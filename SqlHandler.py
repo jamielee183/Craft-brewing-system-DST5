@@ -5,6 +5,8 @@ from mysql.connector.errors import ProgrammingError
 import logging
 from collections.abc import Iterable
 
+import ExceptionLogging
+
 
 
 class SqlDatabaseHandler():
@@ -23,8 +25,8 @@ class SqlDatabaseHandler():
         self.cursor = self.db.cursor()
 
     def createUser(self, host: str, user: str, passwd: str):
-        self.cursor.execute(f"CREATE USER \'{user}\'@\'{host}\' IDENTIFIED BY \'{passwd}\'")
-        self.cursor.execute(f"GRANT ALL PRIVILEGES on * . * TO \'{user}\@\'{host}\' ")
+        self.cursor.execute(f"CREATE USER '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
+        self.cursor.execute(f"GRANT ALL PRIVILEGES on * . * TO '{user}@'{host}' ")
         self.cursor.execute("FLUSH PRIVILEGES")
 
     def showAllDatabases(self):
@@ -193,6 +195,10 @@ class SqlTableHandler():
         self.cursor.execute(f"SELECT max(id) FROM {tableName}")
         return self.cursor.fetchone()[0]
 
+    def maxValueFromTable(self, value, tableName: str):
+        self.cursor.execute(f"SELECT max({value}) FROM {tableName}")
+        return self.cursor.fetchone()[0]
+
     def innerJoin(self, primaryTable: str, fieldSelect: str, secondaryTable: str, fieldSelect2: str, fieldMatch: str):
 
         sql = f"SELECT {secondaryTable}.{fieldSelect2}, {primaryTable}.{fieldSelect} "
@@ -292,7 +298,7 @@ if __name__ == "__main__":
         "0","Simcoe","15","Simcoe","45","Simcoe","59","Simcoe","20"))
 
     #insert.append(("TenAmps", "2020-02-10"))
-    t.insertToTable("Brews", insert)
+    # t.insertToTable("Brews", insert)
 
     insert = []
     insert.append(("BatchID", "TimeStamp","Fermenter","Sg", "Temp","Volume"))
@@ -304,7 +310,7 @@ if __name__ == "__main__":
     # insert.append(("2", "2020-02-14 17:45:00","2", "1.104", "20.51","10.52"))
     # insert.append(("2", "2020-02-14 18:45:00","2", "1.103", "20.56","10.51"))
     # insert.append(("2", "2020-02-14 19:45:00","2", "1.100", "20.59","10.50"))
-    t.insertToTable("Ferment", insert)
+    # t.insertToTable("Ferment", insert)
 
 
     for x in t.readFromTable("Brews", "Recipe, Date"):

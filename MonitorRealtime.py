@@ -1,5 +1,7 @@
 import numpy as np
 import logging
+import ExceptionLogging
+from Constants import *
 
 import sys
 import os
@@ -52,3 +54,10 @@ class HistoryPlot(QWidget):
         self.dataYHistory[0] = sample
         self.updatePlot()
     
+class HistoryMonitorWindow(QWidget):
+
+    _logname = 'MonitorWindow'
+    _log = logging.getLogger(f'{_logname}')
+
+    def __init__(self, LOGIN, batchID):
+        pass
