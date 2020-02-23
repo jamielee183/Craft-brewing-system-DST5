@@ -1,14 +1,18 @@
 
 import sys
+import os
+
 import traceback
 import logging
+
 from PyQt5 import QtCore, QtWidgets
 
 # basic logger functionality
-LOGGING_LEVEL = logging.DEBUG
+LOGGING_LEVEL = logging.INFO
+EXECPTION_CATCHING = False
 
 log = logging.getLogger(__name__)
-logging.basicConfig(format ='%(asctime)s :%(name)-7s :%(message)s', datefmt='%d-%b-%y %H:%M:%S', level=LOGGING_LEVEL)
+logging.basicConfig(format ='%(asctime)s :%(name)-7s :%(levelname)s :%(message)s', datefmt='%d-%b-%y %H:%M:%S', level=LOGGING_LEVEL)
 handler = logging.StreamHandler(stream=sys.stdout)
 log.addHandler(handler)
 
@@ -52,4 +56,5 @@ class UncaughtHook(QtCore.QObject):
             self._exception_caught.emit(log_msg)
  
 # create a global instance of our class to register the hook
-qt_exception_hook = UncaughtHook()
+if EXECPTION_CATCHING:
+    qt_exception_hook = UncaughtHook()

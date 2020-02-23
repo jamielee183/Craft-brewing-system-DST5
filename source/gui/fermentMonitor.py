@@ -1,21 +1,16 @@
-import numpy as np
-import logging
-import ExceptionLogging
-from datetime import datetime
-from Constants import *
-
-
-from SqlHandler import SqlTableHandler as dataBase
-from SQLBrewingComms import SQLFermentMonitor
-
 import sys
 import os
+
+import numpy as np
+import logging
+from datetime import datetime
+
 
 from PyQt5 import QtCore, QtGui, Qt
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
-                    QLabel, QGridLayout, QFrame, QComboBox
+                    QLabel, QGridLayout, QComboBox
 
 from PyQt5.QtCore import QTimer, QDateTime, QTime
 
@@ -23,40 +18,38 @@ from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
             QwtPlotCurve, QwtPlotItem, QwtLogScaleEngine, QwtText,  \
             QwtPlotRenderer, QwtScaleDraw, QwtText
 
+# if running from command line, need to append the parent directories to the PATH
+# so python knows where to find "source.file"
+sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
+import source.tools.exceptionLogging
+from source.tools.constants import *
+from source.tools.sqlHandler import SqlTableHandler as dataBase
+from source.tools.sqlBrewingComms import SQLFermentMonitor
+from source.gui.guitools import FermentTimeScaleDraw, QHLine
 
 
-class QHLine(QFrame):
-    def __init__(self):
-        super(QHLine, self).__init__()
-        self.setFrameShape(QFrame.HLine)
-        self.setFrameShadow(QFrame.Sunken)
+# class TimeScaleDraw(QwtScaleDraw):
 
+#     _logname = 'TimeScaleDraw'
+#     _log = logging.getLogger(f'{_logname}')
 
-class QVLine(QFrame):
-    def __init__(self):
-        super(QVLine, self).__init__()
-        self.setFrameShape(QFrame.VLine)
-        self.setFrameShadow(QFrame.Sunken)
+#     def __init__(self, timeStamps, *args):
+#         QwtScaleDraw.__init__(self, *args)
+#         self.timeStamps = timeStamps
+#         #self.baseTime = datetime
+#         self.fmt='%H:%M:%S\n%Y-%m-%d'
+#         #tdelta = datetime.strptime(s2, FMT) - datetime.strptime(s1, FMT)
 
-class TimeScaleDraw(QwtScaleDraw):
-    
+#     def label(self, value):
+#         self._log.debug(f"VALUE: {value}")
+#         self._log.debug(f"timestamp length: {len(self.timeStamps)}")
+        
+#         try:
+#             dt = self.timeStamps[int(value)][0]
+#             return QwtText(dt.strftime(self.fmt))
+#         except IndexError:
+#             return QwtText(self.timeStamps[-1][0].strftime(self.fmt))
 
-    def __init__(self, timeStamps, *args):
-        QwtScaleDraw.__init__(self, *args)
-        self.timeStamps = timeStamps
-        #self.baseTime = datetime
-        self.fmt='%H:%M:%S\n%Y-%m-%d'
-        #tdelta = datetime.strptime(s2, FMT) - datetime.strptime(s1, FMT)
-
-    def label(self, value):
-        # logging.getLogger('AxisDraw').debug(f"VALUE: {value}")
-        # logging.getLogger('AxisDraw').debug(f"timestamp length: {len(self.timeStamps)}")
-        if value >= len(self.timeStamps):
-            return QwtText(self.timeStamps[0][0].strftime(self.fmt))
-        else:
-            dt = self.timeStamps[int(value)][0]
-            #-self.startTime#.fromMSecsSinceEpoch((value+self.count))#+datetime.timestamp(datetime.now())))
-            return QwtText(dt.strftime(self.fmt))
 
 class FermentPlot(QWidget):
 
@@ -81,12 +74,26 @@ class FermentPlot(QWidget):
         self.plot.replot()
         self.plot.show()
 
-        self.labelFermentTemp = QLabel()
-        self.labelRecipe = QLabel()
-        self.labelRecipe = QLabel()
+        self.labelFerment = QLabel("Set Temp:")
+        self.labelFermentTemp = QLabel("Temp")
+        self.recipeLabel = QLabel(f"Recipe:")
+        self.recipeName = QLabel("Name")
+        self.boilStartLabel = QLabel("Boil Start:")
+        self.boilStartTime = QLabel("Time")
+        self.boilEndLabel = QLabel("Boil End:")
+        self.boilEndTime = QLabel("Time")
+        
 
         self.recipeGrid = QGridLayout()
-        self.recipeGrid.addWidget(self.labelFermentTemp,0,0)
+        self.recipeGrid.addWidget(self.recipeLabel,0,0)
+        self.recipeGrid.addWidget(self.recipeName,0,1)
+        self.recipeGrid.addWidget(QHLine(), 1, 0, 1, 2)
+        self.recipeGrid.addWidget(self.labelFerment,2,0)
+        self.recipeGrid.addWidget(self.labelFermentTemp,2,1)
+        self.recipeGrid.addWidget(self.boilStartLabel,3,0)
+        self.recipeGrid.addWidget(self.boilStartTime,3,1)
+        self.recipeGrid.addWidget(self.boilEndLabel,4,0)
+        self.recipeGrid.addWidget(self.boilEndTime,4,1)
 
         mainLayout = QHBoxLayout()
         # mainLayout.addLayout(buttonLayout)
@@ -98,6 +105,7 @@ class FermentPlot(QWidget):
 
     def updateData(self, tankID, displayDataType):
         self.displayDataType = displayDataType
+        self.tankID = tankID
 
         sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{tankID}'"
         query = self.db.custom(sql)
@@ -163,16 +171,30 @@ class FermentPlot(QWidget):
         self.updatePlotData()
 
     def updatePlotData(self):
+        db = dataBase(self.LOGIN, "Brewing")
+        sql = (f"SELECT TimeStamp FROM Ferment "
+              f"WHERE BatchID = '{self.batchID}' "
+              f"AND Fermenter = '{self.tankID}'")
+        data = db.custom(sql)
+        self.timeStamp = data
         self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
         self.dataY = self.displayData
         self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
         self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw(self.timeStamp))
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, FermentTimeScaleDraw(self.timeStamp))
         # self.curve.setData(self.dataY)
         self.plot.replot()
 
     def updateLabels(self):
-        self.labelFermentTemp.setText(f"Ferment temperature: {self.recipeData['fermenttemp']}{DEGREESC}")
+        self.labelFermentTemp.setText(f"{self.recipeData['fermenttemp']}{DEGREESC}")
+        self.recipeName.setText(f"{self.recipeData['recipeName']}")
+
+        db = dataBase(self.LOGIN, "Brewing")
+        sql = (f"SELECT BoilStart, BoilFinish FROM Boil "
+              f"WHERE BatchID = '{self.batchID}' ")
+        data = db.custom(sql)
+        self.boilStartTime.setText(data[-1][0].strftime('%H:%M:%S'))
+        self.boilEndTime.setText(data[-1][1].strftime('%H:%M:%S'))
 
 
     def getData(self,dataType, id,table):
@@ -257,8 +279,8 @@ class FermentMonitor(QWidget):
 
         if __name__ == "__main__":
             self.fakeFermentCount = 0
-            self.fakeFermenter = SQLFermentMonitor(self.LOGIN,4,3)
-            self.fakeFermenter2 = SQLFermentMonitor(self.LOGIN,5,4)
+            self.fakeFermenter = SQLFermentMonitor(self.LOGIN,1,1)
+            # self.fakeFermenter2 = SQLFermentMonitor(self.LOGIN,5,4)
             updateDataTimer = QTimer(self)
             updateDataTimer.timeout.connect(self.fakeFermentData)
             updateDataTimer.start(1000)
@@ -271,15 +293,14 @@ class FermentMonitor(QWidget):
         x = self.fakeFermentCount
         temp = np.divide(10*np.power(x,3)+2*np.square(x)-x, 2*np.power(x,3)+10*np.square(x)+1)
         self.fakeFermenter.record(float(temp),float(temp*2),float(temp*4))
-        self.fakeFermenter2.record(float(temp),float(temp*2),float(temp*4))
+        # self.fakeFermenter2.record(float(temp),float(temp*2),float(temp*4))
         self.fakeFermentCount +=1
 
 if __name__ == "__main__":
     import logging
+    _logname = 'FermentMonitorMain'
+    _log = logging.getLogger(f'{_logname}')
     
-
-    logging.basicConfig(format ='%(asctime)s :%(name)-7s :%(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.DEBUG)
-
     HOST = "localhost"
     USER = "Test"
     PASSWORD = "BirraMosfeti"

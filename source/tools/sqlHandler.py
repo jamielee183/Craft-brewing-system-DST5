@@ -3,9 +3,9 @@ import numpy as np
 import mysql.connector as sql
 from mysql.connector.errors import ProgrammingError
 import logging
+
 from collections.abc import Iterable
 
-import ExceptionLogging
 
 
 
@@ -13,8 +13,7 @@ class SqlDatabaseHandler():
 
     _logname = 'SqlDatabaseHandler'
     _log = logging.getLogger(f'{_logname}')
-    logging.basicConfig(format ='%(asctime)s :%(name)-7s :%(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.DEBUG)
-
+    
     def __init__(self, LOGIN: list):
         self.db= sql.connect(
             host=LOGIN[0],
@@ -184,7 +183,7 @@ class SqlTableHandler():
         self.cursor.executemany(sql,data[1:])
 
         self.db.commit()
-        self._log.info("Table record inserted")
+        self._log.debug(f"Record inserted to {tableName}: {fields}")
     
     def readFromTable(self, tableName: str, fields: str):
         sql = f"SELECT {fields} FROM {tableName}"
@@ -211,6 +210,11 @@ class SqlTableHandler():
 
 if __name__ == "__main__":
 
+    import logging
+    _logname = 'SqlHandlerMain'
+    _log = logging.getLogger(f'{_logname}')
+    
+    
     HOST = "localhost"
     USER = "Test"
     PASSWORD = "BirraMosfeti"

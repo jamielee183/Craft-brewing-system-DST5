@@ -3,10 +3,10 @@ from abc import ABCMeta, abstractmethod
 from threading import Thread, Event
 import logging
 
-class Comms(Thread, metaclass=ABCMeta):
+class UCComms(Thread, metaclass=ABCMeta):
 
 
-    _logname = 'Comms'
+    _logname = 'UCComms'
     _log = logging.getLogger(f'{_logname}')
 
     def __init__(self):

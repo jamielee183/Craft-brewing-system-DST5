@@ -1,8 +1,5 @@
 import numpy as np
 import logging
-import ExceptionLogging
-from Constants import *
-
 import sys
 import os
 
@@ -17,6 +14,9 @@ from PyQt5.QtCore import QTimer, QDateTime, QTime
 from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
             QwtPlotCurve, QwtPlotItem, QwtLogScaleEngine, QwtText,  \
             QwtPlotRenderer, QwtScaleDraw, QwtText
+
+import source.tools.exceptionLogging
+from source.tools.constants import *
 
 class HistoryPlot(QWidget):
 
@@ -56,7 +56,7 @@ class HistoryPlot(QWidget):
     
 class HistoryMonitorWindow(QWidget):
 
-    _logname = 'MonitorWindow'
+    _logname = 'HistoryMonitorWindow'
     _log = logging.getLogger(f'{_logname}')
 
     def __init__(self, LOGIN, batchID):
