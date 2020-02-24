@@ -148,11 +148,12 @@ class FermentPlot(QWidget):
         self.updatePlotData()
 
     def updatePlotData(self):
-        db = dataBase(self.LOGIN, "Brewing")
+        #db = dataBase(self.LOGIN, "Brewing")
+        # self.db.flushTables()
         sql = (f"SELECT TimeStamp FROM Ferment "
               f"WHERE BatchID = '{self.batchID}' "
               f"AND Fermenter = '{self.tankID}'")
-        data = db.custom(sql)
+        data = self.db.custom(sql)
         self.timeStamp = data
         self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
         self.dataY = self.displayData
@@ -166,18 +167,19 @@ class FermentPlot(QWidget):
         self.labelFermentTemp.setText(f"{self.recipeData['fermenttemp']}{DEGREESC}")
         self.recipeName.setText(f"{self.recipeData['recipeName']}")
 
-        db = dataBase(self.LOGIN, "Brewing")
+        # db = dataBase(self.LOGIN, "Brewing")
         sql = (f"SELECT BoilStart, BoilFinish FROM Boil "
               f"WHERE BatchID = '{self.batchID}' ")
-        data = db.custom(sql)
+        data = self.db.custom(sql)
         self.boilStartTime.setText(data[-1][0].strftime('%H:%M:%S'))
         self.boilEndTime.setText(data[-1][1].strftime('%H:%M:%S'))
 
 
     def getData(self,dataType, id,table):
-        db = dataBase(self.LOGIN, "Brewing")
+        # db = dataBase(self.LOGIN, "Brewing")
+        self.db.flushTables()
         sql = f"SELECT {dataType} FROM {table} WHERE {id} = '{self.batchID}'"
-        data = db.custom(sql)
+        data = self.db.custom(sql)
         data = [i[0] for i in data]
         #self._log.debug(f"batchID: {self.batchID}, sql return: {data}")
         

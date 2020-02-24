@@ -22,20 +22,23 @@ class SQLBrewingComms(metaclass=ABCMeta):
         # self.batchID = self.getCurrentBrew()
         
     def _custom(self, sql: str, val=None ):
-        db = Sql(self.LOGIN, self.dbName)
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.flushTables()
         if val is None:
-            db.custom(sql)
+            self.db.custom(sql)
         elif val is not None:
-            db.custom(sql,val)
+            self.db.custom(sql,val)
 
     def getCurrentBrew(self):
-        db = Sql(self.LOGIN, self.dbName)
-        return db.maxIdFromTable("Brews")
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.flushTables()
+        return self.db.maxIdFromTable("Brews")
 
     def getBrewData(self, batchID):
-        db = Sql(self.LOGIN, self.dbName)
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.flushTables()
         sql = f"SELECT * FROM Brews WHERE id = '{batchID}'"
-        query = db.custom(sql)
+        query = self.db.custom(sql)
         data = {}
 
         data["recipeName"] = query[0][1]
@@ -70,8 +73,9 @@ class SQLBoilMonitor(SQLBrewingComms):
         insert.append(("BatchID", "TimeStamp", "Temp", "Volume"))
         insert.append((self.batchID, datetime.now(), temp, volume))
         self._log.debug(f"Batch ID:{self.batchID}, Time Stamp: {datetime.now()}, Temp: {temp}, Volume:{volume}")
-        db = Sql(self.LOGIN, self.dbName)
-        db.insertToTable("BoilMonitor", insert)
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.insertToTable("BoilMonitor", insert)
+        self.db.flushTables()
 
 class SQLBoil(SQLBrewingComms):
 
@@ -132,8 +136,9 @@ class SQLBoil(SQLBrewingComms):
         insert = []
         insert.append(("BatchID", "BoilStart", "Hop1", "Hop2", "Hop3", "Hop4", "BoilFinish"))
         insert.append((self.batchID, self.starttime, self.hop1timer,self.hop2timer,self.hop3timer,self.hop4timer, self.endtime))
-        db = Sql(self.LOGIN, self.dbName)
-        db.insertToTable("Boil", insert)
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.insertToTable("Boil", insert)
+        self.db.flushTables()
 
 class SQLNewBrew(SQLBrewingComms):
 
@@ -174,8 +179,9 @@ class SQLNewBrew(SQLBrewingComms):
             self.fermentTemp
             ))
         
-        db = Sql(self.LOGIN, self.dbName)
-        db.insertToTable("Brews", insert)
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.insertToTable("Brews", insert)
+        self.db.flushTables()
         self.batchID = self.getCurrentBrew()
         self._log.info(f"Recipe:{self.brewName}, "
                      f"Batch ID: {self.batchID}, " 
@@ -210,8 +216,9 @@ class SQLFermentMonitor(SQLBrewingComms):
         insert.append(("BatchID", "TimeStamp", "Fermenter", "Sg", "Temp", "Volume"))
         insert.append((self.batchID, datetime.now(), self.fermenterID, specificG, temp, volume))
         self._log.debug(f"Fermenter:{self.fermenterID}, Batch:{self.batchID}, SG:{specificG},Temp:{temp}, Volume:{volume}")
-        db = Sql(self.LOGIN, self.dbName)
-        db.insertToTable("Ferment", insert)
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.insertToTable("Ferment", insert)
+        self.db.flushTables()
 
 
 if __name__ == '__main__':

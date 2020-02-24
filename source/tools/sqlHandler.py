@@ -85,6 +85,9 @@ class SqlTableHandler():
         except ProgrammingError:
             raise LoginError("Invalid Login ")
 
+    def flushTables(self):
+        self.cursor.execute("FLUSH TABLES")
+
     def custom(self, sql: str, val=None ):
         if val is None:
             self.cursor.execute(sql)

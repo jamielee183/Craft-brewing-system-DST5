@@ -40,6 +40,7 @@ class TabGraph(QWidget):
     def __init__(self, LOGIN, parent=None):
         super().__init__(parent)
         self.LOGIN = LOGIN
+        self.db = dataBase(self.LOGIN, "Brewing")
         self.dataY = np.zeros(0)
         self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
 
@@ -161,15 +162,15 @@ class TabMash(TabGraph):
         self.targetTempLabel.setText(f"Set mash temp: {self.recipedata['mashTemp']}{DEGREESC}")
         
     def updatePlot(self):
-
-        db = dataBase(self.LOGIN, "Brewing")
+        self.db.flushTables()
+        # db = dataBase(self.LOGIN, "Brewing")
         sql = f"SELECT Temp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = db.custom(sql)
+        query = self.db.custom(sql)
 
         results = [i[0] for i in query]
 
         sql = f"SELECT TimeStamp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = db.custom(sql)
+        query = self.db.custom(sql)
 
 
         self.timeStamps = [i[0] for i in query]
@@ -192,7 +193,7 @@ class TabMash(TabGraph):
 
 
 class TabBoil(TabGraph):
-    _logname = 'TabBoil'
+    _logname = 'TablesTabBoil'
     _log = logging.getLogger(f'{_logname}')
 
     def __init__(self, LOGIN, batchID, recipedata:dict, parent=None):
@@ -272,15 +273,15 @@ class TabBoil(TabGraph):
 
 
     def updatePlot(self):
-
-        db = dataBase(self.LOGIN, "Brewing")
+        self.db.flushTables()
+        # db = dataBase(self.LOGIN, "Brewing")
         sql = f"SELECT Temp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
-        query = db.custom(sql)
+        query = self.db.custom(sql)
 
         results = [i[0] for i in query]
 
         sql = f"SELECT TimeStamp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
-        query = db.custom(sql)
+        query = self.db.custom(sql)
 
 
         self.timeStamps = [i[0] for i in query]
@@ -319,11 +320,11 @@ class MonitorWindow(QWidget):
         super().__init__(parent)
         self.setWindowTitle("Monitor")
         self.LOGIN = LOGIN
-        db = dataBase(self.LOGIN, "Brewing")
+        self.db = dataBase(self.LOGIN, "Brewing")
         self.batchID = batchID
 
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
-        query = db.custom(sql)
+        query = self.db.custom(sql)
 
         self.recipedata = {}
         self.recipedata['batchID']    = self.batchID
@@ -372,7 +373,7 @@ class MonitorWindow(QWidget):
         self.mashPlotUpdateTimer.timeout.connect(self.updateMashPlot)
         self.mashPlotUpdateTimer.start(1000)
 
-
+        #TODO: remove once we can get real data
         if __name__ == "__main__":
             self.boilMonitor = SQLBoilMonitor(self.LOGIN)
             self.fakeBoilTimer = QTimer(self)
@@ -399,7 +400,7 @@ class MonitorWindow(QWidget):
             reply = QMessageBox.question(self, 'oops', 
                     msg, QMessageBox.Ok)
         else:
-            raise Exception("Boil Error")
+            raise Exception("Boiling Error")
 
     def boilStopClicked(self):
         if self.tabBoil.secondsTimer.isActive():
@@ -416,7 +417,7 @@ class MonitorWindow(QWidget):
                 self.tabBoil.secondsTimer.stop()
                 self.tabBoil.sqlBoilComms.endTimer()
                 self.tabBoil.timeStatusLED.value=False
-                
+
                 boilPopup = BoilFinishedPopup(LOGIN=self.LOGIN, recipeData=self.recipedata, parent=self)
 
                 if boilPopup.exec_():
