@@ -28,36 +28,13 @@ from source.tools.sqlBrewingComms import SQLFermentMonitor
 from source.gui.guitools import FermentTimeScaleDraw, QHLine
 
 
-# class TimeScaleDraw(QwtScaleDraw):
-
-#     _logname = 'TimeScaleDraw'
-#     _log = logging.getLogger(f'{_logname}')
-
-#     def __init__(self, timeStamps, *args):
-#         QwtScaleDraw.__init__(self, *args)
-#         self.timeStamps = timeStamps
-#         #self.baseTime = datetime
-#         self.fmt='%H:%M:%S\n%Y-%m-%d'
-#         #tdelta = datetime.strptime(s2, FMT) - datetime.strptime(s1, FMT)
-
-#     def label(self, value):
-#         self._log.debug(f"VALUE: {value}")
-#         self._log.debug(f"timestamp length: {len(self.timeStamps)}")
-        
-#         try:
-#             dt = self.timeStamps[int(value)][0]
-#             return QwtText(dt.strftime(self.fmt))
-#         except IndexError:
-#             return QwtText(self.timeStamps[-1][0].strftime(self.fmt))
-
-
 class FermentPlot(QWidget):
 
     _logname = 'FermentPlot'
     _log = logging.getLogger(f'{_logname}')
     
-    def __init__(self, LOGIN):
-        super().__init__()
+    def __init__(self, LOGIN,parent=None):
+        super().__init__(parent)
         self.setWindowTitle("Monitor")
         self.LOGIN = LOGIN
         self.db = dataBase(self.LOGIN, "Brewing")
@@ -222,11 +199,11 @@ class FermentMonitor(QWidget):
         "Volume" : "Volume"
     }
 
-    def __init__(self, LOGIN):
+    def __init__(self, LOGIN, parent=None):
         self.LOGIN = LOGIN
 
         self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")
-        super().__init__()
+        super().__init__(parent)
         self.setWindowTitle('Fermentation monitor')
         
         self.dropDownBox = QComboBox()
