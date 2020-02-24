@@ -1,10 +1,12 @@
 
-from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QFrame, QComboBox, QLabel, \
+    QDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox
 from qwt import QwtScaleDraw, QwtText
 import logging
 
 import source.tools.exceptionLogging
 from source.tools.constants import *
+from source.tools.sqlBrewingComms import SQLFermentMonitor
 
 class QHLine(QFrame):
     def __init__(self):
@@ -61,6 +63,9 @@ class FermentTimeScaleDraw(TimeScaleDraw):
 
 class BoilMashTimeScaleDraw(TimeScaleDraw):
 
+    _logname = 'BoilMashTimeScaleDraw'
+    _log = logging.getLogger(f'{_logname}')
+
     def label(self, value):
         try:
             # if value > len(self.timeStamps):
@@ -76,3 +81,47 @@ class BoilMashTimeScaleDraw(TimeScaleDraw):
         except IndexError:
             logging.getLogger('AxisDraw').debug(f"PROPER INDEX ERROR: {value}")
             return QwtText("0 Secs")
+
+
+class BoilFinishedPopup(QDialog):
+
+    _logname = 'BoilFinishedPopup'
+    _log = logging.getLogger(f'{_logname}')
+
+    def __init__(self, LOGIN, recipeData, parent=None):
+        super().__init__(parent)
+        self.recipeData = recipeData
+        self.LOGIN = LOGIN
+        label = QLabel("Send to fermentation tank:")
+        self.combo = QComboBox()
+        for i in range(NUMBER_OF_FERMENTATION_TANKS):
+            self.combo.addItem('{}'.format(i+1))
+
+
+        box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
+            centerButtons=True,
+        )
+        box.accepted.connect(self.accepted)
+        box.rejected.connect(self.reject)
+
+        self.fermLayout = QHBoxLayout()
+        self.fermLayout.addWidget(label)
+        self.fermLayout.addWidget(self.combo)
+
+        self.mainLayout = QVBoxLayout(self)
+        self.mainLayout.addStretch(10)
+        self.mainLayout.addLayout(self.fermLayout)
+        self.mainLayout.addWidget(box)
+        self.mainLayout.addStretch(10)
+        self.setWindowTitle("Select fermentation tank")
+        self.selectedTank = None
+
+    def accepted(self):
+        '''
+        setup Fermentation
+        '''
+        self.selectedTank = self.combo.currentIndex()+1
+        SQLFermentMonitor(self.LOGIN, self.recipeData['batchID'], self.selectedTank)
+        self._log.info('Batch {} sent to fermentation tank {}'.format(self.recipeData['batchID'],self.selectedTank))
+        self.accept()
