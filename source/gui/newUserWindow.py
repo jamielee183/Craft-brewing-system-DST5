@@ -1,5 +1,8 @@
 #-*- coding: utf-8 -*-
 
+import sys
+import os
+
 #from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import \
     Qt #, pyqtSlot
@@ -11,7 +14,8 @@ from PySide2.QtWidgets import \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox \
 
-import mainwindow
+sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
+import source.gui.mainwindow
 
 class NewUserWindow(QDialog):
 
