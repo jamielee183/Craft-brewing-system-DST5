@@ -1,0 +1,4 @@
+source/gui/__pycache__/guitools.cpython-36.pyc
+source/tools/__pycache__/constants.cpython-36.pyc
+source/tools/__pycache__/exceptionLogging.cpython-36.pyc
+source/tools/__pycache__/sqlBrewingComms.cpython-36.pyc
