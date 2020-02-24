@@ -1,3 +1,9 @@
+"""
+Python exception hooks with Qt message box:
+TIM LEHR: http://timlehr.com/python-exception-hooks-with-qt-message-box/
+"""
+
+
 
 import sys
 import os
