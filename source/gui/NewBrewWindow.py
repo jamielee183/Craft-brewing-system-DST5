@@ -1,5 +1,9 @@
 #-*- coding: utf-8 -*-
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
+
 #from PySide2 import QtWidgets
 from PySide2.QtCore import \
     Qt #, pyqtSlot
@@ -10,7 +14,7 @@ from PySide2.QtWidgets import \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox
-from mainwindow import DEGREES
+from source.tools.constants import DEGREES
 
 class NewBrewWindow(QDialog):
 
