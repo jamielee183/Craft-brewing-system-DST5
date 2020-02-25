@@ -145,7 +145,7 @@ class SQLNewBrew(SQLBrewingComms):
     _logname = 'SQLNewBrew'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self, LOGIN:list, brewName:str, mashTime:str, mashTemp:str, boilTime:str, boilTemp:str,hop1:tuple, hop2:tuple, hop3:tuple, hop4:tuple, fermentTemp):
+    def __init__(self, LOGIN:list, brewName:str, mashTime:str, mashTemp:str, boilTime:str, boilTemp:str,hop1:tuple, hop2:tuple, hop3:tuple, hop4:tuple, fermentTemp:str):
         super().__init__(LOGIN)
         self.brewName = brewName
         self.mashTime = mashTime
@@ -249,7 +249,8 @@ if __name__ == '__main__':
     hop3 = ("Saaz","2")
     hop4 = ("HoppidyHop","3")
 
-    # brew = SQLNewBrew(LOGIN, "Tennents", "60","-20","69","-2",hop1,hop2,hop3,hop4, "112" )
+    # brew = SQLNewBrew(LOGIN, "None", "None","None","None","None",hop1,hop2,hop3,hop4, "None" )
+    brew = SQLNewBrew(LOGIN, "Fake", "60","-20","69","-2",hop1,hop2,hop3,hop4, "112" )
     # fermenter1=SQLFermentMonitor(LOGIN, 1)
     # boilMonitor = SQLBoilMonitor(LOGIN)
     # boil = SQLBoil(LOGIN)
@@ -299,14 +300,14 @@ if __name__ == '__main__':
     # boil.endTimer()
     # boil.record()
 
-    brew = SQLNewBrew(LOGIN, "Tennents", "60","-20","69","5",hop1,hop2,hop3,hop4, "112" )
-    fermenter1=SQLFermentMonitor(LOGIN, brew.getCurrentBrew(), 1)
-    fermenter1.record(specificG=10, temp=26, volume=90)
-    fermenter1.record(specificG=50, temp=36, volume=91)
-    fermenter1.record(specificG=30, temp=56, volume=92)
-    fermenter1.record(specificG=60, temp=76, volume=93)
-    fermenter1.record(specificG=140, temp=59, volume=100)
-    fermenter1.record(specificG=106, temp=57, volume=100)
+    # brew = SQLNewBrew(LOGIN, "Tennents", "60","-20","69","5",hop1,hop2,hop3,hop4, "112" )
+    # fermenter1=SQLFermentMonitor(LOGIN, brew.getCurrentBrew(), 1)
+    # fermenter1.record(specificG=10, temp=26, volume=90)
+    # fermenter1.record(specificG=50, temp=36, volume=91)
+    # fermenter1.record(specificG=30, temp=56, volume=92)
+    # fermenter1.record(specificG=60, temp=76, volume=93)
+    # fermenter1.record(specificG=140, temp=59, volume=100)
+    # fermenter1.record(specificG=106, temp=57, volume=100)
 
     # brew = SQLNewBrew(LOGIN, "Not Tennents", "50","-60","68","200",hop1,hop2,hop3,hop4, "202" )
     # fermenter2=SQLFermentMonitor(LOGIN, brew.getCurrentBrew(), 2)
