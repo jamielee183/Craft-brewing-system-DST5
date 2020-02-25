@@ -5,27 +5,40 @@ import os
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 
 #from PySide2 import QtWidgets
-from PySide2.QtCore import \
-    Qt #, pyqtSlot
-from PySide2.QtGui import \
+from PyQt5.QtCore import \
+    Qt,pyqtSignal #, pyqtSlot
+from PyQt5.QtGui import \
     QFont
-from PySide2.QtWidgets import \
+from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox
+
 from source.tools.constants import DEGREES
+from source.tools.sqlHandler import SqlTableHandler as db
+from source.tools.sqlBrewingComms import SQLNewBrew
+from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 
 class NewBrewWindow(QDialog):
+    formSubmitted = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, LOGIN, parent=None):
         super(NewBrewWindow, self).__init__(parent)
+        self.LOGIN = LOGIN
         self.create_layout_newBrew()
         self.setWindowTitle('Start New Brew')
 
     # Function to create layout of New Brew window
     def create_layout_newBrew(self):
         lab_details = QLabel('Enter brew details in the form below:')
+
+
+        nameGroupBox = QGroupBox('Recipe')
+        nameForm = QFormLayout() 
+        self.recipeNameEdit = QLineEdit()
+        nameForm.addRow(QLabel('Recipe Name'), self.recipeNameEdit)
+        nameGroupBox.setLayout(nameForm)
 
         # Mash group box
         mashGroupBox = QGroupBox('Mash')
@@ -77,6 +90,7 @@ class NewBrewWindow(QDialog):
         # Add each each layout to main vLayout
         vLayout = QVBoxLayout()
         vLayout.addWidget(lab_details)
+        vLayout.addWidget(nameGroupBox)
         vLayout.addWidget(mashGroupBox)
         vLayout.addWidget(boilGroupBox)
         vLayout.addWidget(fermentGroupBox)
@@ -103,31 +117,72 @@ class NewBrewWindow(QDialog):
 
     
     # Function to check whether hop box is checked and deal with data accordingly
-    def checkHopBox(self, hopBoxes):
+    # def checkHopBox(self, hopBoxes):
 
-        for i in range(4):
-            if (hopBoxes[i][0].isChecked() == False):
+    #     for i in range(4):
+    #         if (hopBoxes[i][0].isChecked() == False):
                 
-                hopBoxes[i][1].setText(None)
-                hopBoxes[i][2].setText(None)
+    #             hopBoxes[i][1].setText(None)
+    #             hopBoxes[i][2].setText(None)
+
+    #             hopBoxes[i][1] = None
+    #             hopBoxes[i][2] = None
                 
-            else:
-                int(hopBoxes[i][2].text(),10)
+    #         else:
+    #             int(hopBoxes[i][2].text(),10)
+
+    def checkHopBox(self, hopBox):
+
+        if (hopBox[0].isChecked() == False):
+
+            # hopBox[1] = None
+            # hopBox[2] = None
+            return None, None
+            
+        else:
+            return str(hopBox[1].text()), str(int(hopBox[2].text(),10))
+    
 
 
     # Function run if Start Brew button is pressed
     def but_nextClicked(self):
 
         try:
-            float(self.mashTempEdit.text())
-            int(self.mashTimeEdit.text(), 10)
-            float(self.boilTempEdit.text())
-            int(self.boilTimeEdit.text(), 10)
-            float(self.fermentTempEdit.text())
+            mashTemp = float(self.mashTempEdit.text())
+            mashTime = int(self.mashTimeEdit.text(), 10)
+            boilTemp = float(self.boilTempEdit.text())
+            boilTemp = int(self.boilTimeEdit.text(), 10)
+            fermTemp = float(self.fermentTempEdit.text())
+
+            hop1 = self.checkHopBox(self.hopBoxes[0])
+            hop2 = self.checkHopBox(self.hopBoxes[1])
+            hop3 = self.checkHopBox(self.hopBoxes[2])
+            hop4 = self.checkHopBox(self.hopBoxes[3])
+
             
-            self.checkHopBox(self.hopBoxes)
+            # self.checkHopBox(self.hopBoxes)
+
 
             # open next page (Jamie's 3 tab window)
+            SQLNewBrew( LOGIN       =   self.LOGIN,
+                        brewName    =   "{}".format(self.recipeNameEdit.text()), 
+                        mashTime    =   "{}".format(mashTime),
+                        mashTemp    =   "{}".format(mashTemp),
+                        boilTime    =   "{}".format(boilTemp),
+                        boilTemp    =   "{}".format(boilTemp),
+                        fermentTemp =   "{}".format(fermTemp),
+                        hop1        =    self.checkHopBox(self.hopBoxes[0]),
+                        hop2        =    self.checkHopBox(self.hopBoxes[1]),
+                        hop3        =    self.checkHopBox(self.hopBoxes[2]),
+                        hop4        =    self.checkHopBox(self.hopBoxes[3]),
+                        )
+
+            # database = db(self.LOGIN,"Brewing")
+            # batchID = database.maxIdFromTable("Brews")
+            # self.mashBoilMonitor = MashBoilMonitor(LOGIN = self.LOGIN, batchID=batchID, parent=None)
+            # self.mashBoilMonitor.show()
+            self.formSubmitted.emit()
+            self.close()
 
 
         # Show error message if wrong type is used in entry form

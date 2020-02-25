@@ -26,6 +26,7 @@ from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 from source.gui.fermentMonitor import FermentMonitor, FermentMonitorThread
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as db
+from source.gui.NewBrewWindow import NewBrewWindow
 
 # from source.gui.guitools import MyPyQtSlot
 
@@ -110,9 +111,9 @@ class MainWindow(QMainWindow):
         self.main_widget.setLayout(vLay_main)
 
         # connect new brew buttton with open brew window
-        self.but_start_brew.clicked.connect(MainWindow.startBrewClicked)
+        self.but_start_brew.clicked.connect(self.startBrewClicked)
         # connect new user buttton with open new user window
-        self.but_newUser.clicked.connect(MainWindow.newUserClicked)
+        self.but_newUser.clicked.connect(self.newUserClicked)
         # connect quit button with closing main window
         self.but_quit.clicked.connect(self.quitClicked)
 
@@ -129,7 +130,7 @@ class MainWindow(QMainWindow):
 
     
     def fermentButtonClicked(self):
-        # self.fermentMonitor.startTimers()
+        self.fermentMonitor.startTimers()
         self.fermentMonitor.restartTankDropdown()
         self.fermentMonitor.show()
 
@@ -145,9 +146,9 @@ class MainWindow(QMainWindow):
         
 
     def startBrewClicked(self):
-        # newBrewWindow = NewBrewWindow.NewBrewWindow()
-        # newBrewWindow.exec_()
-
+        newBrewWindow = NewBrewWindow(LOGIN=self.LOGIN, parent=self)
+        newBrewWindow.formSubmitted.connect(self.mashBoilButtonClicked)
+        newBrewWindow.exec_()
         pass
 
     def newUserClicked(self):

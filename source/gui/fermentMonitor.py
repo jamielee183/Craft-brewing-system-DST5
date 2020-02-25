@@ -234,7 +234,7 @@ class FermentMonitor(QDialog):
 
 
         self.plot = FermentPlot(self.LOGIN)
-        self.plot.updateData(1, "Sg")
+        # self.plot.updateData(1, "Sg")
         self.dropDownBox.currentIndexChanged.connect(self.indexChanged)
         self.dropDownGraphBox.currentIndexChanged.connect(self.indexChanged)
 
@@ -274,14 +274,14 @@ class FermentMonitor(QDialog):
         self.updateDataTimer = QTimer(self)
         self.updateDataTimer.timeout.connect(self.fakeFermentData)
         # self.updateDataTimer.start(1000)
-        self.startTimers()
+        # self.startTimers()
 
     def restartTankDropdown(self):
         self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")
         self.dropDownBox.clear()
         if self.numberTotalTanks == None:
-           raise Exception("No fermentations active")
-        #    pass
+        #    raise Exception("No fermentations active")
+           pass
         else:
             tanks = []
             for i in range(self.numberTotalTanks):
@@ -298,6 +298,9 @@ class FermentMonitor(QDialog):
             self.plot.updateData(self.dropDownBox.currentIndex()+1, self.textGraphDrop[f"{self.dropDownGraphBox.currentText()}"])
 
     def fakeFermentData(self):
+        self.fakeFermenter = SQLFermentMonitor(self.LOGIN,
+                                                batchID=self.plot.batchID,
+                                                fermenterID=self.dropDownBox.currentIndex()+1)
         x = self.fakeFermentCount
         temp = np.divide(10*np.power(x,3)+2*np.square(x)-x, 2*np.power(x,3)+10*np.square(x)+1)
         self.fakeFermenter.record(float(temp),float(temp*2),float(temp*4))
@@ -358,5 +361,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     #window = MonitorWindow(mashtime=mashtime, boiltime=boiltime,hop1=hop1,hop2=hop2,hop3=hop3,hop4=hop4)
     window = FermentMonitor(LOGIN)
+    window.startTimers()
     window.show()
     sys.exit(app.exec_())

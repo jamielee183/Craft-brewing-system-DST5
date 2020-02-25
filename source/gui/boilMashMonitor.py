@@ -210,6 +210,10 @@ class TabBoil(TabGraph):
         self.targetTimeLabel.setText(f"Set boil time: {self.recipedata['boilTime']} mins")
         self.targetTempLabel.setText(f"Set boil temp: {self.recipedata['boilTemp']}{DEGREESC}")
 
+        # for i in range(4):
+        #     if self.recipedata[f'hop{i+1}'][0] is None:
+
+
         self.recipeLED = [QLed(self, onColour=QLed.Green, 
                             offColour=QLed.Red, 
                             shape=QLed.Circle)
@@ -235,9 +239,14 @@ class TabBoil(TabGraph):
         self.recipeGrid.addWidget(QLabel(f"Hop\nStatus"),3,2)
         self.recipeGrid.addWidget(QLabel(f"Time\nadded"),3,3)
         for i in range(4):
-            self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][0])),4+i,0)
-            self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][1])),4+i,1)
-            self.recipeGrid.addWidget(self.recipeLED[i],4+i,2)
+            if self.recipedata[f'hop{i+1}'][0] is None:
+                self.recipeGrid.addWidget(QLabel(""),4+i,0)
+                self.recipeGrid.addWidget(QLabel(""),4+i,1)
+
+            else:
+                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][0])),4+i,0)
+                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][1])),4+i,1)
+                self.recipeGrid.addWidget(self.recipeLED[i],4+i,2)
             self.recipeLED[i].setMaximumSize(35,35)
             self.recipeGrid.addWidget(self.hopTimeLabels[i],4+i,3)
 
@@ -247,7 +256,11 @@ class TabBoil(TabGraph):
         self.recipeLED[1].clicked.connect(lambda: self.ledClicked(self.recipeLED[1],2))
         self.recipeLED[2].clicked.connect(lambda: self.ledClicked(self.recipeLED[2],3))
         self.recipeLED[3].clicked.connect(lambda: self.ledClicked(self.recipeLED[3],4))
-    
+
+        for i in range(4):
+            if self.recipedata[f'hop{i+1}'][0] is None:
+                self.recipeLED[i].deleteLater()
+                
 
     def ledClicked(self,led,hopNo):
         if self.minuteTimer.isActive():
@@ -307,8 +320,9 @@ class TabBoil(TabGraph):
                 self.tempStatusLED.value=True
 
         for i in range(4):
-            if self.count/60 >= self.recipedata[f'hop{i+1}'][1]:
-                self.recipeLED[i].setOffColour(QLed.Yellow)
+            if self.recipedata[f'hop{i+1}'][1] is not None:
+                if self.count/60 >= self.recipedata[f'hop{i+1}'][1]:
+                    self.recipeLED[i].setOffColour(QLed.Yellow)
 
 class MonitorWindow(QDialog):
 
