@@ -25,8 +25,9 @@ class SqlDatabaseHandler():
 
     def createUser(self, host: str, user: str, passwd: str):
         self.cursor.execute(f"CREATE USER '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
-        self.cursor.execute(f"GRANT ALL PRIVILEGES on * . * TO '{user}@'{host}' ")
+        self.cursor.execute(f"GRANT SELECT,INSERT,UPDATE,DELETE on Brewing. * TO '{user}@'{host}' ")
         self.cursor.execute("FLUSH PRIVILEGES")
+        
 
     def showAllDatabases(self):
         self.cursor.execute("SHOW DATABASES")
@@ -83,7 +84,7 @@ class SqlTableHandler():
             self.cursor = self.db.cursor()
 
         except ProgrammingError:
-            raise LoginError("Invalid Login ")
+            raise LoginError("Invalid Login details ")
 
     def flushTables(self):
         self.cursor.execute("FLUSH TABLES")
@@ -221,6 +222,11 @@ if __name__ == "__main__":
     HOST = "localhost"
     USER = "Test"
     PASSWORD = "BirraMosfeti"
+
+    HOST = "192.168.0.17"
+    USER = "jamie"
+    PASSWORD = "beer"
+
     LOGIN = [HOST,USER,PASSWORD]
 
     s = SqlDatabaseHandler(LOGIN)

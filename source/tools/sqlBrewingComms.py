@@ -232,6 +232,11 @@ if __name__ == '__main__':
     HOST = "localhost"
     USER = "Test"
     PASSWORD = "BirraMosfeti"
+
+    HOST = "192.168.0.17"
+    USER = "jamie"
+    PASSWORD = "beer"
+
     LOGIN = [HOST,USER,PASSWORD]
 
     # brewName:str, mashTime:str, \

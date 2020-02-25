@@ -1,13 +1,14 @@
 # This Python file uses the following encoding: utf-8
 import sys
 import os
+import traceback, types
 import logging
 
 #-*- coding: utf-8 -*-
 
 #from PySide2 import QtWidgets
 from PyQt5.QtCore import \
-    Qt, QThread, pyqtSignal, pyqtSlot #, pyqtSlot
+    Qt, QThread, pyqtSignal, pyqtSlot, QTimer, QThreadPool, QCoreApplication #, pyqtSlot
 from PyQt5.QtGui import \
     QFont
 from PyQt5.QtWidgets import \
@@ -26,11 +27,13 @@ from source.gui.fermentMonitor import FermentMonitor, FermentMonitorThread
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as db
 
+# from source.gui.guitools import MyPyQtSlot
+
 # import NewBrewWindow
 # import loginWindow
 # import newUserWindow
 
-DEGREES = chr(176)
+
 
 class MainWindow(QMainWindow):
 
@@ -115,13 +118,8 @@ class MainWindow(QMainWindow):
 
         self.but_fermenters.clicked.connect(self.fermentButtonClicked)
 
-        self.fermentThread = QThread()
-        self.fermentMonitor = FermentMonitorThread(self.LOGIN)
-        self.fermentMonitor.moveToThread(self.fermentThread)
 
-        # self.fermentMonitor.moveToThread(self.fermentThread)
-        # self.fermentMonitor.fermentMonitor.fermentClose.connect(self.fermentCloseSignal)
-        # self.fermentThread.start()
+        self.fermentMonitor = FermentMonitor(self.LOGIN)
 
         # database = db(LOGIN,"Brewing")
         # batchID = database.maxIdFromTable("Brews")
@@ -129,32 +127,12 @@ class MainWindow(QMainWindow):
         self.but_mashBoil.clicked.connect(self.mashBoilButtonClicked)
 
 
-    # @pyqtSlot()
-    def fermentCloseSignal(self):
-        if self.fermentThread.isRunning():
-            self.fermentThread.terminate()
-            self.fermentThread.wait()
-            self.fermentMonitor.fermentMonitor.close()
-            self._log.info("Ferment Thread closed")
-            # del self.fermentMonitor
-
-
-    def forceFermentQuit(self):
-        if self.fermentThread.isRunning():
-            self.fermentThread.terminate()
-            self.fermentThread.wait()
-
-
+    
     def fermentButtonClicked(self):
-        # self.fermentMonitor = FermentMonitor(self.LOGIN)
-        # self.fermentMonitor = FermentMonitor(self.LOGIN)
-        # self.fermentMonitor.show()
-        # # self.fermentMonitor = FermentMonitorThread(self.LOGIN)
-        # self.fermentMonitor.moveToThread(self.fermentThread)
-        # v
-        self.fermentThread.start()
-        self.fermentMonitor.fermentMonitor.fermentClose.connect(self.fermentCloseSignal)
-        self.fermentMonitor.fermentMonitor.show()
+        # self.fermentMonitor.startTimers()
+        self.fermentMonitor.restartTankDropdown()
+        self.fermentMonitor.show()
+
 
 
     def mashBoilButtonClicked(self):
@@ -163,6 +141,7 @@ class MainWindow(QMainWindow):
         batchID = database.maxIdFromTable("Brews")
         self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID)
         self.mashBoilMonitor.show()
+        self.mashBoilMonitor.finishedSignal.connect(lambda: self.fermentMonitor.restartTankDropdown())
         
 
     def startBrewClicked(self):
@@ -192,7 +171,7 @@ if __name__ == "__main__":
     
 
 
-    app = QApplication([])
+    app = QApplication(sys.argv)
     # login = loginWindow.LoginWindow()
     # login.show()
     window = MainWindow(LOGIN)
