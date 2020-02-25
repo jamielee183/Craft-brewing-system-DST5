@@ -10,9 +10,9 @@ from PyQt5 import QtCore, QtGui, Qt
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
-                    QLabel, QGridLayout, QFrame, QMessageBox
+                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog
 
-from PyQt5.QtCore import QTimer, QDateTime, QTime
+from PyQt5.QtCore import QTimer, QDateTime, QTime, pyqtSignal
 
 from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
             QwtPlotCurve, QwtPlotItem, QwtLogScaleEngine, QwtText,  \
@@ -24,7 +24,7 @@ from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as dataBase
-from source.tools.sqlBrewingComms import SQLBoil
+from source.tools.sqlBrewingComms import SQLBoil, SQLBoilMonitor, SQLFermentMonitor
 from source.tools.constants import *
 from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup
 
@@ -115,8 +115,8 @@ class TabGraph(QWidget):
         vLayout = QVBoxLayout(self)
         vLayout.addLayout(mainLayout)
 
-        self.secondsTimer = QTimer(self)
-        self.secondsTimer.timeout.connect(lambda:self.addTimer(1))
+        self.minuteTimer = QTimer(self)
+        self.minuteTimer.timeout.connect(lambda:self.addTimer(60))
 
 
     def insertSample(self,sample):
@@ -247,11 +247,10 @@ class TabBoil(TabGraph):
         self.recipeLED[1].clicked.connect(lambda: self.ledClicked(self.recipeLED[1],2))
         self.recipeLED[2].clicked.connect(lambda: self.ledClicked(self.recipeLED[2],3))
         self.recipeLED[3].clicked.connect(lambda: self.ledClicked(self.recipeLED[3],4))
-
-            
+    
 
     def ledClicked(self,led,hopNo):
-        if self.secondsTimer.isActive():
+        if self.minuteTimer.isActive():
             if led.offColour == QLed.Yellow and led.value==False:
                 self.hoptimes[f'{hopNo}']()
                 # led.value=True
@@ -302,19 +301,21 @@ class TabBoil(TabGraph):
             self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
             self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))     
 
-        if (self.dataY[-1] < (self.recipedata['boilTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['boilTemp']+0.5)):
-            self.tempStatusLED.value=False
-        else:
-            self.tempStatusLED.value=True
+            if (self.dataY[-1] < (self.recipedata['boilTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['boilTemp']+0.5)):
+                self.tempStatusLED.value=False
+            else:
+                self.tempStatusLED.value=True
 
         for i in range(4):
-            if self.count/60 > self.recipedata[f'hop{i+1}'][1]:
+            if self.count/60 >= self.recipedata[f'hop{i+1}'][1]:
                 self.recipeLED[i].setOffColour(QLed.Yellow)
 
-class MonitorWindow(QWidget):
+class MonitorWindow(QDialog):
 
     _logname = 'MonitorWindow'
     _log = logging.getLogger(f'{_logname}')
+
+    finishedSignal= pyqtSignal()
     
     def __init__(self, LOGIN, batchID, parent=None):
         super().__init__(parent)
@@ -349,7 +350,7 @@ class MonitorWindow(QWidget):
         self.tabs.addTab(self.tabBoil,"Boil")
 
         self.quitButton = QPushButton(self.tr('&Quit'))
-        self.quitButton.clicked.connect(lambda: self.close())
+        self.quitButton.clicked.connect(self.closeWindow)
         
         self.tabBoil.startButton.clicked.connect(self.boilStartClicked)
         self.tabBoil.stopButton.clicked.connect(self.boilStopClicked)
@@ -374,15 +375,27 @@ class MonitorWindow(QWidget):
         self.mashPlotUpdateTimer.start(1000)
 
         #TODO: remove once we can get real data
-        if __name__ == "__main__":
-            self.boilMonitor = SQLBoilMonitor(self.LOGIN)
-            self.fakeBoilTimer = QTimer(self)
-            self.fakeBoilCount = 0
-            self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
-        
+        # if __name__ == "__main__":
+        self.boilMonitor = SQLBoilMonitor(self.LOGIN)
+        self.fakeBoilTimer = QTimer(self)
+        self.fakeBoilCount = 0
+        self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
 
+
+    # def startBoilTimers(self):
+    #     # self.boilPlotUpdateTimer.start(1000)
+    #     self.tabBoil.minuteTimer.start(60000)
+    #     self.tabBoil.sqlBoilComms.startTimer()
+
+    # def stopBoilTimers(self):
+
+
+    # def startMashTimers(self):
+
+    # def stopMashTimers(self):
+    
     def boilStartClicked(self):
-        if not self.tabBoil.secondsTimer.isActive():
+        if not self.tabBoil.minuteTimer.isActive():
             msg = 'Start boiling? \n set {}{} for {} minutes'.format(self.recipedata['boilTemp'],DEGREESC,self.recipedata['boilTime'])
             reply = QMessageBox.question(self, 'Continue?', 
                     msg, QMessageBox.Yes, QMessageBox.No)
@@ -390,11 +403,11 @@ class MonitorWindow(QWidget):
                 '''
                 TODO: Set Boil Uc
                 '''
-                self.fakeBoilTimer.start(100)   #TODO: remove once we can get real data
-                self.tabBoil.secondsTimer.start(1000)
+                self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
+                self.tabBoil.minuteTimer.start(60000)
                 self.tabBoil.sqlBoilComms.startTimer()
                 self.tabBoil.timeStatusLED.value=True
-        elif self.tabBoil.secondsTimer.isActive():
+        elif self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
             msg = 'Boil already running: {} mins {} secs'.format(x[0],x[1])
             reply = QMessageBox.question(self, 'oops', 
@@ -403,7 +416,7 @@ class MonitorWindow(QWidget):
             raise Exception("Boiling Error")
 
     def boilStopClicked(self):
-        if self.tabBoil.secondsTimer.isActive():
+        if self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
             msg = 'Stop boiling?\nCurrent time: {} mins {} secs\nRecipe time: {} mins'.format(x[0],x[1], self.recipedata['boilTime'] )
             reply = QMessageBox.question(self, 'Continue?', 
@@ -413,8 +426,10 @@ class MonitorWindow(QWidget):
                 TODO: TURN OFF BOIL uC 
                 '''
                 self.fakeBoilTimer.stop()
-                # self.boilPlotUpdateTimer.stop()
-                self.tabBoil.secondsTimer.stop()
+                self.boilPlotUpdateTimer.stop()
+                self.mashPlotUpdateTimer.stop()#######
+                self.tabBoil.minuteTimer.stop()
+                self.tabMash.minuteTimer.stop() ###########
                 self.tabBoil.sqlBoilComms.endTimer()
                 self.tabBoil.timeStatusLED.value=False
 
@@ -424,11 +439,14 @@ class MonitorWindow(QWidget):
                     tankNumber = boilPopup.selectedTank
                     self._log.debug('Batch {} being sent to tank {}'.format(self.recipedata['batchID'],tankNumber))
                     '''EMIT SIGNAL with fermentation tank number'''
+                    fermtank = SQLFermentMonitor(self.LOGIN, self.recipedata['batchID'], tankNumber)
+                    fermtank.record(None,None,None)
+                    self.finishedSignal.emit()
                     self.close()
                     
                 
 
-        elif not self.tabBoil.secondsTimer.isActive():
+        elif not self.tabBoil.minuteTimer.isActive():
             msg = 'No Boil currently running'
             reply = QMessageBox.question(self, 'oops', 
                     msg, QMessageBox.Ok)
@@ -438,11 +456,11 @@ class MonitorWindow(QWidget):
         '''
         Set mash Uc up with 
         '''
-        self.tabMash.secondsTimer.start(1000)
+        self.tabMash.minuteTimer.start(60000)
 
     def mashStopClicked(self):
         self.mashPlotUpdateTimer.stop()
-        self.tabMash.secondsTimer.stop()
+        self.tabMash.minuteTimer.stop()
 
     def updateMashPlot(self):
         '''
@@ -459,6 +477,14 @@ class MonitorWindow(QWidget):
         collect boil data
         '''
         self.tabBoil.updatePlot()
+
+    def closeWindow(self):
+        self.fakeBoilTimer.stop()
+        self.boilPlotUpdateTimer.stop()
+        self.tabBoil.minuteTimer.stop()
+        self.mashPlotUpdateTimer.stop()
+        self.tabMash.minuteTimer.stop()
+        self.close()
 
 
     def fakeBoilData(self):
@@ -478,15 +504,17 @@ if __name__ == "__main__":
     _log = logging.getLogger(f'{_logname}')
     
 
-    from threading import Thread
-    import time
-    from source.tools.sqlBrewingComms import SQLBoilMonitor
     from source.tools.sqlHandler import SqlTableHandler as db
 
     
     HOST = "localhost"
     USER = "Test"
     PASSWORD = "BirraMosfeti"
+
+    HOST = "192.168.0.17"
+    USER = "jamie"
+    PASSWORD = "beer"
+
     LOGIN = [HOST,USER,PASSWORD]
     database = db(LOGIN,"Brewing")
     batchID = database.maxIdFromTable("Brews")

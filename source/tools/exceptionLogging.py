@@ -14,8 +14,8 @@ import logging
 from PyQt5 import QtCore, QtWidgets
 
 # basic logger functionality
-LOGGING_LEVEL = logging.INFO
-EXECPTION_CATCHING = False
+LOGGING_LEVEL = logging.DEBUG
+EXECPTION_CATCHING = True
 
 log = logging.getLogger(__name__)
 logging.basicConfig(format ='%(asctime)s :%(name)-7s :%(levelname)s :%(message)s', datefmt='%d-%b-%y %H:%M:%S', level=LOGGING_LEVEL)

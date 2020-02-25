@@ -53,12 +53,16 @@ class FermentTimeScaleDraw(TimeScaleDraw):
     def label(self, value):
         self._log.debug(f"VALUE: {value}")
         self._log.debug(f"timestamp length: {len(self.timeStamps)}")
-        
         try:
-            dt = self.timeStamps[int(value)][0]
-            return QwtText(dt.strftime(self.fmtFull))
+            try:
+                dt = self.timeStamps[int(value)][0]
+                return QwtText(dt.strftime(self.fmtFull))
+            except IndexError:
+                return QwtText(self.timeStamps[-1][0].strftime(self.fmtFull))
+
         except IndexError:
-            return QwtText(self.timeStamps[-1][0].strftime(self.fmtFull))
+            self._log.debug(f"PROPER INDEX ERROR: {value}")
+            return QwtText("0 Secs")
 
 
 class BoilMashTimeScaleDraw(TimeScaleDraw):
@@ -75,11 +79,11 @@ class BoilMashTimeScaleDraw(TimeScaleDraw):
                 dt = (self.timeStamps[int(value)] - self.timeStamps[0]).total_seconds()
                 return QwtText(self.display_time(dt))
             except IndexError:
-                logging.getLogger('AxisDraw').debug(f"INDEX ERROR: {value}")
+                self._log.debug(f"INDEX ERROR: {value}")
                 dt = (self.timeStamps[0] - self.timeStamps[0]).total_seconds()
                 return QwtText(self.display_time(dt))
         except IndexError:
-            logging.getLogger('AxisDraw').debug(f"PROPER INDEX ERROR: {value}")
+            self._log.debug(f"PROPER INDEX ERROR: {value}")
             return QwtText("0 Secs")
 
 
@@ -122,6 +126,7 @@ class BoilFinishedPopup(QDialog):
         setup Fermentation
         '''
         self.selectedTank = self.combo.currentIndex()+1
-        SQLFermentMonitor(self.LOGIN, self.recipeData['batchID'], self.selectedTank)
+        # fermtank = SQLFermentMonitor(self.LOGIN, self.recipeData['batchID'], self.selectedTank)
+        # fermtank.record(None,None,None)
         self._log.info('Batch {} sent to fermentation tank {}'.format(self.recipeData['batchID'],self.selectedTank))
         self.accept()
