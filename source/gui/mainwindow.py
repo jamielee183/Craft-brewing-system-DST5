@@ -167,6 +167,11 @@ if __name__ == "__main__":
     HOST = "192.168.0.17"
     USER = "jamie"
     PASSWORD = "beer"
+
+    HOST = "localhost"
+    USER = "Test"
+    PASSWORD = "BirraMosfeti"
+    
     LOGIN = [HOST,USER,PASSWORD]
 
     
