@@ -28,6 +28,8 @@ from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.gui.NewBrewWindow import NewBrewWindow
 
+from source.gui.newUserWindow import NewUserWindow
+
 # from source.gui.guitools import MyPyQtSlot
 
 # import NewBrewWindow
@@ -149,12 +151,12 @@ class MainWindow(QMainWindow):
         newBrewWindow = NewBrewWindow(LOGIN=self.LOGIN, parent=self)
         newBrewWindow.formSubmitted.connect(self.mashBoilButtonClicked)
         newBrewWindow.exec_()
-        pass
+        # pass
 
     def newUserClicked(self):
-        # # newuserWindow = newUserWindow.NewUserWindow()
-        # newuserWindow.exec_()
-        pass
+        newuserWindow = NewUserWindow(LOGIN=self.LOGIN, parent=self)
+        newuserWindow.exec_()
+        # pass
 
     def quitClicked(self):
         self.close()

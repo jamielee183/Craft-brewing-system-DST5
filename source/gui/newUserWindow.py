@@ -4,26 +4,28 @@ import sys
 import os
 
 #from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtCore import \
+from PyQt5.QtCore import \
     Qt #, pyqtSlot
-from PySide2.QtGui import \
+from PyQt5.QtGui import \
     QFont
-from PySide2.QtWidgets import \
+from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox \
 
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
-import source.gui.mainwindow
+
+from source.tools.sqlHandler import SqlDatabaseHandler
 
 class NewUserWindow(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self,LOGIN, parent=None):
         super(NewUserWindow, self).__init__(parent)
         self.create_layout_newUser()
         self.setWindowTitle('Create New User')
         self.setFixedSize(300, 200)
+        self.db = SqlDatabaseHandler(LOGIN)
 
     def create_layout_newUser(self):
 
@@ -88,8 +90,8 @@ class NewUserWindow(QDialog):
 
         # New user created successfully successful
         else:
-
-            self.__loginDetails = [self.__new_hostEdit.text(), self.__new_usernameEdit.text(), self.__new_passwordEdit.text()]
+            self.__loginDetails = [str(self.__new_hostEdit.text()), str(self.__new_usernameEdit.text()), str(self.__new_passwordEdit.text())]
+            self.db.createUser(host=self.__loginDetails[0], user=self.__loginDetails[1], passwd=self.__loginDetails[2])
 
             userSuccess = QMessageBox()
             userSuccess.setIcon(QMessageBox.Information)
