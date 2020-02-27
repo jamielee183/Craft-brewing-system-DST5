@@ -266,12 +266,10 @@ class TabBoil(TabGraph):
         if self.minuteTimer.isActive():
             if led.offColour == QLed.Yellow and led.value==False:
                 self.hoptimes[f'{hopNo}']()
-                # led.value=True
                 self._log.info("Hop added")
 
             elif led.offColour == QLed.Red and led.value==False:            
                 self.hoptimes[f'{hopNo}']()
-                # led.value=True
                 self._log.info(f"Hop added early")
 
             elif led.value == True:
@@ -281,7 +279,8 @@ class TabBoil(TabGraph):
                 raise Exception("Somethings gone terribly wrong")
 
             led.value=True
-            self.hopTimeLabels[hopNo-1].setText("{}".format(self.display_time(self.count)))
+            time = (self.recipedata['boilTime']*60)-self.count
+            self.hopTimeLabels[hopNo-1].setText("{}".format(self.display_time(time)))
 
 
     def updatePlot(self):
@@ -290,13 +289,15 @@ class TabBoil(TabGraph):
         sql = f"SELECT Temp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
         query = self.db.custom(sql)
 
-        results = [i[0] for i in query]
+        # results = [i[0] for i in query]
+        results = np.asarray(query)
 
         sql = f"SELECT TimeStamp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
         query = self.db.custom(sql)
 
 
         self.timeStamps = [i[0] for i in query]
+        # self.timeStamps = np.asarray(query)
         # self._log.debug(self.timeStamps)
         self.dataY = np.fromiter(results, dtype=float)
         
@@ -321,7 +322,7 @@ class TabBoil(TabGraph):
 
         for i in range(4):
             if self.recipedata[f'hop{i+1}'][1] is not None:
-                if self.count/60 >= self.recipedata[f'hop{i+1}'][1]:
+                if self.count/60 >= self.recipedata['boilTime']-self.recipedata[f'hop{i+1}'][1]:
                     self.recipeLED[i].setOffColour(QLed.Yellow)
 
 class MonitorWindow(QDialog):
