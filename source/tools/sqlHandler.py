@@ -24,9 +24,9 @@ class SqlDatabaseHandler():
         self.cursor = self.db.cursor()
 
     def createUser(self, host: str, user: str, passwd: str):
-        self.cursor.execute(f"CREATE USER '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
-        self.cursor.execute(f"GRANT SELECT,INSERT,UPDATE,DELETE on Brewing. * TO '{user}@'{host}' ")
+        self.cursor.execute(f"GRANT INSERT, SELECT, DELETE, UPDATE ON Brewing.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
         self.cursor.execute("FLUSH PRIVILEGES")
+        self._log.info(f"New user: {user} created on: {host}")
         
 
     def showAllDatabases(self):
