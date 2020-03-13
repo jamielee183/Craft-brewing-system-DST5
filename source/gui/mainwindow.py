@@ -29,6 +29,7 @@ from source.tools.sqlHandler import SqlTableHandler as db
 from source.gui.NewBrewWindow import NewBrewWindow
 
 from source.gui.newUserWindow import NewUserWindow
+from source.gui.viewDataWindow import ViewDataWindow
 
 # from source.gui.guitools import MyPyQtSlot
 
@@ -58,7 +59,7 @@ class MainWindow(QMainWindow):
         self.label_title = QLabel('Brew Monitoring System')
         self.label_title.setFont(self.font_title)
         self.but_start_brew = QPushButton(self.tr('Go'))
-        self.but_history = QPushButton(self.tr('Go'))
+        self.but_view_data = QPushButton(self.tr('Go'))
         self.but_fermenters = QPushButton(self.tr('Go'))
         self.but_test = QPushButton(self.tr('Go'))
         self.but_newUser = QPushButton(self.tr('Go'))
@@ -66,7 +67,7 @@ class MainWindow(QMainWindow):
         self.but_mashBoil = QPushButton(self.tr('Go'))
 
         self.lab_start_brew = QLabel(self.tr('Start New Brew'))
-        self.lab_history = QLabel(self.tr('View Brew History'))
+        self.lab_view_data = QLabel(self.tr('View Past Brew Data'))
         self.lab_fermenters = QLabel(self.tr('View Fermenter Data'))
         self.lab_test = QLabel(self.tr('Check System for Faults'))
         self.lab_newUser = QLabel(self.tr('Create New User'))
@@ -76,8 +77,8 @@ class MainWindow(QMainWindow):
         gLay_buttons = QGridLayout()
         gLay_buttons.addWidget(self.but_start_brew, 0, 0)
         gLay_buttons.addWidget(self.lab_start_brew, 0, 1)
-        gLay_buttons.addWidget(self.but_history)
-        gLay_buttons.addWidget(self.lab_history)
+        gLay_buttons.addWidget(self.but_view_data)
+        gLay_buttons.addWidget(self.lab_view_data)
         gLay_buttons.addWidget(self.but_fermenters)
         gLay_buttons.addWidget(self.lab_fermenters)
         gLay_buttons.addWidget(self.but_mashBoil)
@@ -121,6 +122,7 @@ class MainWindow(QMainWindow):
 
         self.but_fermenters.clicked.connect(self.fermentButtonClicked)
 
+        self.but_view_data.clicked.connect(self.viewDataClicked)
 
         self.fermentMonitor = FermentMonitor(self.LOGIN)
 
@@ -153,6 +155,11 @@ class MainWindow(QMainWindow):
         newBrewWindow.exec_()
         # pass
 
+    def viewDataClicked(self):
+        viewDataWindow = ViewDataWindow(LOGIN=self.LOGIN, parent=self)
+        viewDataWindow.exec_()
+        # pass
+
     def newUserClicked(self):
         newuserWindow = NewUserWindow(LOGIN=self.LOGIN, parent=self)
         newuserWindow.exec_()
@@ -171,13 +178,13 @@ if __name__ == "__main__":
     USER = "jamie"
     PASSWORD = "beer"
 
-    HOST = "localhost"
-    USER = "Test"
-    PASSWORD = "BirraMosfeti"
+    # HOST = "localhost"
+    # USER = "Test"
+    # PASSWORD = "BirraMosfeti"
 
-    HOST = input("Host ID: ")
-    USER = input("User: ")
-    PASSWORD = getpass()
+    # HOST = input("Host ID: ")
+    # USER = input("User: ")
+    # PASSWORD = getpass()
     if HOST == "Pi":
         HOST = "192.168.10.223"
 
