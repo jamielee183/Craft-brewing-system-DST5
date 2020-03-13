@@ -167,7 +167,7 @@ if __name__ == "__main__":
     from source.tools.sqlHandler import SqlTableHandler as db
     from getpass import getpass
 
-    HOST = "192.168.0.17"
+    HOST = "192.168.10.223"
     USER = "jamie"
     PASSWORD = "beer"
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     USER = input("User: ")
     PASSWORD = getpass()
     if HOST == "Pi":
-        HOST = "192.168.0.17"
+        HOST = "192.168.10.223"
 
     LOGIN = [HOST,USER,PASSWORD]
     
