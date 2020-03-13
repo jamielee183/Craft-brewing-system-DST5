@@ -27,6 +27,12 @@ class SqlDatabaseHandler():
         self.cursor.execute(f"GRANT INSERT, SELECT, DELETE, UPDATE ON Brewing.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
         self.cursor.execute("FLUSH PRIVILEGES")
         self._log.info(f"New user: {user} created on: {host}")
+
+
+    def createSuperUser(self, host: str, user: str, passwd: str):
+        self.cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}' WITH GRANT OPTION")
+        self.cursor.execute("FLUSH PRIVILEGES")
+        self._log.info(f"New super user: {user} created on: {host}")
         
 
     def showAllDatabases(self):
@@ -215,6 +221,7 @@ class SqlTableHandler():
 if __name__ == "__main__":
 
     import logging
+    from getpass import getpass
     _logname = 'SqlHandlerMain'
     _log = logging.getLogger(f'{_logname}')
     
@@ -226,6 +233,12 @@ if __name__ == "__main__":
     HOST = "192.168.0.17"
     USER = "jamie"
     PASSWORD = "beer"
+
+    HOST = input("Host ID: ")
+    USER = input("User: ")
+    PASSWORD = getpass()
+    if HOST == "Pi": 
+        HOST = "192.168.0.17"
 
     LOGIN = [HOST,USER,PASSWORD]
 
