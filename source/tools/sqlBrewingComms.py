@@ -259,6 +259,7 @@ if __name__ == '__main__':
 
     # brew = SQLNewBrew(LOGIN, "None", "None","None","None","None",hop1,hop2,hop3,hop4, "None" )
     brew = SQLNewBrew(LOGIN, "Fake", "60","-20","69","-2",hop1,hop2,hop3,hop4, "112" )
+    brew = SQLNewBrew(LOGIN, "Fake2", "60","-20","69","-2",hop1,hop2,hop3,hop4, "112" )
     # fermenter1=SQLFermentMonitor(LOGIN, 1)
     # boilMonitor = SQLBoilMonitor(LOGIN)
     # boil = SQLBoil(LOGIN)

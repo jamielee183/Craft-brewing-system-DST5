@@ -80,6 +80,9 @@ class ViewDataWindow(QDialog):
         self.dataTable = QTableWidget(10,3)
         columnNames = ["Batch ID", "Recipe", "Date"]
         self.dataTable.setHorizontalHeaderLabels(columnNames)
+        for x in self.db.readFromTable("Brews", "id, Recipe, Date"):
+
+            self.addTableData(x)
 
         # Create quit button
         self.but_quit = QPushButton("Quit")
@@ -109,13 +112,16 @@ class ViewDataWindow(QDialog):
         
     # This function takes columns from the database and adds the items to the table row by row
     # Just need to know how to correctly pass it columns from the database
-#    def addTableData(self, columns):
-#
-#        rowPosition = self.dataTable.rowCount()
-#        self.dataTable.insertRow(rowPosition)
+    def addTableData(self, dataIn):
 
-#        for i, column in enumerate(columns):
-#            self.dataTable.setItem(rowPosition, i, QWidgets.QtTableWidgetItem(str(column)))
+        rowPosition = self.dataTable.rowCount()
+        self.dataTable.insertRow(rowPosition)
+
+        for i in range(3):
+            self.dataTable.setItem(rowPosition,i, QTableWidgetItem(str(dataIn[i])))
+
+    #    for i, column in enumerate(columns):
+    #        self.dataTable.setItem(rowPosition, i, QWidgets.QtTableWidgetItem(str(column)))
 
         
         
