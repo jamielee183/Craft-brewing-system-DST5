@@ -3,6 +3,12 @@ from abc import ABCMeta, abstractmethod
 from threading import Thread, Event
 import logging
 
+
+import RPi.GPIO as GPIO
+import time
+import spidev 
+from RF24 import *
+
 class UCComms(Thread, metaclass=ABCMeta):
 
 
@@ -33,6 +39,19 @@ class UCComms(Thread, metaclass=ABCMeta):
         pass
 
         
+class PiRadio(UCComms):
+
+    _logname = 'PiRadio'
+    _log = logging.getlogger(f'{_logname}')
+
+    def __init__(self):
+        super().__init__()
+
+    def _configure(self) -> None:
+
+
+
+
     
 
 
