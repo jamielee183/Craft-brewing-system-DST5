@@ -53,9 +53,10 @@ class MainWindow(QMainWindow):
         self.create_layout()
         self.setWindowTitle('Brew Monitoring System')
         self.setCentralWidget(self.main_widget)
-        
+
         if isRunningOnPi:
-            PiRadio(self.LOGIN)
+            radio = PiRadio(self.LOGIN)
+            radio.configure()
 
     def create_layout(self):
 
