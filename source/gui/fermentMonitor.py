@@ -262,7 +262,7 @@ class FermentMonitor(QDialog):
         self.fakeFermenter = SQLFermentMonitor(self.LOGIN,1,1)
         # self.fakeFermenter2 = SQLFermentMonitor(self.LOGIN,5,4)
         self.updateDataTimer = QTimer(self)
-        self.updateDataTimer.timeout.connect(self.fakeFermentData)
+        # self.updateDataTimer.timeout.connect(self.fakeFermentData)
         # self.updateDataTimer.start(1000)
         # self.startTimers()
 

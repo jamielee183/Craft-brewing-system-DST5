@@ -37,6 +37,9 @@ from source.gui.newUserWindow import NewUserWindow
 # import newUserWindow
 
 
+isRunningOnPi = True
+if isRunningOnPi:
+    from source.tools.uCcoms import PiRadio
 
 class MainWindow(QMainWindow):
 
@@ -50,6 +53,9 @@ class MainWindow(QMainWindow):
         self.create_layout()
         self.setWindowTitle('Brew Monitoring System')
         self.setCentralWidget(self.main_widget)
+        
+        if isRunningOnPi:
+            PiRadio(self.LOGIN)
 
     def create_layout(self):
 

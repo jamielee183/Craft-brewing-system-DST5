@@ -433,7 +433,7 @@ class MonitorWindow(QDialog):
     def boilStopClicked(self):
         if self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Stop boiling?\nCurrent time: {} mins {} secs\nRecipe time: {} mins'.format(x[0],x[1], self.recipedata['boilTime'] )
+            msg = 'Stop boiling?\nCurrent time: {} mins\nRecipe time: {} mins'.format(x[0], self.recipedata['boilTime'] )
             reply = QMessageBox.question(self, 'Continue?', 
                     msg, QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.Yes:
@@ -455,7 +455,7 @@ class MonitorWindow(QDialog):
                     self._log.debug('Batch {} being sent to tank {}'.format(self.recipedata['batchID'],tankNumber))
                     '''EMIT SIGNAL with fermentation tank number'''
                     fermtank = SQLFermentMonitor(self.LOGIN, self.recipedata['batchID'], tankNumber)
-                    fermtank.record(None,None,None)
+                    fermtank.record(None,None,None) #enter null into database to attach tank to batch id
                     self.finishedSignal.emit()
                     self.close()
                     
