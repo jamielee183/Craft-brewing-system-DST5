@@ -104,19 +104,19 @@ class PiRadio(UCComms):
             self._log("something went wrong")
 
     def mash(self, data):
-        if data[0] = 0x01: #if temp sensor data, 12 bit data? (2 bytes)
+        if data[0] == 0x01: #if temp sensor data, 12 bit data? (2 bytes)
             pass
-        elif data[0] = 0x02: #if temp camera data, 8x8 array of 1 byte values
+        elif data[0] == 0x02: #if temp camera data, 8x8 array of 1 byte values
             pass
         else:
             self._log.warning("Wrong data type for Mash")
 
     def boil(self, data):
-        if data[0] = 0x01: #if temp sensor data
+        if data[0] == 0x01: #if temp sensor data
             #insert temp and volume data
             SQLBoilMonitor(LOGIN=self.LOGIN).record(temp=data[1:2], volume=10)
             
-        elif data[0] = 0x02: #if temp cam data
+        elif data[0] == 0x02: #if temp cam data
             pass
         else:
             self._log.warning("Wrong data type for Boil")
