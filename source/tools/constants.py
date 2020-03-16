@@ -11,3 +11,5 @@ TIME_INTERVALS = (
     ('mins', 60),
     ('secs', 1),
     )
+
+PI_RADIO_CHANNEL =0x76
