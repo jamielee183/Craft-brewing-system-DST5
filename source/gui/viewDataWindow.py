@@ -48,7 +48,7 @@ class ViewDataWindow(QDialog):
         # Date edit box
         lab_date = QLabel("Date:")
         self.dateEdit = QDateEdit()   
-        # Set range of possible dates
+        # Set range of possible dates, current date is max date
         self.maxDate = QDate().currentDate()
         self.minDate = QDate(2020,1,1)
         self.dateEdit.setDate(self.minDate)
