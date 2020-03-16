@@ -164,7 +164,7 @@ class FermentPlot(QWidget):
         self.boilEndTime.setText(data[-1][1].strftime('%H:%M:%S'))
 
 
-        self.label1.setText(self.displayDataType)
+        # self.label1.setText(self.displayDataType)
 
 
     def getData(self,dataType, id,table):

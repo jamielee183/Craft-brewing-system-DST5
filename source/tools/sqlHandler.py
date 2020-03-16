@@ -349,6 +349,7 @@ if __name__ == "__main__":
         print(x)
 
     print("current BrewID: {}".format(t.maxIdFromTable("Brews")))
+    print("database reset")
 
     #t.deleteTable("people")
     # t.createTable("people", columns)
