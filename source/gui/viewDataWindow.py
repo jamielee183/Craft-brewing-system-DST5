@@ -50,47 +50,77 @@ class ViewDataWindow(QDialog):
         self.dateEdit = QDateEdit()   
         # Set range of possible dates, current date is max date
         self.maxDate = QDate().currentDate()
-        self.minDate = QDate(2020,1,1)
-        self.dateEdit.setDate(self.minDate)
+        self.minDate = QDate(2019,1,1)
+        self.dateEdit.setDate(self.maxDate)
         self.dateEdit.setDateRange(self.minDate, self.maxDate)
         self.dateEdit.setCalendarPopup(1)
+        self.dateEdit.setDisplayFormat("dd/MM/yy")
+        #self.dateEdit2 = QLineEdit()
+        self.dateEdit.dateChanged.connect(self.filter_date)
+
+        dateHLayout = QHBoxLayout()
+        dateHLayout.addWidget(lab_date)
+        dateHLayout.addWidget(self.dateEdit)
         
-        # Recipe drop down box
-        lab_recipe = QLabel("Recipe:")
-        self.recipeEdit = QComboBox()
-        self.recipeEdit.addItem("Recipe 1")
-        self.recipeEdit.addItem("Recipe 2")
-        self.recipeEdit.addItem("Recipe 3")
 
         ### Text edit filters ###
         # Batch ID search
+        lab_batch = QLabel("Batch ID:")
         self.edit_batchID = QLineEdit()
         self.edit_batchID.setPlaceholderText("Enter Batch ID")
         self.but_IDsearch = QPushButton("Go")
+        self.but_IDsearch.setAutoDefault(0)
         self.but_IDsearch.clicked.connect(self.filter_batchID)
-        # Recipe search
-        self.lineEdit_recipe = QLineEdit()
-        self.lineEdit_recipe.setPlaceholderText("Enter Recipe")
-        self.lineEdit_recipe.textChanged.connect(self.filter_recipe)
+        self.edit_batchID.returnPressed.connect(self.filter_batchID)
+        batchHLayout = QHBoxLayout()
+        batchHLayout.addWidget(lab_batch)
+        batchHLayout.addWidget(self.edit_batchID)
+        batchHLayout.addWidget(self.but_IDsearch)
         
-        # Filter groupbox layout
+        # Recipe search
+        lab_recipe = QLabel("Recipe:")
+        self.lineEdit_recipe = QLineEdit()
+        self.lineEdit_recipe.setPlaceholderText("Enter Recipe")      
+        self.lineEdit_recipe.textChanged.connect(self.filter_recipe)
+        self.lineEdit_recipe.returnPressed.connect(self.filter_recipe)
         recipeHLayout = QHBoxLayout()
         recipeHLayout.addWidget(lab_recipe)
-        recipeHLayout.addWidget(self.recipeEdit)
-        recipeVLayout = QVBoxLayout()
-        recipeVLayout.addLayout(recipeHLayout)
-        recipeVLayout.addWidget(self.lineEdit_recipe)
+        recipeHLayout.addWidget(self.lineEdit_recipe)
+
+        # Clear filters button
+        self.but_clearFilter = QPushButton("Clear Filter")
+        self.but_clearFilter.setAutoDefault(0)
+        clearHLayout = QHBoxLayout()
+        clearHLayout.addStretch(1)
+        clearHLayout.addWidget(self.but_clearFilter)
+        clearHLayout.addStretch(1)
+        self.but_clearFilter.clicked.connect(self.clearFilters)
+
+        # Filter groupbox layout
+        
+        #recipeHLayout.addWidget(self.recipeEdit)
+        #recipeVLayout = QVBoxLayout()
+        #recipeVLayout.addLayout(recipeHLayout)
+        #recipeVLayout.addWidget(self.lineEdit_recipe)
         filterHLayout = QHBoxLayout()
         filterHLayout.addStretch(1)
         filterHLayout.addWidget(lab_date)
         filterHLayout.addWidget(self.dateEdit)
         filterHLayout.addStretch(1)
-        filterHLayout.addLayout(recipeVLayout)
+        #filterHLayout.addLayout(recipeVLayout)
         filterHLayout.addStretch(1)
         filterHLayout.addWidget(self.edit_batchID)
         filterHLayout.addWidget(self.but_IDsearch)
         filterHLayout.addStretch(1)
-        filterGroupBox.setLayout(filterHLayout)
+        #filterGroupBox.setLayout(filterHLayout)
+
+        # Alternate - Filter vertical layout
+        filterVLayout = QVBoxLayout()
+        filterVLayout.addLayout(batchHLayout)
+        filterVLayout.addLayout(recipeHLayout)
+        filterVLayout.addLayout(dateHLayout)
+        filterVLayout.addLayout(clearHLayout)
+        filterGroupBox.setLayout(filterVLayout)
 
         # scrollHLayout = QHBoxLayout()
         # scrollHLayout.addWidget(filterGroupBox)
@@ -100,21 +130,27 @@ class ViewDataWindow(QDialog):
         # Create QTableView of brew data
         header = ['Brew ID', 'Recipe', 'Date']
         model = MyTableModel(my_array, header, self)     
-        self.proxyModel =  QSortFilterProxyModel(self)
+        self.proxyModel = QSortFilterProxyModel(self)
+        self.proxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxyModel.setSourceModel(model)
         self.dataTable = QTableView()          
         self.dataTable.setModel(self.proxyModel)
         self.dataTable.setSortingEnabled(True)
 
-        #for x in self.db.readFromTable("Brews", "id, Recipe, Date"):
+        # Database data
+        #self.db.readFromTable("Brews", "id, Recipe, Date")
 
-        #    self.addTableData(x)
-
-        # Create quit button
+        # Create bottom buttons
         self.but_quit = QPushButton("Quit")
+        self.but_quit.setAutoDefault(0)
+        self.but_view = QPushButton("View Data")
+        self.but_view.setAutoDefault(0)
         quitHLayout = QHBoxLayout()
-        quitHLayout.addStretch(1)
+        quitHLayout.addStretch(0)
         quitHLayout.addWidget(self.but_quit)
+        quitHLayout.addStretch(3)
+        quitHLayout.addWidget(self.but_view)
+        quitHLayout.addStretch(0)
 
         # Main vertical layout
         vLayout = QVBoxLayout()
@@ -136,27 +172,25 @@ class ViewDataWindow(QDialog):
         self.proxyModel.setFilterKeyColumn(0)
 
     def filter_recipe(self):
+        self.edit_batchID.clear()
         self.proxyModel.setFilterRegExp(self.lineEdit_recipe.text())
         self.proxyModel.setFilterKeyColumn(1)
 
+    def filter_date(self):     
+        self.lineEdit_recipe.clear()
+        self.edit_batchID.clear()
+        self.proxyModel.setFilterRegExp(self.dateEdit.date().toString("dd/MM/yy"))
+        self.proxyModel.setFilterKeyColumn(2)
 
-    # To do - functions to add database into dataTable, don't know how to access
-    # database data and what format it is in
-  #  def loadData(self):
+    def clearFilters(self):
+        self.dateEdit.setDate(self.maxDate)
+        self.proxyModel.setFilterRegExp('')
+        self.proxyModel.setFilterKeyColumn(0)
+        self.proxyModel.setFilterKeyColumn(1)
+        self.proxyModel.setFilterKeyColumn(2)
+        self.lineEdit_recipe.clear()
+        self.edit_batchID.clear()
         
-    # This function takes columns from the database and adds the items to the table row by row
-    # Just need to know how to correctly pass it columns from the database
-    def addTableData(self, dataIn):
-
-        rowPosition = self.dataTable.rowCount()
-        self.dataTable.insertRow(rowPosition)
-
-        for i in range(3):
-            self.dataTable.setItem(rowPosition,i, QTableWidgetItem(str(dataIn[i])))
-
-    #    for i, column in enumerate(columns):
-    #        self.dataTable.setItem(rowPosition, i, QWidgets.QtTableWidgetItem(str(column)))
-
 
 class MyTableModel(QAbstractTableModel):
     def __init__(self, datain, headerdata, parent=None, *args):
