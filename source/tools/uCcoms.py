@@ -7,6 +7,7 @@ import sys, os
 # so python knows where to find "source.file"
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.tools.constants import *
+from source.tools.exceptionLogging import *
 from source.tools.sqlBrewingComms import SQLBoilMonitor, SQLFermentMonitor
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 
@@ -73,7 +74,7 @@ class PiRadio(UCComms):
         self.radio.openReadingPipe(1,bytes(self.pipes[1]))
         self.radio.openWritingPipe(bytes(self.pipes[0]))
         self.radio.setChannel(PI_RADIO_CHANNEL)
-        self.radio.eneableDynamicPayloads()
+        self.radio.enableDynamicPayloads()
         self.radio.setRetries(5,15)
         #Setup GPIO pin for interupt when datas ready
         GPIO.setmode(GPIO.BCM)
@@ -85,14 +86,14 @@ class PiRadio(UCComms):
     def readData(self):
         
         if self.radio.available():
-            recieved = self.radio.read(self.radio.getDynamicPayloadSize()).decode('utf-8')
+            recieved = self.radio.read(self.radio.getDynamicPayloadSize())
             self._log.debug("Recieved data: {}".format(recieved))
             return recieved
 
     def sendData(self, channel=PI_RADIO_CHANNEL):
         self.radio.stopListening()
 
-    def callback(self):
+    def callback(self, channel=0):
         dataIn = self.readData()
         self.caseSwitcher(dataIn)
 
@@ -100,8 +101,9 @@ class PiRadio(UCComms):
         try:
             func = self.cases.get(data[0])
             return func(data[1:])
-        except:
-            self._log("something went wrong")
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            self._log.warning("something went wrong: {}: {}".format(exc_tb,e))
 
     def mash(self, data):
         if data[0] == 0x01: #if temp sensor data, 12 bit data? (2 bytes)
@@ -112,11 +114,13 @@ class PiRadio(UCComms):
             self._log.warning("Wrong data type for Mash")
 
     def boil(self, data):
-        if data[0] == 0x01: #if temp sensor data
+        if data[0] == 1: #if temp sensor data
             #insert temp and volume data
-            SQLBoilMonitor(LOGIN=self.LOGIN).record(temp=data[1:2], volume=10)
+            temp = int.from_bytes(data[1:3], 'big', signed=False)
+            #convert 16bit number to temp value
+            SQLBoilMonitor(LOGIN=self.LOGIN).record(temp=temp, volume=None)
             
-        elif data[0] == 0x02: #if temp cam data
+        elif data[0] == 2: #if temp cam data
             pass
         else:
             self._log.warning("Wrong data type for Boil")
@@ -126,16 +130,25 @@ class PiRadio(UCComms):
         #bytes 1-2 are temp sensor (12 bit data)
         #bytes 3-4 are specific gravity (assume 16 bit?)
         #bytes 5-6 are volume
-        fermenterID = int.from_bytes(data[0], "big") 
-        tempData = int.from_bytes(data[1:2], "big")
-        specificG = int.from_bytes(data[3:4], "big")
-        volume = int.from_bytes(data[5:6], "big")
 
+        #fermenterID = int.from_bytes(data[0], "big", signed=False) 
+        fermenterID = data[0]
+        print("fermenterID: ",fermenterID)
+
+        tempData = data[1:3]
+        tempData = int.from_bytes(tempData, "big", signed=False)
+        
+        specificG = data[3:5]
+        specificG = int.from_bytes(specificG, "big", signed=False)
+        
+        volume = data[5:7]
+        volume = int.from_bytes(volume, "big", signed=False)
+        
 
         sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{fermenterID}'"
         query = self.db.custom(sql)
         batchID = query[-1][0]
-
+        print("batchID: ", batchID)
         addtodatabase = SQLFermentMonitor(LOGIN=self.LOGIN, batchID=batchID,fermenterID=fermenterID)
         addtodatabase.record(specificG=specificG,temp=tempData,volume=None)
 
@@ -147,6 +160,7 @@ class PiRadio(UCComms):
 
 if __name__=="__main__":
     from getpass import getpass
+    import time
     HOST = "192.168.10.223"
     USER = "jamie"
     PASSWORD = "beer"
@@ -165,3 +179,5 @@ if __name__=="__main__":
 
     x = PiRadio(LOGIN)
     x.configure()
+    while True:
+         time.sleep(1)
