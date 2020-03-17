@@ -85,7 +85,7 @@ class PiRadio(UCComms):
     def readData(self):
         
         if self.radio.available():
-            recieved = self.radio.read(self.radio.getDynamicPayloadSize())
+            recieved = self.radio.read(self.radio.getDynamicPayloadSize()).decode('utf-8')
             self._log.debug("Recieved data: {}".format(recieved))
             return recieved
 
@@ -145,3 +145,23 @@ class PiRadio(UCComms):
     
 
 
+if __name__=="__main__":
+    from getpass import getpass
+    HOST = "192.168.10.223"
+    USER = "jamie"
+    PASSWORD = "beer"
+
+    # HOST = "localhost"
+    # USER = "Test"
+    # PASSWORD = "BirraMosfeti"
+
+    # HOST = input("Host ID: ")
+    # USER = input("User: ")
+    # PASSWORD = getpass()
+    if HOST == "Pi":
+        HOST = "192.168.10.223"
+
+    LOGIN = [HOST,USER,PASSWORD]
+
+    x = PiRadio(LOGIN)
+    x.configure()
