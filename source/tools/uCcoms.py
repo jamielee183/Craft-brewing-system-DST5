@@ -90,8 +90,11 @@ class PiRadio(UCComms):
             self._log.debug("Recieved data: {}".format(recieved))
             return recieved
 
-    def sendData(self, channel=PI_RADIO_CHANNEL):
+    def sendData(self, data, channel=PI_RADIO_CHANNEL):
         self.radio.stopListening()
+        self.radio.write(data)
+        self.radio.startListening()
+
 
     def callback(self, channel=0):
         dataIn = self.readData()
@@ -102,8 +105,7 @@ class PiRadio(UCComms):
             func = self.cases.get(data[0])
             return func(data[1:])
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            self._log.warning("something went wrong: {}: {}".format(exc_tb,e))
+            self._log.warning("something went wrong: {}".format(e))
 
     def mash(self, data):
         if data[0] == 0x01: #if temp sensor data, 12 bit data? (2 bytes)
@@ -150,7 +152,7 @@ class PiRadio(UCComms):
         batchID = query[-1][0]
         print("batchID: ", batchID)
         addtodatabase = SQLFermentMonitor(LOGIN=self.LOGIN, batchID=batchID,fermenterID=fermenterID)
-        addtodatabase.record(specificG=specificG,temp=tempData,volume=None)
+        addtodatabase.record(specificG=specificG,temp=tempData,volume=volume)
 
 
     
@@ -176,8 +178,10 @@ if __name__=="__main__":
         HOST = "192.168.10.223"
 
     LOGIN = [HOST,USER,PASSWORD]
+    senddata = [0x01,0x02,0x03,0x04,0x05]
 
     x = PiRadio(LOGIN)
     x.configure()
     while True:
-         time.sleep(1)
+        time.sleep(5)
+        x.sendData(senddata)
