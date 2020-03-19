@@ -97,7 +97,9 @@ class PiRadio(UCComms):
 
 
     def callback(self, channel=0):
-        rx, tx, fail = [False for _ in range(3)]
+        rx = False
+        tx = False
+        fail = False
         self.radio.whatHappened(tx,fail,rx)
         if rx or self.radio.available():
             dataIn = self.readData()
