@@ -97,8 +97,18 @@ class PiRadio(UCComms):
 
 
     def callback(self, channel=0):
-        dataIn = self.readData()
-        self.caseSwitcher(dataIn)
+        rx, tx, fail = [False for _ in range(3)]
+        self.radio.whatHappened(tx,fail,rx)
+        if rx or self.radio.available():
+            dataIn = self.readData()
+            if dataIn is not None:
+                self.caseSwitcher(dataIn)
+
+        if tx:
+            self._log.debug("Ack Payload sucessfull")
+
+        if fail:
+            self._log.debug("Ack Payload fail")
 
     def caseSwitcher(self, data):
         try:
@@ -184,4 +194,4 @@ if __name__=="__main__":
     x.configure()
     while True:
         time.sleep(5)
-        x.sendData(senddata)
+        x.sendData(bytes(senddata))
