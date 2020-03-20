@@ -17,6 +17,10 @@ import time
 import spidev 
 from RF24 import *
 
+
+CONFIGURE_ARUDINO = [0x05]
+
+
 class UCComms(Thread, metaclass=ABCMeta):
 
 
@@ -81,6 +85,9 @@ class PiRadio(UCComms):
         GPIO.setup(self.PI_INTERUPT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(self.PI_INTERUPT_PIN, GPIO.FALLING, callback=self.callback)
         self.radio.startListening()
+        self.sendData(bytes(CONFIGURE_ARUDINO))
+       # self.sendData(bytes([0x02, 0x01, 0x00, 0x05]))
+
 
 
     def readData(self):
@@ -92,19 +99,19 @@ class PiRadio(UCComms):
 
     def sendData(self, data, channel=PI_RADIO_CHANNEL):
         self.radio.stopListening()
+        self._log.debug("sending data: {}".format(data))
         self.radio.write(data)
+        self._log.debug("data sent")
         self.radio.startListening()
 
 
     def callback(self, channel=0):
-        rx = False
-        tx = False
-        fail = False
-        self.radio.whatHappened(tx,fail,rx)
+        tx, fail, rx  = self.radio.whatHappened()
         if rx or self.radio.available():
             dataIn = self.readData()
             if dataIn is not None:
                 self.caseSwitcher(dataIn)
+                self._log.debug("Data available")
 
         if tx:
             self._log.debug("Ack Payload sucessfull")
@@ -113,11 +120,10 @@ class PiRadio(UCComms):
             self._log.debug("Ack Payload fail")
 
     def caseSwitcher(self, data):
-        try:
-            func = self.cases.get(data[0])
-            return func(data[1:])
-        except Exception as e:
-            self._log.warning("something went wrong: {}".format(e))
+        assert data[0] in self.cases
+        func = self.cases.get(data[0])
+        return func(data[1:])
+
 
     def mash(self, data):
         if data[0] == 0x01: #if temp sensor data, 12 bit data? (2 bytes)
@@ -128,16 +134,24 @@ class PiRadio(UCComms):
             self._log.warning("Wrong data type for Mash")
 
     def boil(self, data):
-        if data[0] == 1: #if temp sensor data
+        if data[0] == 0x01: #if temp sensor data
+            pass
             #insert temp and volume data
             temp = int.from_bytes(data[1:3], 'big', signed=False)
             #convert 16bit number to temp value
-            SQLBoilMonitor(LOGIN=self.LOGIN).record(temp=temp, volume=None)
+            SQLBoilMonitor(LOGIN=self.LOGIN).record(temp=temp, volume=20)
             
-        elif data[0] == 2: #if temp cam data
+        elif data[0] == 0x02: #if temp cam data
             pass
         else:
             self._log.warning("Wrong data type for Boil")
+
+    def startBoil(self, temp):
+        temp *= 10
+        self.sendData(bytes([0x02, 0x01,(temp>>8)&0xFF, temp&0xFF]))
+
+    def stopBoil(self):
+        self.sendData(bytes([0x02, 0x02]))
 
     def ferment(self, data):
         #bytes 0 are the fermented ID
@@ -175,6 +189,11 @@ class PiRadio(UCComms):
 if __name__=="__main__":
     from getpass import getpass
     import time
+    LOGGING_LEVEL = logging.DEBUG
+    _log = logging.getLogger(__name__)
+    logging.basicConfig(format ='%(asctime)s :%(name)-7s :%(levelname)s :%(message)s', datefmt='%d-%b-%y %H:%M:%S', level=LOGGING_LEVEL)
+    handler = logging.StreamHandler(stream=sys.stdout)
+    _log.addHandler(handler)
     HOST = "192.168.10.223"
     USER = "jamie"
     PASSWORD = "beer"
@@ -195,5 +214,7 @@ if __name__=="__main__":
     x = PiRadio(LOGIN)
     x.configure()
     while True:
+        x.startBoil(60)
+        time.sleep(20)
+        x.stopBoil()
         time.sleep(5)
-        x.sendData(bytes(senddata))
