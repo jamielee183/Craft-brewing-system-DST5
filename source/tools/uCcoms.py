@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABCMeta, abstractmethod
 from threading import Thread, Event
+import time
 import logging
 import sys, os
 # if running from command line, need to append the parent directories to the PATH
@@ -42,6 +43,9 @@ class UCComms(Thread, metaclass=ABCMeta):
             self._log.warning(e)
             return False
 
+#    def readData(self) -> bool:
+#        try:
+#            sel
 
     @abstractmethod
     def _configure(self) -> None:
@@ -50,6 +54,11 @@ class UCComms(Thread, metaclass=ABCMeta):
         This is where the configuration routine for each I2C uC goes
         '''
         pass
+
+    @abstractmethod
+    def readData(self):
+        pass
+
 
         
 class PiRadio(UCComms):
@@ -68,7 +77,7 @@ class PiRadio(UCComms):
             0x02 : self.boil,
             0x03 : self.ferment
         }
-
+        self.sendRetryCount = 0
         
 
     def _configure(self) -> None:
@@ -100,10 +109,19 @@ class PiRadio(UCComms):
     def sendData(self, data, channel=PI_RADIO_CHANNEL):
         self.radio.stopListening()
         self._log.debug("sending data: {}".format(data))
-        self.radio.write(data)
+        sent = False
+        while not sent:
+            sent = self.radio.write(data)
+            if not sent:
+                self.sendRetryCount +=1
+                if self.sendRetryCount == 5:
+                    self._log.warning("Sending Data failed") 
+                    break
+
+        self.sendRetryCount = 0
         self._log.debug("data sent")
         self.radio.startListening()
-
+        return sent
 
     def callback(self, channel=0):
         tx, fail, rx  = self.radio.whatHappened()
@@ -139,7 +157,8 @@ class PiRadio(UCComms):
             #insert temp and volume data
             temp = int.from_bytes(data[1:3], 'big', signed=False)
             #convert 16bit number to temp value
-            SQLBoilMonitor(LOGIN=self.LOGIN).record(temp=temp, volume=20)
+            x = SQLBoilMonitor(LOGIN=self.LOGIN)
+            x.record(temp=temp, volume=20)
             
         elif data[0] == 0x02: #if temp cam data
             pass
@@ -148,7 +167,10 @@ class PiRadio(UCComms):
 
     def startBoil(self, temp):
         temp *= 10
-        self.sendData(bytes([0x02, 0x01,(temp>>8)&0xFF, temp&0xFF]))
+        sent = False
+        while True:
+            if self.sendData(bytes([0x02, 0x01,(temp>>8)&0xFF, temp&0xFF])):
+                break
 
     def stopBoil(self):
         self.sendData(bytes([0x02, 0x02]))
@@ -161,7 +183,6 @@ class PiRadio(UCComms):
 
         #fermenterID = int.from_bytes(data[0], "big", signed=False) 
         fermenterID = data[0]
-        print("fermenterID: ",fermenterID)
 
         tempData = data[1:3]
         tempData = int.from_bytes(tempData, "big", signed=False)
@@ -176,7 +197,7 @@ class PiRadio(UCComms):
         sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{fermenterID}'"
         query = self.db.custom(sql)
         batchID = query[-1][0]
-        print("batchID: ", batchID)
+        
         addtodatabase = SQLFermentMonitor(LOGIN=self.LOGIN, batchID=batchID,fermenterID=fermenterID)
         addtodatabase.record(specificG=specificG,temp=tempData,volume=volume)
 
@@ -213,8 +234,10 @@ if __name__=="__main__":
 
     x = PiRadio(LOGIN)
     x.configure()
-    while True:
-        x.startBoil(60)
-        time.sleep(20)
-        x.stopBoil()
-        time.sleep(5)
+    time.sleep(10)
+    x.startBoil(100)
+    time.sleep(300)
+    x.stopBoil()
+        #time.sleep(20)
+        #x.stopBoil()
+        #time.sleep(5)
