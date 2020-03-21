@@ -332,12 +332,14 @@ class MonitorWindow(QDialog):
 
     finishedSignal= pyqtSignal()
     
-    def __init__(self, LOGIN, batchID, parent=None):
+    def __init__(self, LOGIN, batchID, radio=None ,parent=None):
         super().__init__(parent)
         self.setWindowTitle("Monitor")
         self.LOGIN = LOGIN
         self.db = dataBase(self.LOGIN, "Brewing")
         self.batchID = batchID
+        if radio is not None:
+            self.radio = radio
 
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
         query = self.db.custom(sql)
@@ -418,6 +420,7 @@ class MonitorWindow(QDialog):
                 '''
                 TODO: Set Boil Uc
                 '''
+                self.radio.startBoil(self.recipedata['boilTemp'])
                 self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
                 self.tabBoil.minuteTimer.start(60000)
                 self.tabBoil.sqlBoilComms.startTimer()

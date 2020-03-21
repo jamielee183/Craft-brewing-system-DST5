@@ -21,6 +21,10 @@ from RF24 import *
 
 CONFIGURE_ARUDINO = [0x05]
 
+BOIL_COMMAND = 0x02
+MASH_COMMAND = 0x01
+FERMENT_COMMAND = 0x03
+
 
 class UCComms(Thread, metaclass=ABCMeta):
 
@@ -73,9 +77,9 @@ class PiRadio(UCComms):
         self.pipes = [[0xE0,0xE0,0xF1,0xF1,0xE0], [0xCC, 0xCE,0xCC,0xCE,0xCC]]
         self.PI_INTERUPT_PIN = 5
         self.cases ={
-            0x01 : self.mash,
-            0x02 : self.boil,
-            0x03 : self.ferment
+            BOIL_COMMAND : self.mash,
+            BOIL_COMMAND : self.boil,
+            FERMENT_COMMAND : self.ferment
         }
         self.sendRetryCount = 0
         
@@ -96,7 +100,6 @@ class PiRadio(UCComms):
         self.radio.startListening()
         self.sendData(bytes(CONFIGURE_ARUDINO))
        # self.sendData(bytes([0x02, 0x01, 0x00, 0x05]))
-
 
 
     def readData(self):
@@ -153,7 +156,6 @@ class PiRadio(UCComms):
 
     def boil(self, data):
         if data[0] == 0x01: #if temp sensor data
-            pass
             #insert temp and volume data
             temp = int.from_bytes(data[1:3], 'big', signed=False)
             #convert 16bit number to temp value
@@ -167,13 +169,12 @@ class PiRadio(UCComms):
 
     def startBoil(self, temp):
         temp *= 10
-        sent = False
         while True:
-            if self.sendData(bytes([0x02, 0x01,(temp>>8)&0xFF, temp&0xFF])):
+            if self.sendData(bytes([BOIL_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF])):
                 break
 
     def stopBoil(self):
-        self.sendData(bytes([0x02, 0x02]))
+        self.sendData(bytes([BOIL_COMMAND, 0x02]))
 
     def ferment(self, data):
         #bytes 0 are the fermented ID
@@ -183,17 +184,10 @@ class PiRadio(UCComms):
 
         #fermenterID = int.from_bytes(data[0], "big", signed=False) 
         fermenterID = data[0]
-
-        tempData = data[1:3]
-        tempData = int.from_bytes(tempData, "big", signed=False)
+        tempData = int.from_bytes(data[1:3], "big", signed=False)
+        specificG = int.from_bytes(data[3:5], "big", signed=False)
+        volume = int.from_bytes(data[5:7], "big", signed=False)
         
-        specificG = data[3:5]
-        specificG = int.from_bytes(specificG, "big", signed=False)
-        
-        volume = data[5:7]
-        volume = int.from_bytes(volume, "big", signed=False)
-        
-
         sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{fermenterID}'"
         query = self.db.custom(sql)
         batchID = query[-1][0]

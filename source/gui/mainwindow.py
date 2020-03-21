@@ -55,8 +55,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.main_widget)
 
         if isRunningOnPi:
-            radio = PiRadio(self.LOGIN)
-            radio.configure()
+            self.radio = PiRadio(self.LOGIN)
+            self.radio.configure()
 
     def create_layout(self):
 
@@ -149,7 +149,10 @@ class MainWindow(QMainWindow):
         # self.fermentMonitor = FermentMonitor(self.LOGIN)
         database = db(self.LOGIN,"Brewing")
         batchID = database.maxIdFromTable("Brews")
-        self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID)
+        if isRunningOnPi:
+            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)
+        else:
+            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None)            
         self.mashBoilMonitor.show()
         self.mashBoilMonitor.finishedSignal.connect(lambda: self.fermentMonitor.restartTankDropdown())
         
