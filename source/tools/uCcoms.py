@@ -169,6 +169,7 @@ class PiRadio(UCComms):
 
     def startBoil(self, temp):
         temp *= 10
+        temp = int(temp)
         while True:
             if self.sendData(bytes([BOIL_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF])):
                 break

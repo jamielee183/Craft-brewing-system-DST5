@@ -148,6 +148,7 @@ class MainWindow(QMainWindow):
     def mashBoilButtonClicked(self):
         # self.fermentMonitor = FermentMonitor(self.LOGIN)
         database = db(self.LOGIN,"Brewing")
+        database.flushTables()
         batchID = database.maxIdFromTable("Brews")
         if isRunningOnPi:
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)

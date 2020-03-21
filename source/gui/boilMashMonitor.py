@@ -393,10 +393,10 @@ class MonitorWindow(QDialog):
 
         #TODO: remove once we can get real data
         # if __name__ == "__main__":
-        self.boilMonitor = SQLBoilMonitor(self.LOGIN)
+       # self.boilMonitor = SQLBoilMonitor(self.LOGIN)
         self.fakeBoilTimer = QTimer(self)
         self.fakeBoilCount = 0
-        self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
+       # self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
 
 
     # def startBoilTimers(self):
@@ -421,7 +421,7 @@ class MonitorWindow(QDialog):
                 TODO: Set Boil Uc
                 '''
                 self.radio.startBoil(self.recipedata['boilTemp'])
-                self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
+        #        self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
                 self.tabBoil.minuteTimer.start(60000)
                 self.tabBoil.sqlBoilComms.startTimer()
                 self.tabBoil.timeStatusLED.value=True
