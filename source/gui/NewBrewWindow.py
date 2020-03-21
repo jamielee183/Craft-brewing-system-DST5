@@ -152,7 +152,7 @@ class NewBrewWindow(QDialog):
             mashTemp = float(self.mashTempEdit.text())
             mashTime = int(self.mashTimeEdit.text(), 10)
             boilTemp = float(self.boilTempEdit.text())
-            boilTemp = int(self.boilTimeEdit.text(), 10)
+            boilTime = int(self.boilTimeEdit.text(), 10)
             fermTemp = float(self.fermentTempEdit.text())
 
             hop1 = self.checkHopBox(self.hopBoxes[0])
@@ -169,7 +169,7 @@ class NewBrewWindow(QDialog):
                         brewName    =   "{}".format(self.recipeNameEdit.text()), 
                         mashTime    =   "{}".format(mashTime),
                         mashTemp    =   "{}".format(mashTemp),
-                        boilTime    =   "{}".format(boilTemp),
+                        boilTime    =   "{}".format(boilTime),
                         boilTemp    =   "{}".format(boilTemp),
                         fermentTemp =   "{}".format(fermTemp),
                         hop1        =    self.checkHopBox(self.hopBoxes[0]),
