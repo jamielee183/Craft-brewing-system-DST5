@@ -91,7 +91,7 @@ class FermentPlot(QWidget):
         self.tankID = tankID
         self.db.flushTables()
 
-        sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{tankID}'"
+        sql = f"SELECT max(BatchID) FROM Ferment WHERE Fermenter = '{tankID}'"
         query = self.db.custom(sql)
         # self._log.debug(f"Query: {query}")
         self.batchID = query[-1][0]

@@ -188,8 +188,8 @@ class PiRadio(UCComms):
         tempData = int.from_bytes(data[1:3], "big", signed=False)
         specificG = int.from_bytes(data[3:5], "big", signed=False)
         volume = int.from_bytes(data[5:7], "big", signed=False)
-        
-        sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{fermenterID}'"
+        self.db.flushTables()
+        sql = f"SELECT max(BatchID) FROM Ferment WHERE Fermenter = '{fermenterID}'"
         query = self.db.custom(sql)
         batchID = query[-1][0]
         

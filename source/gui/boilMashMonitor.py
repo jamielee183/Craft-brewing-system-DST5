@@ -443,7 +443,8 @@ class MonitorWindow(QDialog):
                 '''
                 TODO: TURN OFF BOIL uC 
                 '''
-                self.fakeBoilTimer.stop()
+                self.radio.stopBoil()
+                #self.fakeBoilTimer.stop()
                 self.boilPlotUpdateTimer.stop()
                 self.mashPlotUpdateTimer.stop()#######
                 self.tabBoil.minuteTimer.stop()
