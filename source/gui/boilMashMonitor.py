@@ -498,7 +498,7 @@ class MonitorWindow(QDialog):
         # self.tabMash.minuteTimer.start(60000)
 
     def mashStopClicked(self):
-                if self.tabMash.minuteTimer.isActive():
+        if self.tabMash.minuteTimer.isActive():
             x = divmod(self.tabMash.count,60)
             msg = 'Stop mashing?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['mashTime'] )
             reply = QMessageBox.question(self, 'Continue?', 
@@ -507,7 +507,7 @@ class MonitorWindow(QDialog):
                 '''
                 TODO: TURN OFF BOIL uC 
                 '''
-                self.radio.stopBoil()
+                self.radio.stopMash()
                 #self.fakeBoilTimer.stop()
                 # self.boilPlotUpdateTimer.stop()
                 # self.mashPlotUpdateTimer.stop()#######

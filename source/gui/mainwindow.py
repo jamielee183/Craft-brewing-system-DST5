@@ -147,7 +147,6 @@ class MainWindow(QMainWindow):
 
 
     def mashBoilButtonClicked(self):
-        # self.fermentMonitor = FermentMonitor(self.LOGIN)
         database = db(self.LOGIN,"Brewing")
         database.flushTables()
         batchID = database.maxIdFromTable("Brews")
