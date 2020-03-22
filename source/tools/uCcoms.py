@@ -9,7 +9,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.tools.constants import *
 from source.tools.exceptionLogging import *
-from source.tools.sqlBrewingComms import SQLBoilMonitor, SQLFermentMonitor
+from source.tools.sqlBrewingComms import *
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 
 
@@ -98,7 +98,7 @@ class PiRadio(UCComms):
         GPIO.setup(self.PI_INTERUPT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(self.PI_INTERUPT_PIN, GPIO.FALLING, callback=self.callback)
         self.radio.startListening()
-        self.sendData(bytes(CONFIGURE_ARUDINO))
+        self.sendData(CONFIGURE_ARUDINO)
        # self.sendData(bytes([0x02, 0x01, 0x00, 0x05]))
 
 
@@ -114,7 +114,7 @@ class PiRadio(UCComms):
         self._log.debug("sending data: {}".format(data))
         sent = False
         while not sent:
-            sent = self.radio.write(data)
+            sent = self.radio.write(bytes(data))
             if not sent:
                 self.sendRetryCount +=1
                 if self.sendRetryCount == 5:
@@ -148,11 +148,25 @@ class PiRadio(UCComms):
 
     def mash(self, data):
         if data[0] == 0x01: #if temp sensor data, 12 bit data? (2 bytes)
-            pass
+            #insert temp and volume data
+            temp = int.from_bytes(data[1:3], 'big', signed=False)
+            #convert 16bit number to temp value
+            x = SQLMashMonitor(LOGIN=self.LOGIN)
+            x.record(temp=temp, volume=20, pH=0, SG=1.0)
         elif data[0] == 0x02: #if temp camera data, 8x8 array of 1 byte values
             pass
         else:
             self._log.warning("Wrong data type for Mash")
+
+    def startMash(self, temp):
+        temp *= 10
+        temp = int(temp)
+        while True:
+            if self.sendData([MASH_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF]):
+                break
+
+    def stopMash(self):
+        self.sendData([MASH_COMMAND, 0x02])
 
     def boil(self, data):
         if data[0] == 0x01: #if temp sensor data
@@ -171,11 +185,11 @@ class PiRadio(UCComms):
         temp *= 10
         temp = int(temp)
         while True:
-            if self.sendData(bytes([BOIL_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF])):
+            if self.sendData([BOIL_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF]):
                 break
 
     def stopBoil(self):
-        self.sendData(bytes([BOIL_COMMAND, 0x02]))
+        self.sendData([BOIL_COMMAND, 0x02])
 
     def ferment(self, data):
         #bytes 0 are the fermented ID
