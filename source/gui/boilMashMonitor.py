@@ -374,6 +374,12 @@ class MonitorWindow(QDialog):
 
         self.tabMash.startButton.clicked.connect(self.mashStartClicked)
         self.tabMash.stopButton.clicked.connect(self.mashStopClicked)
+
+        if radio is None:
+            self.tabBoil.startButton.setEnabled(False)
+            self.tabBoil.stopButton.setEnabled(False)
+            self.tabMash.startButton.setEnabled(False)
+            self.tabMash.stopButton.setEnabled(False)
         
 
         hLayout = QHBoxLayout()
@@ -427,7 +433,7 @@ class MonitorWindow(QDialog):
                 self.tabBoil.timeStatusLED.value=True
         elif self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Boil already running: {} mins {} secs'.format(x[0],x[1])
+            msg = 'Boil already running: {} mins.'.format(x[0])
             reply = QMessageBox.question(self, 'oops', 
                     msg, QMessageBox.Ok)
         else:
@@ -436,7 +442,7 @@ class MonitorWindow(QDialog):
     def boilStopClicked(self):
         if self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Stop boiling?\nCurrent time: {} mins\nRecipe time: {} mins'.format(x[0], self.recipedata['boilTime'] )
+            msg = 'Stop boiling?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['boilTime'] )
             reply = QMessageBox.question(self, 'Continue?', 
                     msg, QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.Yes:
@@ -445,8 +451,8 @@ class MonitorWindow(QDialog):
                 '''
                 self.radio.stopBoil()
                 #self.fakeBoilTimer.stop()
-                self.boilPlotUpdateTimer.stop()
-                self.mashPlotUpdateTimer.stop()#######
+                # self.boilPlotUpdateTimer.stop()
+                # self.mashPlotUpdateTimer.stop()#######
                 self.tabBoil.minuteTimer.stop()
                 self.tabMash.minuteTimer.stop() ###########
                 self.tabBoil.sqlBoilComms.endTimer()
@@ -462,8 +468,6 @@ class MonitorWindow(QDialog):
                     fermtank.record(None,None,None) #enter null into database to attach tank to batch id
                     self.finishedSignal.emit()
                     self.close()
-                    
-                
 
         elif not self.tabBoil.minuteTimer.isActive():
             msg = 'No Boil currently running'
@@ -472,29 +476,57 @@ class MonitorWindow(QDialog):
 
 
     def mashStartClicked(self):
-        '''
-        Set mash Uc up with 
-        '''
-        self.tabMash.minuteTimer.start(60000)
+        if not self.tabMash.minuteTimer.isActive():
+            msg = 'Start mashing? \n set {}{} for {} minutes'.format(self.recipedata['mashTemp'],DEGREESC,self.recipedata['mashTime'])
+            reply = QMessageBox.question(self, 'Continue?', 
+                    msg, QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                '''
+                TODO: Set mash Uc
+                '''
+                self.radio.startMash(self.recipedata['mashTemp'])
+        #        self.fakeMashTimer.start(1000)   #TODO: remove once we can get real data
+                self.tabMash.minuteTimer.start(60000)
+                self.tabMash.timeStatusLED.value=True
+        elif self.tabMash.minuteTimer.isActive():
+            x = divmod(self.tabMash.count,60)
+            msg = 'Mash already running: {} mins.'.format(x[0])
+            reply = QMessageBox.question(self, 'oops', 
+                    msg, QMessageBox.Ok)
+        else:
+            raise Exception("Mashing Error")
+        # self.tabMash.minuteTimer.start(60000)
 
     def mashStopClicked(self):
-        self.mashPlotUpdateTimer.stop()
-        self.tabMash.minuteTimer.stop()
+                if self.tabMash.minuteTimer.isActive():
+            x = divmod(self.tabMash.count,60)
+            msg = 'Stop mashing?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['mashTime'] )
+            reply = QMessageBox.question(self, 'Continue?', 
+                    msg, QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                '''
+                TODO: TURN OFF BOIL uC 
+                '''
+                self.radio.stopBoil()
+                #self.fakeBoilTimer.stop()
+                # self.boilPlotUpdateTimer.stop()
+                # self.mashPlotUpdateTimer.stop()#######
+                # self.tabBoil.minuteTimer.stop()
+                self.tabMash.minuteTimer.stop() ###########
+                # self.tabBoil.sqlBoilComms.endTimer()
+                self.tabMash.timeStatusLED.value=False
+
+        elif not self.tabMash.minuteTimer.isActive():
+            msg = 'No mash currently running'
+            reply = QMessageBox.question(self, 'oops', 
+                    msg, QMessageBox.Ok)
+        # self.mashPlotUpdateTimer.stop()
+        # self.tabMash.minuteTimer.stop()
 
     def updateMashPlot(self):
-        '''
-        collect mash data
-        '''
-
-        # self.mashCount += 1
-        # self.tabMash.addTimer(1)
-        # self.tabMash.insertSample(np.sin(self.mashCount/4))
         self.tabMash.updatePlot()
         
     def updateBoilPlot(self):
-        '''
-        collect boil data
-        '''
         self.tabBoil.updatePlot()
 
     def closeWindow(self):
