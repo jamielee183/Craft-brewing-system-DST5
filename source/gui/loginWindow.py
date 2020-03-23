@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import \
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.gui.mainwindow import MainWindow
 from source.tools.sqlHandler import SqlTableHandler, LoginError
+from source.tools.constants import *
 import mysql.connector as sql
 
 class LoginWindow(QDialog):
@@ -68,13 +69,16 @@ class LoginWindow(QDialog):
         HOST = self.hostEdit.text()
         USER = self.usernameEdit.text()
         PASSWORD = self.passwordEdit.text()
+        if HOST == "Pi":
+            HOST = PI_IP
         LOGIN = [HOST, USER, PASSWORD]
 
         try:
-            SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
+            # SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
 
-            self.close()
+            # self.close()
             self.window = MainWindow(LOGIN=LOGIN)
+            self.close()
             self.window.show()
         
         except LoginError:
