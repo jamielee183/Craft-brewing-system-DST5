@@ -37,7 +37,7 @@ from source.gui.newUserWindow import NewUserWindow
 # import newUserWindow
 
 
-isRunningOnPi = False
+# isRunningOnPi = False
 # if isRunningOnPi:
 #     from source.tools.uCcoms import PiRadio
 
@@ -53,9 +53,10 @@ class MainWindow(QMainWindow):
         self.create_layout()
         self.setWindowTitle('Brew Monitoring System')
         self.setCentralWidget(self.main_widget)
+        self.isRunningOnPi = isRunningOnPi
 
-        if isRunningOnPi:
-            PiRadio = __import__('source.tools.uCcoms')
+        if self.isRunningOnPi:
+            from source.tools.uCcoms import PiRadio
             self.radio = PiRadio(self.LOGIN)
             self.radio.configure()
 
@@ -151,7 +152,7 @@ class MainWindow(QMainWindow):
         database = db(self.LOGIN,"Brewing")
         database.flushTables()
         batchID = database.maxIdFromTable("Brews")
-        if isRunningOnPi:
+        if self.isRunningOnPi:
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)
         else:
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None)            
@@ -177,6 +178,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
 
     from source.tools.sqlHandler import SqlTableHandler as db
+    from source.gui.loginWindow import LoginWindow
     from getpass import getpass
 
     HOST = "192.168.10.223"
@@ -187,11 +189,11 @@ if __name__ == "__main__":
     USER = "Test"
     PASSWORD = "BirraMosfeti"
 
-    HOST = input("Host ID: ")
-    USER = input("User: ")
-    PASSWORD = getpass()
+    # HOST = input("Host ID: ")
+    # USER = input("User: ")
+    # PASSWORD = getpass()
     if HOST == "Pi":
-        HOST = "192.168.10.223"
+        HOST = PI_IP
 
     LOGIN = [HOST,USER,PASSWORD]
     
@@ -201,8 +203,8 @@ if __name__ == "__main__":
 
 
     app = QApplication(sys.argv)
-    # login = loginWindow.LoginWindow()
-    # login.show()
-    window = MainWindow(LOGIN, isRunningOnPi=True)
-    window.show()
+    login = LoginWindow()
+    login.show()
+    # window = MainWindow(LOGIN, isRunningOnPi=False)
+    # window.show()
     sys.exit(app.exec_())
