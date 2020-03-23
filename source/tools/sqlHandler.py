@@ -79,6 +79,7 @@ class SqlTableHandler():
 
     def __init__(self, LOGIN, databaseName):
         try:
+            # self.sql = sql
             self.db= sql.connect(
                 host=LOGIN[0],
                 user=LOGIN[1],

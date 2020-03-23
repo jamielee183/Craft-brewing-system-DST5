@@ -153,6 +153,8 @@ class PiRadio(UCComms):
             #convert 16bit number to temp value
             x = SQLMashMonitor(LOGIN=self.LOGIN)
             x.record(temp=temp, volume=20, pH=0, SG=1.0)
+            x.db.cursor.close()
+            x.db.db.close()
         elif data[0] == 0x02: #if temp camera data, 8x8 array of 1 byte values
             pass
         else:
@@ -175,6 +177,8 @@ class PiRadio(UCComms):
             #convert 16bit number to temp value
             x = SQLBoilMonitor(LOGIN=self.LOGIN)
             x.record(temp=temp, volume=20)
+            x.db.cursor.close()
+            x.db.db.close()
             
         elif data[0] == 0x02: #if temp cam data
             pass
@@ -209,6 +213,8 @@ class PiRadio(UCComms):
         
         addtodatabase = SQLFermentMonitor(LOGIN=self.LOGIN, batchID=batchID,fermenterID=fermenterID)
         addtodatabase.record(specificG=specificG,temp=tempData,volume=volume)
+        addtodatabase.db.cursor.close()
+        addtodatabase.db.db.close()
 
 
     
