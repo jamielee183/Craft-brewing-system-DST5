@@ -71,7 +71,7 @@ class SQLMashMonitor(SQLBrewingComms):
         self.batchID = self.getCurrentBrew()
         insert = []
         insert.append(("BatchID", "TimeStamp", "Temp", "Volume", "pH","SG"))
-        insert.append((self.batchID, datetime.now(), temp, volume))
+        insert.append((self.batchID, datetime.now(), temp, volume, pH, SG))
         self._log.debug(f"Batch ID:{self.batchID}, Time Stamp: {datetime.now()}, Temp: {temp}, Volume:{volume}, pH:{pH}, SG:{SG}")
         # db = Sql(self.LOGIN, self.dbName)
         self.db.insertToTable("Mash", insert)

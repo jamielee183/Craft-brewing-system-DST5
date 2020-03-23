@@ -189,6 +189,18 @@ class TabMash(TabGraph):
         else:
             # timerlabel = TimeScaleDraw(self.timeStamps).label(self.dataX[-1])}")
             self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
+            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))     
+
+            if (self.dataY[-1] < (self.recipedata['mashTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['mashTemp']+0.5)):
+                self.tempStatusLED.value=False
+            else:
+                self.tempStatusLED.value=True
+        if len(self.dataX) == 0:
+            self.timeLabel.setText("Timer:")
+            self.tempLabel.setText("Temp:")
+        else:
+            # timerlabel = TimeScaleDraw(self.timeStamps).label(self.dataX[-1])}")
+            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
             self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))
 
 

@@ -77,7 +77,7 @@ class PiRadio(UCComms):
         self.pipes = [[0xE0,0xE0,0xF1,0xF1,0xE0], [0xCC, 0xCE,0xCC,0xCE,0xCC]]
         self.PI_INTERUPT_PIN = 5
         self.cases ={
-            BOIL_COMMAND : self.mash,
+            MASH_COMMAND : self.mash,
             BOIL_COMMAND : self.boil,
             FERMENT_COMMAND : self.ferment
         }
