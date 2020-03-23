@@ -264,7 +264,7 @@ class FermentMonitor(QDialog):
         self.updateDataTimer = QTimer(self)
         # self.updateDataTimer.timeout.connect(self.fakeFermentData)
         # self.updateDataTimer.start(1000)
-        # self.startTimers()
+        self.startTimers()
 
     def restartTankDropdown(self):
         self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")

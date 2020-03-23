@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
         self.but_fermenters.clicked.connect(self.fermentButtonClicked)
 
 
-#        self.fermentMonitor = FermentMonitor(self.LOGIN)
+        self.fermentMonitor = FermentMonitor(self.LOGIN)
 
         # database = db(LOGIN,"Brewing")
         # batchID = database.maxIdFromTable("Brews")
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
     
     def fermentButtonClicked(self):
         self.fermentMonitor = FermentMonitor(self.LOGIN)
-        self.fermentMonitor.startTimers()
+#        self.fermentMonitor.startTimers()
         self.fermentMonitor.restartTankDropdown()
         self.fermentMonitor.show()
 
