@@ -37,16 +37,16 @@ from source.gui.newUserWindow import NewUserWindow
 # import newUserWindow
 
 
-isRunningOnPi = True
-if isRunningOnPi:
-    from source.tools.uCcoms import PiRadio
+isRunningOnPi = False
+# if isRunningOnPi:
+#     from source.tools.uCcoms import PiRadio
 
 class MainWindow(QMainWindow):
 
     _logname = 'MainWindow'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self,LOGIN, parent = None):
+    def __init__(self,LOGIN, isRunningOnPi=False, parent = None):
         super(MainWindow, self).__init__()
         self.LOGIN = LOGIN
         self.main_widget = QWidget()
@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.main_widget)
 
         if isRunningOnPi:
+            PiRadio = __import__('source.tools.uCcoms')
             self.radio = PiRadio(self.LOGIN)
             self.radio.configure()
 
@@ -202,6 +203,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     # login = loginWindow.LoginWindow()
     # login.show()
-    window = MainWindow(LOGIN)
+    window = MainWindow(LOGIN, isRunningOnPi=True)
     window.show()
     sys.exit(app.exec_())
