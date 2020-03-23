@@ -37,7 +37,10 @@ from source.gui.newUserWindow import NewUserWindow
 # import newUserWindow
 
 
+
 # isRunningOnPi = False
+
+
 # if isRunningOnPi:
 #     from source.tools.uCcoms import PiRadio
 
