@@ -37,7 +37,7 @@ from source.gui.newUserWindow import NewUserWindow
 # import newUserWindow
 
 
-isRunningOnPi = False
+#isRunningOnPi = False
 # if isRunningOnPi:
 #     from source.tools.uCcoms import PiRadio
 
@@ -53,9 +53,11 @@ class MainWindow(QMainWindow):
         self.create_layout()
         self.setWindowTitle('Brew Monitoring System')
         self.setCentralWidget(self.main_widget)
+        self.isRunningOnPi = isRunningOnPi
 
-        if isRunningOnPi:
-            PiRadio = __import__('source.tools.uCcoms')
+        if self.isRunningOnPi:
+            #_temp = __import__('source.tools.uCcoms')
+            from source.tools.uCcoms import PiRadio
             self.radio = PiRadio(self.LOGIN)
             self.radio.configure()
 
@@ -151,7 +153,7 @@ class MainWindow(QMainWindow):
         database = db(self.LOGIN,"Brewing")
         database.flushTables()
         batchID = database.maxIdFromTable("Brews")
-        if isRunningOnPi:
+        if self.isRunningOnPi:
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)
         else:
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None)            
