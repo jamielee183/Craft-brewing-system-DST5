@@ -11,7 +11,7 @@ from PyQt5.QtCore import \
 from PyQt5.QtGui import \
     QFont
 from PyQt5.QtWidgets import \
-    QApplication, QMainWindow, QWidget, QTableWidget,\
+    QApplication, QMainWindow, QWidget, QTableWidget, QTabWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox, \
@@ -22,10 +22,10 @@ from source.tools.sqlHandler import SqlTableHandler as db
 from source.tools.sqlBrewingComms import SQLNewBrew
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 
-my_array = [['1','Carling','01/01/19'],
-            ['2','Tennents','13/10/19'],
-            ['3','Drygate','21/01/20'],
-            ['4','Asahi','01/03/20']]
+my_array = [('1','Carling','01/01/19'),
+            ('2','Tennents','13/10/19'),
+            ('3','Drygate','21/01/20'),
+            ('4','Asahi','01/03/20')]
 
 class ViewDataWindow(QDialog):
     formSubmitted = pyqtSignal()
@@ -35,7 +35,7 @@ class ViewDataWindow(QDialog):
         self.LOGIN = LOGIN
         self.db = db(self.LOGIN,"Brewing")
 
-        print(self.db.readFromTable("Brews", "id, Recipe, Date"))
+        #print(self.db.readFromTable("Brews", "id, Recipe, Date"))
         self.create_layout_viewData()
         self.setWindowTitle('Data Viewer')
 
@@ -128,8 +128,8 @@ class ViewDataWindow(QDialog):
 
         
         # Create QTableView of brew data
-        header = ['Brew ID', 'Recipe', 'Date']
-        model = MyTableModel(my_array, header, self)     
+        header = ['Brew ID', 'Recipe', 'Date'] 
+        model = MyTableModel(self.db.readFromTable("Brews", "id, Recipe, Date"), header, self)     
         self.proxyModel = QSortFilterProxyModel(self)
         self.proxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxyModel.setSourceModel(model)
@@ -152,13 +152,26 @@ class ViewDataWindow(QDialog):
         quitHLayout.addWidget(self.but_view)
         quitHLayout.addStretch(0)
 
-        # Main vertical layout
-        vLayout = QVBoxLayout()
-        vLayout.addWidget(filterGroupBox)
-        vLayout.addWidget(self.dataTable)
-        vLayout.addLayout(quitHLayout)
+        # Main vertical layout for left area
+        vLayoutL = QVBoxLayout()
+        vLayoutL.addWidget(filterGroupBox)
+        vLayoutL.addWidget(self.dataTable)
+        vLayoutL.addLayout(quitHLayout)
 
-        self.setLayout(vLayout)
+        # Main vertical layout for right area
+        vLayoutR = QVBoxLayout()
+        self.tabs = QTabWidget()
+        self.tabMash = MashTab()
+        self.tabs.resize(100,1000)
+        self.tabs.addTab(self.tabMash,"Mash")
+        vLayoutR.addWidget(self.tabs)
+
+        # Main layout for whole window
+        mainLayout = QHBoxLayout()
+        mainLayout.addLayout(vLayoutL)
+        mainLayout.addLayout(vLayoutR)
+
+        self.setLayout(mainLayout)
 
         self.but_quit.clicked.connect(self.quitButtonClicked)
 
@@ -215,3 +228,20 @@ class MyTableModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headerdata[col])
         return QVariant()
+
+
+class MashTab(QTabWidget):
+
+    def __init__(self, parent=None):
+        super(MashTab, self).__init__(parent)
+        self.create_layout_mashTab()
+
+    def create_layout_mashTab(self):
+        
+        inputGroupBox = QGroupBox("Inputs")
+        inputForm = QFormLayout() 
+        self.mashTempLab = QLabel()
+        inputForm.addRow(QLabel(f'Temperature ({DEGREES}C):'), self.mashTempLab)
+        self.mashTimeLab = QLabel()
+        inputForm.addRow(QLabel(f'Time (mins):'), self.mashTimeLab)
+        inputGroupBox.setLayout(inputForm)
