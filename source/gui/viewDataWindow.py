@@ -88,12 +88,12 @@ class ViewDataWindow(QDialog):
         recipeHLayout.addWidget(self.lineEdit_recipe)
 
         # Clear filters button
-        self.but_clearFilter = QPushButton("Clear Filter")
+        self.but_clearFilter = QPushButton("Clear Filters")
         self.but_clearFilter.setAutoDefault(0)
         clearHLayout = QHBoxLayout()
         clearHLayout.addStretch(1)
         clearHLayout.addWidget(self.but_clearFilter)
-        clearHLayout.addStretch(1)
+        clearHLayout.addStretch(0)
         self.but_clearFilter.clicked.connect(self.clearFilters)
 
         # Filter groupbox layout
@@ -129,13 +129,14 @@ class ViewDataWindow(QDialog):
         
         # Create QTableView of brew data
         header = ['Brew ID', 'Recipe', 'Date'] 
-        model = MyTableModel(self.db.readFromTable("Brews", "id, Recipe, Date"), header, self)     
+        self.model = MyTableModel(self.db.readFromTable("Brews", "id, Recipe, Date"), header, self)     
         self.proxyModel = QSortFilterProxyModel(self)
         self.proxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.proxyModel.setSourceModel(model)
+        self.proxyModel.setSourceModel(self.model)
         self.dataTable = QTableView()          
         self.dataTable.setModel(self.proxyModel)
         self.dataTable.setSortingEnabled(True)
+        
 
         # Database data
         #self.db.readFromTable("Brews", "id, Recipe, Date")
@@ -158,43 +159,80 @@ class ViewDataWindow(QDialog):
         vLayoutL.addWidget(self.dataTable)
         vLayoutL.addLayout(quitHLayout)
 
+        # Main h layout for displayed brews widget
+        displayTitle = QLabel("Displayed Brews") 
+        hLayoutDisplayed = QHBoxLayout()
+        hLayoutDisplayed.addWidget(displayTitle)
+
         # Main vertical layout for right area
         vLayoutR = QVBoxLayout()
         self.tabs = QTabWidget()
         self.tabMash = MashTab()
+        self.tabBoil = BoilTab()
+        self.tabFerment = FermentTab()
         self.tabs.resize(100,1000)
         self.tabs.addTab(self.tabMash,"Mash")
+        self.tabs.addTab(self.tabBoil, "Boil")
+        self.tabs.addTab(self.tabFerment, "Ferment")
+        vLayoutR.addLayout(hLayoutDisplayed)
         vLayoutR.addWidget(self.tabs)
-
+        
         # Main layout for whole window
         mainLayout = QHBoxLayout()
-        mainLayout.addLayout(vLayoutL)
-        mainLayout.addLayout(vLayoutR)
+        mainLayout.addLayout(vLayoutL, 1)
+        mainLayout.addLayout(vLayoutR, 2)
 
         self.setLayout(mainLayout)
+        self.setGeometry(0, 0, 2000, 1000)
 
+        self.but_view.clicked.connect(self.viewButtonClicked)
         self.but_quit.clicked.connect(self.quitButtonClicked)
 
     def quitButtonClicked(self):     
         
         self.close()
 
+
+    # Slot for adding selected brew to widget
+    def viewButtonClicked(self): # brewID, recipe, date, displayNo):
+
+        rows = sorted(set(index.row() for index in
+                      self.dataTable.selectedIndexes()))
+        for row in rows:
+            print('Row %d is selected' % row)
+            test = self.model.data(self.dataTable.selectedIndexes()[0], 0).value()
+            print(test)
+            #print(self.model.data(self.dataTable.selectedIndexes()[0], 0))
+        
+        #brewID = self.model.data(rows)
+
+        #brewGroupBox = QGroupBox(f'displayNo')
+        #brewForm = QFormLayout()
+        #brewForm.addRow(QLabel('Brew ID:'), brewID)
+        #brewForm.addRow(QLabel('Recipe:'), recipe)
+        #brewForm.addRow(QLabel('Date:'), date)
+        #brewGroupBox.addLayout(brewForm)
+    
+    # Slot for filtering by Batch ID
     def filter_batchID(self):
         self.lineEdit_recipe.clear()
         self.proxyModel.setFilterRegExp(self.edit_batchID.text())
         self.proxyModel.setFilterKeyColumn(0)
 
+    # Slot for filtering by Recipe
     def filter_recipe(self):
         self.edit_batchID.clear()
         self.proxyModel.setFilterRegExp(self.lineEdit_recipe.text())
         self.proxyModel.setFilterKeyColumn(1)
 
+    # Slot for filtering by date
     def filter_date(self):     
         self.lineEdit_recipe.clear()
         self.edit_batchID.clear()
         self.proxyModel.setFilterRegExp(self.dateEdit.date().toString("dd/MM/yy"))
         self.proxyModel.setFilterKeyColumn(2)
 
+    # Slot for clearing all filters
     def clearFilters(self):
         self.dateEdit.setDate(self.maxDate)
         self.proxyModel.setFilterRegExp('')
@@ -205,6 +243,7 @@ class ViewDataWindow(QDialog):
         self.edit_batchID.clear()
         
 
+# Class to create model to hold database data to present in table
 class MyTableModel(QAbstractTableModel):
     def __init__(self, datain, headerdata, parent=None, *args):
         QAbstractTableModel.__init__(self, parent, *args)
@@ -230,6 +269,7 @@ class MyTableModel(QAbstractTableModel):
         return QVariant()
 
 
+### Classes for each of the tabs in the window (Mash, Boil, Ferment) ###
 class MashTab(QTabWidget):
 
     def __init__(self, parent=None):
@@ -238,6 +278,7 @@ class MashTab(QTabWidget):
 
     def create_layout_mashTab(self):
         
+        # Groupbox for Inputs section
         inputGroupBox = QGroupBox("Inputs")
         inputForm = QFormLayout() 
         self.mashTempLab = QLabel()
@@ -245,3 +286,115 @@ class MashTab(QTabWidget):
         self.mashTimeLab = QLabel()
         inputForm.addRow(QLabel(f'Time (mins):'), self.mashTimeLab)
         inputGroupBox.setLayout(inputForm)
+
+        # Groupbox for Temp graph
+        tempGroupBox = QGroupBox("Temperature Graph")
+        # command to add graph to groupbox
+
+        # V layout for input box
+        vLayout = QVBoxLayout()
+        vLayout.addWidget(inputGroupBox)
+        vLayout.addStretch(1)
+        # Main H layout for mash tab
+        hLayout = QHBoxLayout()
+        hLayout.addLayout(vLayout)
+        hLayout.addWidget(tempGroupBox, 1)
+        self.setLayout(hLayout)
+
+class BoilTab(QTabWidget):
+
+    def __init__(self, parent=None):
+        super(BoilTab, self).__init__(parent)
+        self.create_layout_boilTab()
+
+    def create_layout_boilTab(self):
+        
+        # Groupbox for Inputs section
+        inputGroupBox = QGroupBox("Inputs")
+        inputForm = QFormLayout() 
+        self.boilTempLab = QLabel()
+        inputForm.addRow(QLabel(f'Temperature ({DEGREES}C):'), self.boilTempLab)
+        self.boilTimeLab = QLabel()
+        inputForm.addRow(QLabel(f'Time (mins):'), self.boilTimeLab)
+        inputGroupBox.setLayout(inputForm)
+
+        # Groupbox for Temp graph
+        tempGroupBox = QGroupBox("Temperature Graph")
+        # command to add graph to groupbox
+
+        # V layout for input box
+        vLayout = QVBoxLayout()
+        vLayout.addWidget(inputGroupBox)
+        vLayout.addStretch(1)
+        # Main H layout for mash tab
+        hLayout = QHBoxLayout()
+        hLayout.addLayout(vLayout)
+        hLayout.addWidget(tempGroupBox, 1)
+        self.setLayout(hLayout)
+
+class FermentTab(QTabWidget):
+
+    def __init__(self, parent=None):
+        super(FermentTab, self).__init__(parent)
+        self.create_layout_fermentTab()
+
+    def create_layout_fermentTab(self):
+        
+        # Groupbox for Inputs section
+        inputGroupBox = QGroupBox("Inputs")
+        inputForm = QFormLayout() 
+        self.fermentTempLab = QLabel()
+        inputForm.addRow(QLabel(f'Temperature ({DEGREES}C):'), self.fermentTempLab)
+        inputGroupBox.setLayout(inputForm)
+
+        # Groupbox for Temp graph
+        tempGroupBox = QGroupBox("Temperature Graph")
+        # command to add graph to groupbox
+
+        # Groupbox for Specific Gravity Graph
+        gravGroupBox = QGroupBox("Specific Gravity Graph")
+        # command to add graph to groupbox
+
+        # V layout for input box
+        vLayout = QVBoxLayout()
+        vLayout.addWidget(inputGroupBox)
+        vLayout.addStretch(1)
+
+        # V layout for graphs
+        vLayout2 = QVBoxLayout()
+        vLayout2.addWidget(tempGroupBox)
+        vLayout2.addWidget(gravGroupBox)
+
+        # Main H layout for mash tab
+        hLayout = QHBoxLayout()
+        hLayout.addLayout(vLayout)
+        hLayout.addLayout(vLayout2, 2)
+        self.setLayout(hLayout)
+
+# Class for widget that shows which brews are being displayed
+class DisplayedBrews(QWidget):
+
+    def __init__(self, parent=None):
+        super(DisplayedBrews, self).__init__(parent)
+        self.create_layout_displayedBrews()
+
+    def create_layout_displayedBrews(self):
+
+        title = QLabel("Displayed Brews")
+
+        # Main h layout for widget
+        hLayout = QHBoxLayout()
+        hLayout.addWidget(title)
+
+        
+
+    # Function for adding selected brew to widget
+    def add_brew(self, brewID, recipe, date, displayNo):
+
+        brewGroupBox = QGroupBox(f'displayNo')
+        brewForm = QFormLayout()
+        brewForm.addRow(QLabel('Brew ID:'), brewID)
+        brewForm.addRow(QLabel('Recipe:'), recipe)
+        brewForm.addRow(QLabel('Date:'), date)
+        brewGroupBox.addLayout(brewForm)
+
