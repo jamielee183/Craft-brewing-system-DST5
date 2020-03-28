@@ -34,11 +34,12 @@ class ViewDataWindow(QDialog):
         super(ViewDataWindow, self).__init__(parent)
         self.LOGIN = LOGIN
         self.db = db(self.LOGIN,"Brewing")
-
+        self.displayNo = 0
+        self.displayedBrews = []
         #print(self.db.readFromTable("Brews", "id, Recipe, Date"))
         self.create_layout_viewData()
         self.setWindowTitle('Data Viewer')
-
+        
     # Function to create layout of New Brew window
     def create_layout_viewData(self):
 
@@ -136,6 +137,8 @@ class ViewDataWindow(QDialog):
         self.dataTable = QTableView()          
         self.dataTable.setModel(self.proxyModel)
         self.dataTable.setSortingEnabled(True)
+        self.dataTable.setSelectionBehavior(1)
+        #table->setSelectionBehavior(QAbstractItemView::SelectRows);
         
 
         # Database data
@@ -159,10 +162,19 @@ class ViewDataWindow(QDialog):
         vLayoutL.addWidget(self.dataTable)
         vLayoutL.addLayout(quitHLayout)
 
-        # Main h layout for displayed brews widget
+
+        # Widget for displayed brews - Widget allows fixed height to be set
+        displayedWidget = QWidget()
+        displayedWidget.setFixedHeight(160)
+        # h Layout to add groupboxes of displayed brews - added to in viewButtonClicked slot
+        self.hLayoutDisplayed = QHBoxLayout()
+        self.hLayoutDisplayed.addStretch(1)
+        displayedWidget.setLayout(self.hLayoutDisplayed)
+        # Main v layout for displayed brews widget
         displayTitle = QLabel("Displayed Brews") 
-        hLayoutDisplayed = QHBoxLayout()
-        hLayoutDisplayed.addWidget(displayTitle)
+        self.vLayoutDisplayed = QVBoxLayout()
+        self.vLayoutDisplayed.addWidget(displayTitle)
+        self.vLayoutDisplayed.addWidget(displayedWidget)
 
         # Main vertical layout for right area
         vLayoutR = QVBoxLayout()
@@ -174,7 +186,7 @@ class ViewDataWindow(QDialog):
         self.tabs.addTab(self.tabMash,"Mash")
         self.tabs.addTab(self.tabBoil, "Boil")
         self.tabs.addTab(self.tabFerment, "Ferment")
-        vLayoutR.addLayout(hLayoutDisplayed)
+        vLayoutR.addLayout(self.vLayoutDisplayed)
         vLayoutR.addWidget(self.tabs)
         
         # Main layout for whole window
@@ -194,25 +206,47 @@ class ViewDataWindow(QDialog):
 
 
     # Slot for adding selected brew to widget
-    def viewButtonClicked(self): # brewID, recipe, date, displayNo):
-
-        rows = sorted(set(index.row() for index in
-                      self.dataTable.selectedIndexes()))
-        for row in rows:
-            print('Row %d is selected' % row)
-            test = self.model.data(self.dataTable.selectedIndexes()[0], 0).value()
-            print(test)
-            #print(self.model.data(self.dataTable.selectedIndexes()[0], 0))
+    def viewButtonClicked(self):
         
-        #brewID = self.model.data(rows)
+        brewInfo = [] # array to place brew info: ID, Recipe, Date
+        self.displayNo = self.displayNo + 1
+        # Add brew info to array based on selected row
+        index = (self.dataTable.selectionModel().currentIndex())
+        for i in range(3):
+            brewInfo.append(QLabel(str(index.sibling(index.row(), i).data())))
 
-        #brewGroupBox = QGroupBox(f'displayNo')
-        #brewForm = QFormLayout()
-        #brewForm.addRow(QLabel('Brew ID:'), brewID)
-        #brewForm.addRow(QLabel('Recipe:'), recipe)
-        #brewForm.addRow(QLabel('Date:'), date)
-        #brewGroupBox.addLayout(brewForm)
-    
+        # Create group box with all brew info displayed and Remove button
+        brewGroupBox = QGroupBox(str(self.displayNo))
+        brewForm = QFormLayout()
+        brewForm.addRow(QLabel('Brew ID:'), brewInfo[0])
+        brewForm.addRow(QLabel('Recipe:'), brewInfo[1])
+        brewForm.addRow(QLabel('Date:'), brewInfo[2])
+        removeHLayout = QHBoxLayout()
+        removeHLayout.addStretch(1)
+        self.but_Remove = QPushButton("Remove")
+        removeHLayout.addWidget(self.but_Remove)
+        brewForm.addRow(removeHLayout)
+        brewGroupBox.setLayout(brewForm)
+        # Add group box to layout - use insert so that stretch stays on right side
+        self.hLayoutDisplayed.insertWidget(self.displayNo-1, brewGroupBox)
+        self.displayedBrews.append(brewGroupBox)
+        print(self.displayedBrews)
+        self.but_Remove.clicked.connect(lambda: self.removeBrewClicked(brewGroupBox))
+
+
+    def removeBrewClicked(self, brewNo):
+
+        self.hLayoutDisplayed.removeWidget(brewNo)
+        brewNo.setParent(None)
+        self.displayNo = self.displayNo - 1
+        self.displayedBrews.remove(brewNo)
+        print(self.displayNo)
+        i = 0
+        for i in range(len(self.displayedBrews)):
+            print(i)
+            self.displayedBrews[i].setTitle(str(i+1))
+
+
     # Slot for filtering by Batch ID
     def filter_batchID(self):
         self.lineEdit_recipe.clear()
@@ -371,30 +405,4 @@ class FermentTab(QTabWidget):
         hLayout.addLayout(vLayout2, 2)
         self.setLayout(hLayout)
 
-# Class for widget that shows which brews are being displayed
-class DisplayedBrews(QWidget):
-
-    def __init__(self, parent=None):
-        super(DisplayedBrews, self).__init__(parent)
-        self.create_layout_displayedBrews()
-
-    def create_layout_displayedBrews(self):
-
-        title = QLabel("Displayed Brews")
-
-        # Main h layout for widget
-        hLayout = QHBoxLayout()
-        hLayout.addWidget(title)
-
-        
-
-    # Function for adding selected brew to widget
-    def add_brew(self, brewID, recipe, date, displayNo):
-
-        brewGroupBox = QGroupBox(f'displayNo')
-        brewForm = QFormLayout()
-        brewForm.addRow(QLabel('Brew ID:'), brewID)
-        brewForm.addRow(QLabel('Recipe:'), recipe)
-        brewForm.addRow(QLabel('Date:'), date)
-        brewGroupBox.addLayout(brewForm)
 
