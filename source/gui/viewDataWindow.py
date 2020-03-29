@@ -35,7 +35,10 @@ class ViewDataWindow(QDialog):
         self.LOGIN = LOGIN
         self.db = db(self.LOGIN,"Brewing")
         self.displayNo = 0
-        self.displayedBrews = []
+        self.displayedBrewsH = []
+        self.displayedBrewsVMash = []
+        self.displayedBrewsVBoil = []
+        self.displayedBrewsVFerment = []
         #print(self.db.readFromTable("Brews", "id, Recipe, Date"))
         self.create_layout_viewData()
         self.setWindowTitle('Data Viewer')
@@ -195,10 +198,14 @@ class ViewDataWindow(QDialog):
         mainLayout.addLayout(vLayoutR, 2)
 
         self.setLayout(mainLayout)
-        self.setGeometry(0, 0, 2000, 1000)
+        #self.showFullScreen()
+        self.setGeometry(0, 0, 1000, 1000)
 
         self.but_view.clicked.connect(self.viewButtonClicked)
+        self.but_view.clicked.connect(self.viewButtonClickedTabs)
         self.but_quit.clicked.connect(self.quitButtonClicked)
+
+
 
     def quitButtonClicked(self):     
         
@@ -221,31 +228,116 @@ class ViewDataWindow(QDialog):
         brewForm.addRow(QLabel('Brew ID:'), brewInfo[0])
         brewForm.addRow(QLabel('Recipe:'), brewInfo[1])
         brewForm.addRow(QLabel('Date:'), brewInfo[2])
-        removeHLayout = QHBoxLayout()
-        removeHLayout.addStretch(1)
+        removeButHLayout = QHBoxLayout()
+        removeButHLayout.addStretch(1)
         self.but_Remove = QPushButton("Remove")
-        removeHLayout.addWidget(self.but_Remove)
-        brewForm.addRow(removeHLayout)
+        removeButHLayout.addWidget(self.but_Remove)
+        brewForm.addRow(removeButHLayout)
         brewGroupBox.setLayout(brewForm)
         # Add group box to layout - use insert so that stretch stays on right side
         self.hLayoutDisplayed.insertWidget(self.displayNo-1, brewGroupBox)
-        self.displayedBrews.append(brewGroupBox)
-        print(self.displayedBrews)
+        self.displayedBrewsH.append(brewGroupBox) # Add groupbox to array of displayed brews
+        # Signal to connect remove brew button. Lambda function used to pass argument of specific
+        # brew to be removed
+        self.but_Remove.clicked.connect(lambda: self.removeBrewClickedMash(brewGroupBox))
+        self.but_Remove.clicked.connect(lambda: self.removeBrewClickedBoil(brewGroupBox))
+        self.but_Remove.clicked.connect(lambda: self.removeBrewClickedFerment(brewGroupBox))
         self.but_Remove.clicked.connect(lambda: self.removeBrewClicked(brewGroupBox))
 
+    
+    # Slot for adding brew info to each of the process tabs
+    def viewButtonClickedTabs(self):
+        
+        # Arrays to add brew info for each of the processes
+        #mashInfo = []
+        #boilInfo = []
+        #fermentInfo = []
 
-    def removeBrewClicked(self, brewNo):
+        # Create groupboxes for each of the process tabs to fill with brew info
+        mashGroupBox = QGroupBox(str(self.displayNo))
+        mashFormLayout = QFormLayout()
+        mashFormLayout.addRow(QLabel(f'Temperature({DEGREES}C):'))
+        mashFormLayout.addRow(QLabel('Time (mins):'))
+        mashGroupBox.setLayout(mashFormLayout)
+        self.tabMash.mashVLayout.insertWidget(self.displayNo - 1, mashGroupBox)
+        self.displayedBrewsVMash.append(mashGroupBox)
 
-        self.hLayoutDisplayed.removeWidget(brewNo)
-        brewNo.setParent(None)
+        boilGroupBox = QGroupBox(str(self.displayNo))
+        boilFormLayout = QFormLayout()
+        boilFormLayout.addRow(QLabel(f'Temperature({DEGREES}C):'))
+        boilFormLayout.addRow(QLabel('Time (mins):'))
+        boilFormLayout.addRow(QLabel('Hop 1:'))
+        boilFormLayout.addRow(QLabel('Time (mins):'))
+        boilFormLayout.addRow(QLabel('Hop 2:'))
+        boilFormLayout.addRow(QLabel('Time (mins):'))
+        boilGroupBox.setLayout(boilFormLayout)
+        self.tabBoil.boilVLayout.insertWidget(self.displayNo - 1, boilGroupBox)
+        self.displayedBrewsVBoil.append(boilGroupBox)
+
+        fermentGroupBox = QGroupBox(str(self.displayNo))
+        fermentFormLayout = QFormLayout()
+        fermentFormLayout.addRow(QLabel(f'Temperature({DEGREES}C):'))
+        fermentFormLayout.addRow(QLabel('Time (mins):'))
+        fermentGroupBox.setLayout(fermentFormLayout)
+        self.tabFerment.fermentVLayout.insertWidget(self.displayNo - 1, fermentGroupBox)
+        self.displayedBrewsVFerment.append(fermentGroupBox)
+
+
+    def removeBrewClicked(self, brewToRemove):
+
+        self.hLayoutDisplayed.removeWidget(brewToRemove) # remove widget from layout
+        brewToRemove.setParent(None) # remove parent so widget dissappears
         self.displayNo = self.displayNo - 1
-        self.displayedBrews.remove(brewNo)
-        print(self.displayNo)
+        self.displayedBrewsH.remove(brewToRemove) # remove brew from array of displayed brews
         i = 0
-        for i in range(len(self.displayedBrews)):
-            print(i)
-            self.displayedBrews[i].setTitle(str(i+1))
+        # Loop to renumber the remaining displayed groupboxes using the array
+        for i in range(len(self.displayedBrewsH)):
+            self.displayedBrewsH[i].setTitle(str(i+1))
 
+    # Slot for removing group boxes of brew info in mash tab
+    def removeBrewClickedMash(self, brewToRemove):
+        
+        # Obtain position in array of displayed brews of brew to remove
+        brewArrayPos = self.displayedBrewsH.index(brewToRemove)
+        # Use position to remove widget from layout
+        self.tabMash.mashVLayout.takeAt(brewArrayPos)
+        # Use position to remove parent
+        self.displayedBrewsVMash[brewArrayPos].setParent(None)
+        # Use position to delete from vertical array
+        del self.displayedBrewsVMash[brewArrayPos]
+        # Renumber groupboxes in vertical display
+        for i in range(len(self.displayedBrewsVMash)):
+            self.displayedBrewsVMash[i].setTitle(str(i+1))
+
+    # Slot for removing group boxes of brew info in boil tab
+    def removeBrewClickedBoil(self, brewToRemove):
+        
+        # Obtain position in array of displayed brews of brew to remove
+        brewArrayPos = self.displayedBrewsH.index(brewToRemove)
+        # Use position to remove widget from layout
+        self.tabBoil.boilVLayout.takeAt(brewArrayPos)
+        # Use position to remove parent
+        self.displayedBrewsVBoil[brewArrayPos].setParent(None)
+        # Use position to delete from vertical array
+        del self.displayedBrewsVBoil[brewArrayPos]
+        # Renumber groupboxes in vertical display
+        for i in range(len(self.displayedBrewsVBoil)):
+            self.displayedBrewsVBoil[i].setTitle(str(i+1))
+
+    # Slot for removing group boxes of brew info in ferment tab
+    def removeBrewClickedFerment(self, brewToRemove):
+        
+        # Obtain position in array of displayed brews of brew to remove
+        brewArrayPos = self.displayedBrewsH.index(brewToRemove)
+        # Use position to remove widget from layout
+        self.tabFerment.fermentVLayout.takeAt(brewArrayPos)
+        # Use position to remove parent
+        self.displayedBrewsVFerment[brewArrayPos].setParent(None)
+        # Use position to delete from vertical array
+        del self.displayedBrewsVFerment[brewArrayPos]
+        # Renumber groupboxes in vertical display
+        for i in range(len(self.displayedBrewsVFerment)):
+            self.displayedBrewsVFerment[i].setTitle(str(i+1))
 
     # Slot for filtering by Batch ID
     def filter_batchID(self):
@@ -311,27 +403,20 @@ class MashTab(QTabWidget):
         self.create_layout_mashTab()
 
     def create_layout_mashTab(self):
-        
-        # Groupbox for Inputs section
-        inputGroupBox = QGroupBox("Inputs")
-        inputForm = QFormLayout() 
-        self.mashTempLab = QLabel()
-        inputForm.addRow(QLabel(f'Temperature ({DEGREES}C):'), self.mashTempLab)
-        self.mashTimeLab = QLabel()
-        inputForm.addRow(QLabel(f'Time (mins):'), self.mashTimeLab)
-        inputGroupBox.setLayout(inputForm)
 
         # Groupbox for Temp graph
         tempGroupBox = QGroupBox("Temperature Graph")
-        # command to add graph to groupbox
+        ### ADD command to add graph to groupbox ###
 
-        # V layout for input box
-        vLayout = QVBoxLayout()
-        vLayout.addWidget(inputGroupBox)
-        vLayout.addStretch(1)
+        # V layout for input box inside widget to allow fixed width
+        displayedWidget = QWidget()
+        displayedWidget.setFixedWidth(200)
+        self.mashVLayout = QVBoxLayout()
+        self.mashVLayout.addStretch(1)
+        displayedWidget.setLayout(self.mashVLayout)
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
-        hLayout.addLayout(vLayout)
+        hLayout.addWidget(displayedWidget)
         hLayout.addWidget(tempGroupBox, 1)
         self.setLayout(hLayout)
 
@@ -343,26 +428,19 @@ class BoilTab(QTabWidget):
 
     def create_layout_boilTab(self):
         
-        # Groupbox for Inputs section
-        inputGroupBox = QGroupBox("Inputs")
-        inputForm = QFormLayout() 
-        self.boilTempLab = QLabel()
-        inputForm.addRow(QLabel(f'Temperature ({DEGREES}C):'), self.boilTempLab)
-        self.boilTimeLab = QLabel()
-        inputForm.addRow(QLabel(f'Time (mins):'), self.boilTimeLab)
-        inputGroupBox.setLayout(inputForm)
-
         # Groupbox for Temp graph
         tempGroupBox = QGroupBox("Temperature Graph")
         # command to add graph to groupbox
 
-        # V layout for input box
-        vLayout = QVBoxLayout()
-        vLayout.addWidget(inputGroupBox)
-        vLayout.addStretch(1)
+        # V layout for input box inside widget to allow fixed width
+        displayedWidget = QWidget()
+        displayedWidget.setFixedWidth(200)
+        self.boilVLayout = QVBoxLayout()
+        displayedWidget.setLayout(self.boilVLayout)
+        self.boilVLayout.addStretch(1)
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
-        hLayout.addLayout(vLayout)
+        hLayout.addWidget(displayedWidget)
         hLayout.addWidget(tempGroupBox, 1)
         self.setLayout(hLayout)
 
@@ -373,13 +451,6 @@ class FermentTab(QTabWidget):
         self.create_layout_fermentTab()
 
     def create_layout_fermentTab(self):
-        
-        # Groupbox for Inputs section
-        inputGroupBox = QGroupBox("Inputs")
-        inputForm = QFormLayout() 
-        self.fermentTempLab = QLabel()
-        inputForm.addRow(QLabel(f'Temperature ({DEGREES}C):'), self.fermentTempLab)
-        inputGroupBox.setLayout(inputForm)
 
         # Groupbox for Temp graph
         tempGroupBox = QGroupBox("Temperature Graph")
@@ -389,10 +460,12 @@ class FermentTab(QTabWidget):
         gravGroupBox = QGroupBox("Specific Gravity Graph")
         # command to add graph to groupbox
 
-        # V layout for input box
-        vLayout = QVBoxLayout()
-        vLayout.addWidget(inputGroupBox)
-        vLayout.addStretch(1)
+        # V layout for input box inside widget to allow fixed width
+        displayedWidget = QWidget()
+        displayedWidget.setFixedWidth(200)
+        self.fermentVLayout = QVBoxLayout()       
+        self.fermentVLayout.addStretch(1)
+        displayedWidget.setLayout(self.fermentVLayout)
 
         # V layout for graphs
         vLayout2 = QVBoxLayout()
@@ -401,7 +474,7 @@ class FermentTab(QTabWidget):
 
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
-        hLayout.addLayout(vLayout)
+        hLayout.addWidget(displayedWidget)
         hLayout.addLayout(vLayout2, 2)
         self.setLayout(hLayout)
 
