@@ -39,18 +39,30 @@ from source.gui.viewDataWindow import ViewDataWindow
 
 
 
+# isRunningOnPi = False
+
+
+# if isRunningOnPi:
+#     from source.tools.uCcoms import PiRadio
+
 class MainWindow(QMainWindow):
 
     _logname = 'MainWindow'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self,LOGIN, parent = None):
+    def __init__(self,LOGIN, isRunningOnPi=False, parent = None):
         super(MainWindow, self).__init__()
         self.LOGIN = LOGIN
         self.main_widget = QWidget()
         self.create_layout()
         self.setWindowTitle('Brew Monitoring System')
         self.setCentralWidget(self.main_widget)
+        self.isRunningOnPi = isRunningOnPi
+
+        if self.isRunningOnPi:
+            from source.tools.uCcoms import PiRadio
+            self.radio = PiRadio(self.LOGIN)
+            self.radio.configure()
 
     def create_layout(self):
 
@@ -134,17 +146,21 @@ class MainWindow(QMainWindow):
 
     
     def fermentButtonClicked(self):
-        self.fermentMonitor.startTimers()
+        self.fermentMonitor = FermentMonitor(self.LOGIN)
+#        self.fermentMonitor.startTimers()
         self.fermentMonitor.restartTankDropdown()
         self.fermentMonitor.show()
 
 
 
     def mashBoilButtonClicked(self):
-        # self.fermentMonitor = FermentMonitor(self.LOGIN)
         database = db(self.LOGIN,"Brewing")
+        database.flushTables()
         batchID = database.maxIdFromTable("Brews")
-        self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID)
+        if self.isRunningOnPi:
+            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)
+        else:
+            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None)            
         self.mashBoilMonitor.show()
         self.mashBoilMonitor.finishedSignal.connect(lambda: self.fermentMonitor.restartTankDropdown())
         
@@ -172,6 +188,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
 
     from source.tools.sqlHandler import SqlTableHandler as db
+    from source.gui.loginWindow import LoginWindow
     from getpass import getpass
 
     HOST = "192.168.10.223"
@@ -186,7 +203,7 @@ if __name__ == "__main__":
     # USER = input("User: ")
     # PASSWORD = getpass()
     if HOST == "Pi":
-        HOST = "192.168.10.223"
+        HOST = PI_IP
 
     LOGIN = [HOST,USER,PASSWORD]
     
@@ -196,8 +213,8 @@ if __name__ == "__main__":
 
 
     app = QApplication(sys.argv)
-    # login = loginWindow.LoginWindow()
-    # login.show()
-    window = MainWindow(LOGIN)
-    window.show()
+    login = LoginWindow()
+    login.show()
+    # window = MainWindow(LOGIN, isRunningOnPi=False)
+    # window.show()
     sys.exit(app.exec_())

@@ -189,6 +189,18 @@ class TabMash(TabGraph):
         else:
             # timerlabel = TimeScaleDraw(self.timeStamps).label(self.dataX[-1])}")
             self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
+            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))     
+
+            if (self.dataY[-1] < (self.recipedata['mashTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['mashTemp']+0.5)):
+                self.tempStatusLED.value=False
+            else:
+                self.tempStatusLED.value=True
+        if len(self.dataX) == 0:
+            self.timeLabel.setText("Timer:")
+            self.tempLabel.setText("Temp:")
+        else:
+            # timerlabel = TimeScaleDraw(self.timeStamps).label(self.dataX[-1])}")
+            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
             self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))
 
 
@@ -332,12 +344,14 @@ class MonitorWindow(QDialog):
 
     finishedSignal= pyqtSignal()
     
-    def __init__(self, LOGIN, batchID, parent=None):
+    def __init__(self, LOGIN, batchID, radio=None ,parent=None):
         super().__init__(parent)
         self.setWindowTitle("Monitor")
         self.LOGIN = LOGIN
         self.db = dataBase(self.LOGIN, "Brewing")
         self.batchID = batchID
+        if radio is not None:
+            self.radio = radio
 
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
         query = self.db.custom(sql)
@@ -372,6 +386,12 @@ class MonitorWindow(QDialog):
 
         self.tabMash.startButton.clicked.connect(self.mashStartClicked)
         self.tabMash.stopButton.clicked.connect(self.mashStopClicked)
+
+        if radio is None:
+            self.tabBoil.startButton.setEnabled(False)
+            self.tabBoil.stopButton.setEnabled(False)
+            self.tabMash.startButton.setEnabled(False)
+            self.tabMash.stopButton.setEnabled(False)
         
 
         hLayout = QHBoxLayout()
@@ -391,10 +411,10 @@ class MonitorWindow(QDialog):
 
         #TODO: remove once we can get real data
         # if __name__ == "__main__":
-        self.boilMonitor = SQLBoilMonitor(self.LOGIN)
+       # self.boilMonitor = SQLBoilMonitor(self.LOGIN)
         self.fakeBoilTimer = QTimer(self)
         self.fakeBoilCount = 0
-        self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
+       # self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
 
 
     # def startBoilTimers(self):
@@ -418,13 +438,14 @@ class MonitorWindow(QDialog):
                 '''
                 TODO: Set Boil Uc
                 '''
-                self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
+                self.radio.startBoil(self.recipedata['boilTemp'])
+        #        self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
                 self.tabBoil.minuteTimer.start(60000)
                 self.tabBoil.sqlBoilComms.startTimer()
                 self.tabBoil.timeStatusLED.value=True
         elif self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Boil already running: {} mins {} secs'.format(x[0],x[1])
+            msg = 'Boil already running: {} mins.'.format(x[0])
             reply = QMessageBox.question(self, 'oops', 
                     msg, QMessageBox.Ok)
         else:
@@ -433,16 +454,17 @@ class MonitorWindow(QDialog):
     def boilStopClicked(self):
         if self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Stop boiling?\nCurrent time: {} mins {} secs\nRecipe time: {} mins'.format(x[0],x[1], self.recipedata['boilTime'] )
+            msg = 'Stop boiling?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['boilTime'] )
             reply = QMessageBox.question(self, 'Continue?', 
                     msg, QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.Yes:
                 '''
                 TODO: TURN OFF BOIL uC 
                 '''
-                self.fakeBoilTimer.stop()
-                self.boilPlotUpdateTimer.stop()
-                self.mashPlotUpdateTimer.stop()#######
+                self.radio.stopBoil()
+                #self.fakeBoilTimer.stop()
+                # self.boilPlotUpdateTimer.stop()
+                # self.mashPlotUpdateTimer.stop()#######
                 self.tabBoil.minuteTimer.stop()
                 self.tabMash.minuteTimer.stop() ###########
                 self.tabBoil.sqlBoilComms.endTimer()
@@ -455,11 +477,9 @@ class MonitorWindow(QDialog):
                     self._log.debug('Batch {} being sent to tank {}'.format(self.recipedata['batchID'],tankNumber))
                     '''EMIT SIGNAL with fermentation tank number'''
                     fermtank = SQLFermentMonitor(self.LOGIN, self.recipedata['batchID'], tankNumber)
-                    fermtank.record(None,None,None)
+                    fermtank.record(None,None,None) #enter null into database to attach tank to batch id
                     self.finishedSignal.emit()
                     self.close()
-                    
-                
 
         elif not self.tabBoil.minuteTimer.isActive():
             msg = 'No Boil currently running'
@@ -468,29 +488,57 @@ class MonitorWindow(QDialog):
 
 
     def mashStartClicked(self):
-        '''
-        Set mash Uc up with 
-        '''
-        self.tabMash.minuteTimer.start(60000)
+        if not self.tabMash.minuteTimer.isActive():
+            msg = 'Start mashing? \n set {}{} for {} minutes'.format(self.recipedata['mashTemp'],DEGREESC,self.recipedata['mashTime'])
+            reply = QMessageBox.question(self, 'Continue?', 
+                    msg, QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                '''
+                TODO: Set mash Uc
+                '''
+                self.radio.startMash(self.recipedata['mashTemp'])
+        #        self.fakeMashTimer.start(1000)   #TODO: remove once we can get real data
+                self.tabMash.minuteTimer.start(60000)
+                self.tabMash.timeStatusLED.value=True
+        elif self.tabMash.minuteTimer.isActive():
+            x = divmod(self.tabMash.count,60)
+            msg = 'Mash already running: {} mins.'.format(x[0])
+            reply = QMessageBox.question(self, 'oops', 
+                    msg, QMessageBox.Ok)
+        else:
+            raise Exception("Mashing Error")
+        # self.tabMash.minuteTimer.start(60000)
 
     def mashStopClicked(self):
-        self.mashPlotUpdateTimer.stop()
-        self.tabMash.minuteTimer.stop()
+        if self.tabMash.minuteTimer.isActive():
+            x = divmod(self.tabMash.count,60)
+            msg = 'Stop mashing?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['mashTime'] )
+            reply = QMessageBox.question(self, 'Continue?', 
+                    msg, QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                '''
+                TODO: TURN OFF BOIL uC 
+                '''
+                self.radio.stopMash()
+                #self.fakeBoilTimer.stop()
+                # self.boilPlotUpdateTimer.stop()
+                # self.mashPlotUpdateTimer.stop()#######
+                # self.tabBoil.minuteTimer.stop()
+                self.tabMash.minuteTimer.stop() ###########
+                # self.tabBoil.sqlBoilComms.endTimer()
+                self.tabMash.timeStatusLED.value=False
+
+        elif not self.tabMash.minuteTimer.isActive():
+            msg = 'No mash currently running'
+            reply = QMessageBox.question(self, 'oops', 
+                    msg, QMessageBox.Ok)
+        # self.mashPlotUpdateTimer.stop()
+        # self.tabMash.minuteTimer.stop()
 
     def updateMashPlot(self):
-        '''
-        collect mash data
-        '''
-
-        # self.mashCount += 1
-        # self.tabMash.addTimer(1)
-        # self.tabMash.insertSample(np.sin(self.mashCount/4))
         self.tabMash.updatePlot()
         
     def updateBoilPlot(self):
-        '''
-        collect boil data
-        '''
         self.tabBoil.updatePlot()
 
     def closeWindow(self):

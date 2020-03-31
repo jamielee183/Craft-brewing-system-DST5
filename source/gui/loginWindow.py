@@ -2,19 +2,22 @@
 
 import sys
 import os
-#from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtCore import \
+#from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import \
     Qt #, pyqtSlot
-from PySide2.QtGui import \
+from PyQt5.QtGui import \
     QFont
-from PySide2.QtWidgets import \
+from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
-    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox \
+    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox, QCheckBox \
 
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
-import source.gui.mainwindow
+from source.gui.mainwindow import MainWindow
+from source.tools.sqlHandler import SqlTableHandler, LoginError
+from source.tools.constants import *
+import mysql.connector as sql
 
 class LoginWindow(QDialog):
 
@@ -42,8 +45,10 @@ class LoginWindow(QDialog):
         hLayoutButtons = QHBoxLayout()
         self.quitLoginButton = QPushButton('Quit')
         self.loginButton = QPushButton('Log In')
+        self.piCheckBox = QCheckBox('Pi log in?')
         hLayoutButtons.addWidget(self.quitLoginButton)
         hLayoutButtons.addStretch(1)
+        hLayoutButtons.addWidget(self.piCheckBox)
         hLayoutButtons.addWidget(self.loginButton)
 
         # Main V layout
@@ -62,19 +67,52 @@ class LoginWindow(QDialog):
 
 
     def loginButtonClicked(self):
-        # Successful log in, open main window
-        if (self.usernameEdit.text() == '') and (self.passwordEdit.text() == ''):
 
+        HOST = self.hostEdit.text()
+        USER = self.usernameEdit.text()
+        PASSWORD = self.passwordEdit.text()
+        HOST = "Pi"
+        if HOST == "Pi":
+            HOST = PI_IP
+        USER = "jamie"
+        PASSWORD = "beer"
+        LOGIN = [HOST, USER, PASSWORD]
+
+        try:
+            # SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
+
+            # self.close()
+            self.window = MainWindow(LOGIN=LOGIN, isRunningOnPi=self.piCheckBox.isChecked())
             self.close()
-            self.window = mainwindow.MainWindow()
             self.window.show()
-
-        # Log in failed, show warning box
-        else:
+        
+        except LoginError:
             loginFail = QMessageBox()
             loginFail.setIcon(QMessageBox.Critical)
             loginFail.setText("Login Failed")
             loginFail.setStandardButtons(QMessageBox.Ok)
             loginFail.setWindowTitle("Warning")
             loginFail.exec_()
+
+
+        # # Successful log in, open main window
+        # if (self.usernameEdit.text() == '') and (self.passwordEdit.text() == ''):
+        #     db = sql.connect(
+        #         host=LOGIN[0],
+        #         user=LOGIN[1],
+        #         passwd=LOGIN[2]
+        #     )
+
+        #     self.close()
+        #     self.window = MainWindow(LOGIN=)
+        #     self.window.show()
+
+        # # Log in failed, show warning box
+        # else:
+        #     loginFail = QMessageBox()
+        #     loginFail.setIcon(QMessageBox.Critical)
+        #     loginFail.setText("Login Failed")
+        #     loginFail.setStandardButtons(QMessageBox.Ok)
+        #     loginFail.setWindowTitle("Warning")
+        #     loginFail.exec_()
 

@@ -15,7 +15,7 @@ class SqlDatabaseHandler():
     _log = logging.getLogger(f'{_logname}')
     
     def __init__(self, LOGIN: list):
-        self.db= sql.connect(
+        self.db = sql.connect(
             host=LOGIN[0],
             user=LOGIN[1],
             passwd=LOGIN[2]
@@ -79,6 +79,7 @@ class SqlTableHandler():
 
     def __init__(self, LOGIN, databaseName):
         try:
+            # self.sql = sql
             self.db= sql.connect(
                 host=LOGIN[0],
                 user=LOGIN[1],

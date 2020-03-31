@@ -91,7 +91,7 @@ class FermentPlot(QWidget):
         self.tankID = tankID
         self.db.flushTables()
 
-        sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{tankID}'"
+        sql = f"SELECT max(BatchID) FROM Ferment WHERE Fermenter = '{tankID}'"
         query = self.db.custom(sql)
         # self._log.debug(f"Query: {query}")
         self.batchID = query[-1][0]
@@ -262,9 +262,9 @@ class FermentMonitor(QDialog):
         self.fakeFermenter = SQLFermentMonitor(self.LOGIN,1,1)
         # self.fakeFermenter2 = SQLFermentMonitor(self.LOGIN,5,4)
         self.updateDataTimer = QTimer(self)
-        self.updateDataTimer.timeout.connect(self.fakeFermentData)
+        # self.updateDataTimer.timeout.connect(self.fakeFermentData)
         # self.updateDataTimer.start(1000)
-        # self.startTimers()
+        self.startTimers()
 
     def restartTankDropdown(self):
         self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")
