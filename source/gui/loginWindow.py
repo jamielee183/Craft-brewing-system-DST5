@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
-    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox \
+    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox, QCheckBox \
 
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.gui.mainwindow import MainWindow
@@ -45,8 +45,10 @@ class LoginWindow(QDialog):
         hLayoutButtons = QHBoxLayout()
         self.quitLoginButton = QPushButton('Quit')
         self.loginButton = QPushButton('Log In')
+        self.piCheckBox = QCheckBox('Pi log in?')
         hLayoutButtons.addWidget(self.quitLoginButton)
         hLayoutButtons.addStretch(1)
+        hLayoutButtons.addWidget(self.piCheckBox)
         hLayoutButtons.addWidget(self.loginButton)
 
         # Main V layout
@@ -69,15 +71,18 @@ class LoginWindow(QDialog):
         HOST = self.hostEdit.text()
         USER = self.usernameEdit.text()
         PASSWORD = self.passwordEdit.text()
+        HOST = "Pi"
         if HOST == "Pi":
             HOST = PI_IP
+        USER = "jamie"
+        PASSWORD = "beer"
         LOGIN = [HOST, USER, PASSWORD]
 
         try:
             # SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
 
             # self.close()
-            self.window = MainWindow(LOGIN=LOGIN)
+            self.window = MainWindow(LOGIN=LOGIN, isRunningOnPi=self.piCheckBox.isChecked())
             self.close()
             self.window.show()
         
