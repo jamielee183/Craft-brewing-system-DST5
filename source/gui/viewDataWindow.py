@@ -16,6 +16,10 @@ from PyQt5.QtWidgets import \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox, \
     QDateEdit, QComboBox, QCalendarWidget, QTableWidgetItem, QTableView \
+
+from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
+            QwtPlotCurve, QwtPlotItem, QwtLogScaleEngine, QwtText,  \
+            QwtPlotRenderer, QwtScaleDraw, QwtText
     
 from source.tools.constants import DEGREES
 from source.tools.sqlHandler import SqlTableHandler as db
@@ -433,9 +437,18 @@ class MashTab(QTabWidget):
     def create_layout_mashTab(self):
 
         # Groupbox for Temp graph
-        tempGroupBox = QGroupBox("Temperature Graph")
-        ### ADD command to add graph to groupbox ###
-
+        tempGroupBox = QGroupBox("Mash Temperature")
+        self.plot = QwtPlot()
+        self.curve = QwtPlotCurve()
+        self.curve.attach(self.plot)
+        #self.curve.setData(self.dataX, self.dataY)
+        self.plot.resize(1000, 1000)
+        self.plot.replot()
+        self.plot.show()
+        plotLayout = QVBoxLayout()
+        plotLayout.addWidget(self.plot)
+        tempGroupBox.setLayout(plotLayout)
+        
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
         displayedWidget.setFixedWidth(200)
@@ -462,8 +475,17 @@ class BoilTab(QTabWidget):
     def create_layout_boilTab(self):
         
         # Groupbox for Temp graph
-        tempGroupBox = QGroupBox("Temperature Graph")
-        # command to add graph to groupbox
+        tempGroupBox = QGroupBox("Boil Temperature")
+        self.plot = QwtPlot()
+        self.curve = QwtPlotCurve()
+        self.curve.attach(self.plot)
+        #self.curve.setData(self.dataX, self.dataY)
+        self.plot.resize(1000, 1000)
+        self.plot.replot()
+        self.plot.show()
+        plotLayout = QVBoxLayout()
+        plotLayout.addWidget(self.plot)
+        tempGroupBox.setLayout(plotLayout)
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -490,13 +512,33 @@ class FermentTab(QTabWidget):
 
     def create_layout_fermentTab(self):
 
-        # Groupbox for Temp graph
-        tempGroupBox = QGroupBox("Temperature Graph")
-        # command to add graph to groupbox
+        tabs = QTabWidget()
+  
+        # Tab for Temp graph
+        tabTemp = QTabWidget()
+        self.tempPlot = QwtPlot()
+        self.tempCurve = QwtPlotCurve()
+        self.tempCurve.attach(self.tempPlot)
+        #self.curve.setData(self.dataX, self.dataY)
+        self.tempPlot.resize(1000, 1000)
+        self.tempPlot.replot()
+        self.tempPlot.show()
+        plotLayout = QVBoxLayout()
+        plotLayout.addWidget(self.tempPlot)
+        tabTemp.setLayout(plotLayout)
 
-        # Groupbox for Specific Gravity Graph
-        gravGroupBox = QGroupBox("Specific Gravity Graph")
-        # command to add graph to groupbox
+        # Tab for Specific Gravity Graph
+        tabGrav = QTabWidget()
+        self.gravPlot = QwtPlot()
+        self.gravCurve = QwtPlotCurve()
+        self.gravCurve.attach(self.gravPlot)
+        #self.curve.setData(self.dataX, self.dataY)
+        self.gravPlot.resize(1000, 1000)
+        self.gravPlot.replot()
+        self.gravPlot.show()
+        plotLayout = QVBoxLayout()
+        plotLayout.addWidget(self.gravPlot)
+        tabGrav.setLayout(plotLayout)
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -509,11 +551,11 @@ class FermentTab(QTabWidget):
         fermentScrollArea.setWidget(displayedWidget)
         fermentScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
-
-        # V layout for graphs
+        # V layout for graphs - adding tabs
+        tabs.addTab(tabTemp,"Temp")
+        tabs.addTab(tabGrav, "Gravity")        
         vLayout2 = QVBoxLayout()
-        vLayout2.addWidget(tempGroupBox)
-        vLayout2.addWidget(gravGroupBox)
+        vLayout2.addWidget(tabs)
 
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
