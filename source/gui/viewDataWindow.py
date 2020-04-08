@@ -9,10 +9,10 @@ from PyQt5.QtCore import \
     Qt,pyqtSignal, QDate, QObject, QAbstractTableModel, QVariant, \
     QSortFilterProxyModel #, pyqtSlot
 from PyQt5.QtGui import \
-    QFont
+    QFont, QPalette
 from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, QTableWidget, QTabWidget, \
-    QSlider, QPushButton, QLabel, \
+    QSlider, QPushButton, QLabel, QScrollArea,\
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox, \
     QDateEdit, QComboBox, QCalendarWidget, QTableWidgetItem, QTableView \
@@ -168,16 +168,25 @@ class ViewDataWindow(QDialog):
 
         # Widget for displayed brews - Widget allows fixed height to be set
         displayedWidget = QWidget()
-        displayedWidget.setFixedHeight(160)
+        #displayedWidget.setFixedHeight(180)
         # h Layout to add groupboxes of displayed brews - added to in viewButtonClicked slot
         self.hLayoutDisplayed = QHBoxLayout()
         self.hLayoutDisplayed.addStretch(1)
+        self.hLayoutDisplayed.setSizeConstraint(5)
         displayedWidget.setLayout(self.hLayoutDisplayed)
+        # Scroll area for horizontal displayed brews
+        hScrollArea = QScrollArea()
+        #hScrollArea.setBackgroundRole(QPalette.Base)
+        hScrollArea.setWidget(displayedWidget)
+        hScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        hScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        hScrollArea.setFixedHeight(170)
         # Main v layout for displayed brews widget
-        displayTitle = QLabel("Displayed Brews") 
+        displayTitle = QLabel("Displayed Brews")
+        displayTitle.setMaximumHeight(20)
         self.vLayoutDisplayed = QVBoxLayout()
         self.vLayoutDisplayed.addWidget(displayTitle)
-        self.vLayoutDisplayed.addWidget(displayedWidget)
+        self.vLayoutDisplayed.addWidget(hScrollArea)
 
         # Main vertical layout for right area
         vLayoutR = QVBoxLayout()
@@ -191,6 +200,7 @@ class ViewDataWindow(QDialog):
         self.tabs.addTab(self.tabFerment, "Ferment")
         vLayoutR.addLayout(self.vLayoutDisplayed)
         vLayoutR.addWidget(self.tabs)
+
         
         # Main layout for whole window
         mainLayout = QHBoxLayout()
@@ -215,19 +225,19 @@ class ViewDataWindow(QDialog):
     # Slot for adding selected brew to widget
     def viewButtonClicked(self):
         
-        brewInfo = [] # array to place brew info: ID, Recipe, Date
+        self.brewInfo = [] # array to place brew info: ID, Recipe, Date
         self.displayNo = self.displayNo + 1
         # Add brew info to array based on selected row
         index = (self.dataTable.selectionModel().currentIndex())
         for i in range(3):
-            brewInfo.append(QLabel(str(index.sibling(index.row(), i).data())))
+            self.brewInfo.append(QLabel(str(index.sibling(index.row(), i).data())))
 
         # Create group box with all brew info displayed and Remove button
         brewGroupBox = QGroupBox(str(self.displayNo))
         brewForm = QFormLayout()
-        brewForm.addRow(QLabel('Brew ID:'), brewInfo[0])
-        brewForm.addRow(QLabel('Recipe:'), brewInfo[1])
-        brewForm.addRow(QLabel('Date:'), brewInfo[2])
+        brewForm.addRow(QLabel('Brew ID:'), self.brewInfo[0])
+        brewForm.addRow(QLabel('Recipe:'), self.brewInfo[1])
+        brewForm.addRow(QLabel('Date:'), self.brewInfo[2])
         removeButHLayout = QHBoxLayout()
         removeButHLayout.addStretch(1)
         self.but_Remove = QPushButton("Remove")
@@ -247,37 +257,55 @@ class ViewDataWindow(QDialog):
     
     # Slot for adding brew info to each of the process tabs
     def viewButtonClickedTabs(self):
-        
-        # Arrays to add brew info for each of the processes
-        #mashInfo = []
-        #boilInfo = []
-        #fermentInfo = []
+
+        # Query database to get recipe data for the brew selected to view
+        # brewInfo[0].text() gives brew ID for selected brew from table
+        sql = f"SELECT * FROM Brews WHERE id = '{self.brewInfo[0].text()}'"
+        query = self.db.custom(sql)
+
+        self.recipedata = {}
+        self.recipedata['batchID']    = query[0][0]
+        self.recipedata['recipeName'] = query[0][1]
+        self.recipedata['recipeDate'] = query[0][2]
+        self.recipedata['mashTemp']   = query[0][3]
+        self.recipedata['mashTime']   = query[0][4]
+        self.recipedata['boilTemp']   = query[0][5]
+        self.recipedata['boilTime']   = query[0][6]
+        self.recipedata['hop1']       = (query[0][7],query[0][8])
+        self.recipedata['hop2']       = (query[0][9],query[0][10])
+        self.recipedata['hop3']       = (query[0][11],query[0][12])
+        self.recipedata['hop4']       = (query[0][13],query[0][14])
+        self.recipedata['fermenttemp']= query[0][15]
 
         # Create groupboxes for each of the process tabs to fill with brew info
         mashGroupBox = QGroupBox(str(self.displayNo))
         mashFormLayout = QFormLayout()
-        mashFormLayout.addRow(QLabel(f'Temperature({DEGREES}C):'))
-        mashFormLayout.addRow(QLabel('Time (mins):'))
+        mashFormLayout.addRow(QLabel(f"Temperature({DEGREES}C): {self.recipedata['mashTemp']}"))
+        mashFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['mashTime']}"))
         mashGroupBox.setLayout(mashFormLayout)
         self.tabMash.mashVLayout.insertWidget(self.displayNo - 1, mashGroupBox)
         self.displayedBrewsVMash.append(mashGroupBox)
 
         boilGroupBox = QGroupBox(str(self.displayNo))
         boilFormLayout = QFormLayout()
-        boilFormLayout.addRow(QLabel(f'Temperature({DEGREES}C):'))
-        boilFormLayout.addRow(QLabel('Time (mins):'))
-        boilFormLayout.addRow(QLabel('Hop 1:'))
-        boilFormLayout.addRow(QLabel('Time (mins):'))
-        boilFormLayout.addRow(QLabel('Hop 2:'))
-        boilFormLayout.addRow(QLabel('Time (mins):'))
+        boilFormLayout.addRow(QLabel(f"Temperature({DEGREES}C):{self.recipedata['boilTemp']}"))
+        boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['boilTime']}"))
+        boilFormLayout.addRow(QLabel(f"Hop 1: {self.recipedata['hop1'][0]}"))
+        boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['hop1'][1]}"))
+        boilFormLayout.addRow(QLabel(f"Hop 2: {self.recipedata['hop2'][0]}"))
+        boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['hop2'][1]}"))
+        boilFormLayout.addRow(QLabel(f"Hop 3: {self.recipedata['hop3'][0]}"))
+        boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['hop3'][1]}"))
+        boilFormLayout.addRow(QLabel(f"Hop 4: {self.recipedata['hop4'][0]}"))
+        boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['hop4'][1]}"))
         boilGroupBox.setLayout(boilFormLayout)
         self.tabBoil.boilVLayout.insertWidget(self.displayNo - 1, boilGroupBox)
         self.displayedBrewsVBoil.append(boilGroupBox)
 
         fermentGroupBox = QGroupBox(str(self.displayNo))
         fermentFormLayout = QFormLayout()
-        fermentFormLayout.addRow(QLabel(f'Temperature({DEGREES}C):'))
-        fermentFormLayout.addRow(QLabel('Time (mins):'))
+        fermentFormLayout.addRow(QLabel(f"Temperature({DEGREES}C): {self.recipedata['fermenttemp']}"))
+        #fermentFormLayout.addRow(QLabel('Time (mins):'))
         fermentGroupBox.setLayout(fermentFormLayout)
         self.tabFerment.fermentVLayout.insertWidget(self.displayNo - 1, fermentGroupBox)
         self.displayedBrewsVFerment.append(fermentGroupBox)
@@ -339,7 +367,7 @@ class ViewDataWindow(QDialog):
         for i in range(len(self.displayedBrewsVFerment)):
             self.displayedBrewsVFerment[i].setTitle(str(i+1))
 
-    # Slot for filtering by Batch ID
+    # Slot for filtering by Batch IDdisplayed
     def filter_batchID(self):
         self.lineEdit_recipe.clear()
         self.proxyModel.setFilterRegExp(self.edit_batchID.text())
@@ -413,10 +441,15 @@ class MashTab(QTabWidget):
         displayedWidget.setFixedWidth(200)
         self.mashVLayout = QVBoxLayout()
         self.mashVLayout.addStretch(1)
+        self.mashVLayout.setSizeConstraint(5)
         displayedWidget.setLayout(self.mashVLayout)
+        mashScrollArea = QScrollArea()
+        mashScrollArea.setWidget(displayedWidget)
+        mashScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
-        hLayout.addWidget(displayedWidget)
+        hLayout.addWidget(mashScrollArea)
         hLayout.addWidget(tempGroupBox, 1)
         self.setLayout(hLayout)
 
@@ -436,11 +469,16 @@ class BoilTab(QTabWidget):
         displayedWidget = QWidget()
         displayedWidget.setFixedWidth(200)
         self.boilVLayout = QVBoxLayout()
-        displayedWidget.setLayout(self.boilVLayout)
         self.boilVLayout.addStretch(1)
+        self.boilVLayout.setSizeConstraint(5)
+        displayedWidget.setLayout(self.boilVLayout)
+        boilScrollArea = QScrollArea()
+        boilScrollArea.setWidget(displayedWidget)
+        boilScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
-        hLayout.addWidget(displayedWidget)
+        hLayout.addWidget(boilScrollArea)
         hLayout.addWidget(tempGroupBox, 1)
         self.setLayout(hLayout)
 
@@ -465,7 +503,12 @@ class FermentTab(QTabWidget):
         displayedWidget.setFixedWidth(200)
         self.fermentVLayout = QVBoxLayout()       
         self.fermentVLayout.addStretch(1)
+        self.fermentVLayout.setSizeConstraint(5)
         displayedWidget.setLayout(self.fermentVLayout)
+        fermentScrollArea = QScrollArea()
+        fermentScrollArea.setWidget(displayedWidget)
+        fermentScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+
 
         # V layout for graphs
         vLayout2 = QVBoxLayout()
@@ -474,7 +517,7 @@ class FermentTab(QTabWidget):
 
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
-        hLayout.addWidget(displayedWidget)
+        hLayout.addWidget(fermentScrollArea)
         hLayout.addLayout(vLayout2, 2)
         self.setLayout(hLayout)
 
