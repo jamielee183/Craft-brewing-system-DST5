@@ -6,7 +6,7 @@ sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 
 #from PySide2 import QtWidgets
 from PyQt5.QtCore import \
-    Qt,pyqtSignal, QDate, QObject, QAbstractTableModel, QVariant, \
+    Qt,pyqtSignal, QDate, QObject, QAbstractTableModel, QVariant,\
     QSortFilterProxyModel #, pyqtSlot
 from PyQt5.QtGui import \
     QFont, QPalette
@@ -436,18 +436,31 @@ class MashTab(QTabWidget):
 
     def create_layout_mashTab(self):
 
-        # Groupbox for Temp graph
-        tempGroupBox = QGroupBox("Mash Temperature")
+        # Create text for graph and axis titles
+        titleFont = QFont("Helvetica", 12, QFont.Bold)
+        titleText = QwtText()
+        titleText.setText("Mash Temperature")
+        titleText.setFont(titleFont)
+        axisFont = QFont("Helvetica", 11, QFont.Bold)
+        timeTitle = QwtText()
+        timeTitle.setText("Time (mins)")
+        timeTitle.setFont(axisFont)
+
+        tempTitle = QwtText()
+        tempTitle.setText(f"Temperature ({DEGREES}C)")
+        tempTitle.setFont(axisFont)
+
+        # Temp graph
         self.plot = QwtPlot()
+        self.plot.setTitle(titleText)
+        self.plot.setAxisTitle(self.plot.yLeft, tempTitle)
+        self.plot.setAxisTitle(self.plot.xBottom, timeTitle)
         self.curve = QwtPlotCurve()
         self.curve.attach(self.plot)
         #self.curve.setData(self.dataX, self.dataY)
         self.plot.resize(1000, 1000)
         self.plot.replot()
         self.plot.show()
-        plotLayout = QVBoxLayout()
-        plotLayout.addWidget(self.plot)
-        tempGroupBox.setLayout(plotLayout)
         
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -463,7 +476,7 @@ class MashTab(QTabWidget):
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
         hLayout.addWidget(mashScrollArea)
-        hLayout.addWidget(tempGroupBox, 1)
+        hLayout.addWidget(self.plot, 1)
         self.setLayout(hLayout)
 
 class BoilTab(QTabWidget):
@@ -474,18 +487,31 @@ class BoilTab(QTabWidget):
 
     def create_layout_boilTab(self):
         
-        # Groupbox for Temp graph
-        tempGroupBox = QGroupBox("Boil Temperature")
+        # Create text for graph and axis titles
+        titleFont = QFont("Helvetica", 12, QFont.Bold)
+        titleText = QwtText()
+        titleText.setText("Boil Temperature")
+        titleText.setFont(titleFont)
+        axisFont = QFont("Helvetica", 11, QFont.Bold)
+        timeTitle = QwtText()
+        timeTitle.setText("Time (mins)")
+        timeTitle.setFont(axisFont)
+
+        tempTitle = QwtText()
+        tempTitle.setText(f"Temperature ({DEGREES}C)")
+        tempTitle.setFont(axisFont)
+
+        # Temp graph
         self.plot = QwtPlot()
+        self.plot.setTitle(titleText)
+        self.plot.setAxisTitle(self.plot.yLeft, tempTitle)
+        self.plot.setAxisTitle(self.plot.xBottom, timeTitle)
         self.curve = QwtPlotCurve()
         self.curve.attach(self.plot)
         #self.curve.setData(self.dataX, self.dataY)
         self.plot.resize(1000, 1000)
         self.plot.replot()
         self.plot.show()
-        plotLayout = QVBoxLayout()
-        plotLayout.addWidget(self.plot)
-        tempGroupBox.setLayout(plotLayout)
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -501,7 +527,7 @@ class BoilTab(QTabWidget):
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
         hLayout.addWidget(boilScrollArea)
-        hLayout.addWidget(tempGroupBox, 1)
+        hLayout.addWidget(self.plot, 1)
         self.setLayout(hLayout)
 
 class FermentTab(QTabWidget):
@@ -513,10 +539,33 @@ class FermentTab(QTabWidget):
     def create_layout_fermentTab(self):
 
         tabs = QTabWidget()
-  
+        # Create text for graph and axis titles
+        titleFont = QFont("Helvetica", 12, QFont.Bold)
+        tempTitleText = QwtText()
+        tempTitleText.setText("Fermentation Temperature")
+        tempTitleText.setFont(titleFont)
+        gravTitleText = QwtText()
+        gravTitleText.setText("Specific Gravity")
+        gravTitleText.setFont(titleFont)
+        axisFont = QFont("Helvetica", 11, QFont.Bold)
+        timeTitle = QwtText()
+        timeTitle.setText("Time (hours)")
+        timeTitle.setFont(axisFont)
+
+        tempTitle = QwtText()
+        tempTitle.setText(f"Temperature ({DEGREES}C)")
+        tempTitle.setFont(axisFont)
+
+        gravTitle = QwtText()
+        gravTitle.setText("Specific Gravity")
+        gravTitle.setFont(axisFont)
+
         # Tab for Temp graph
         tabTemp = QTabWidget()
         self.tempPlot = QwtPlot()
+        self.tempPlot.setTitle(tempTitleText)
+        self.tempPlot.setAxisTitle(self.tempPlot.yLeft, tempTitle)
+        self.tempPlot.setAxisTitle(self.tempPlot.xBottom, timeTitle)
         self.tempCurve = QwtPlotCurve()
         self.tempCurve.attach(self.tempPlot)
         #self.curve.setData(self.dataX, self.dataY)
@@ -530,6 +579,9 @@ class FermentTab(QTabWidget):
         # Tab for Specific Gravity Graph
         tabGrav = QTabWidget()
         self.gravPlot = QwtPlot()
+        self.gravPlot.setTitle(gravTitleText)
+        self.gravPlot.setAxisTitle(self.gravPlot.yLeft, gravTitle)
+        self.gravPlot.setAxisTitle(self.gravPlot.xBottom, timeTitle)
         self.gravCurve = QwtPlotCurve()
         self.gravCurve.attach(self.gravPlot)
         #self.curve.setData(self.dataX, self.dataY)
