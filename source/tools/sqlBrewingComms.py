@@ -37,21 +37,23 @@ class SQLBrewingComms(metaclass=ABCMeta):
     def getBrewData(self, batchID):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
-        sql = f"SELECT * FROM Brews WHERE id = '{batchID}'"
-        query = self.db.custom(sql)
-        data = {}
+        sql = f"SELECT * FROM Brews WHERE id = '%s'"
+        val = (f"{batchID}")
+        query = self.db.custom(sql, val)
+        data = {
+            "recipeName"    :query[0][1],
+            "recipeDate"    :query[0][2],
+            "mashTemp"      :query[0][3],
+            "mashTime"      :query[0][4],
+            "boilTemp"      :query[0][5],
+            "boilTime"      :query[0][6],
+            "hop1"          :(query[0][7],query[0][8]),
+            "hop2"          :(query[0][9],query[0][10]),
+            "hop3"          :(query[0][11],query[0][12]),
+            "hop4"          :(query[0][13],query[0][14]),
+            "fermenttemp"   :query[0][15]
+            }
 
-        data["recipeName"] = query[0][1]
-        data["recipeDate"] = query[0][2]
-        data["mashTemp"]   = query[0][3]
-        data["mashTime"]  = query[0][4]
-        data["boilTemp"]  = query[0][5]
-        data["boilTime"]  = query[0][6]
-        data["hop1"]       = (query[0][7],query[0][8])
-        data["hop2"]       = (query[0][9],query[0][10])
-        data["hop3"]       = (query[0][11],query[0][12])
-        data["hop4"]       = (query[0][13],query[0][14])
-        data["fermenttemp"]= query[0][15]
         return data
 
     @abstractmethod
