@@ -168,17 +168,20 @@ class MainWindow(QMainWindow):
     def startBrewClicked(self):
         newBrewWindow = NewBrewWindow(LOGIN=self.LOGIN, parent=self)
         newBrewWindow.formSubmitted.connect(self.mashBoilButtonClicked)
-        newBrewWindow.exec_()
+        #newBrewWindow.exec_()
+        newBrewWindow.show()
         # pass
 
     def viewDataClicked(self):
         viewDataWindow = ViewDataWindow(LOGIN=self.LOGIN, parent=self)
-        viewDataWindow.exec_()
+        #viewDataWindow.exec_()
+        viewDataWindow.show()
         # pass
 
     def newUserClicked(self):
         newuserWindow = NewUserWindow(LOGIN=self.LOGIN, parent=self)
-        newuserWindow.exec_()
+        #newuserWindow.exec_()
+        newuserWindow.show()
         # pass
 
     def quitClicked(self):
