@@ -94,25 +94,3 @@ class LoginWindow(QDialog):
             loginFail.setWindowTitle("Warning")
             loginFail.exec_()
 
-
-        # # Successful log in, open main window
-        # if (self.usernameEdit.text() == '') and (self.passwordEdit.text() == ''):
-        #     db = sql.connect(
-        #         host=LOGIN[0],
-        #         user=LOGIN[1],
-        #         passwd=LOGIN[2]
-        #     )
-
-        #     self.close()
-        #     self.window = MainWindow(LOGIN=)
-        #     self.window.show()
-
-        # # Log in failed, show warning box
-        # else:
-        #     loginFail = QMessageBox()
-        #     loginFail.setIcon(QMessageBox.Critical)
-        #     loginFail.setText("Login Failed")
-        #     loginFail.setStandardButtons(QMessageBox.Ok)
-        #     loginFail.setWindowTitle("Warning")
-        #     loginFail.exec_()
-

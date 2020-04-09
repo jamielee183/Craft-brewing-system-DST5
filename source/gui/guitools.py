@@ -1,3 +1,6 @@
+##@package guitools
+#Tools package to help with ome gui functionality
+
 
 from PyQt5.QtWidgets import QFrame, QComboBox, QLabel, \
     QDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QWidget, QSizePolicy
@@ -18,25 +21,27 @@ import source.tools.exceptionLogging
 from source.tools.constants import *
 from source.tools.sqlBrewingComms import SQLFermentMonitor
 
+##Draw a horizontal Line
 class QHLine(QFrame):
     def __init__(self):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Sunken)
 
-
+##Draw a vertical Line
 class QVLine(QFrame):
     def __init__(self):
         super(QVLine, self).__init__()
         self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
 
+##Draw a coloured box (RGB)
 class QBoxColour(QFrame):
-    def __init__(self):
+    def __init__(self, rgb: tuple):
         super(QBoxColour, self).__init__()
-        self.setStyleSheet("background-color: rgb(255, 0, 0);")
+        self.setStyleSheet("background-color: rgb({}, {}, {});".format(rgb[0],rgb[1],rgb[3]))
 
-
+##Embedd a matplotlib plot into Qt for IR camera data display
 class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=3, height=3, dpi=100):
@@ -62,7 +67,7 @@ class PlotCanvas(FigureCanvas):
         self.ax.axes.get_xaxis().set_visible(False)
         self.data  = np.ones((8,8,3), dtype = int)
 
-
+    ##Convert a given temprature to  blue->red heatmap
     def convertTempToColour(self,value):
         red, green, blue = 255, 255, 255
 
@@ -81,10 +86,10 @@ class PlotCanvas(FigureCanvas):
         return int(red), int(green), int(blue)
 
 
-
+    ##Plot the given data
     def plot(self, datain=None):
+
         self.midpoint = ((np.max(datain) - np.min(datain)) / 2) +np.min(datain)
-        print(self.midpoint)
         self.ax.clear()
         for i in range(8):
             for j in range(8):
@@ -96,14 +101,8 @@ class PlotCanvas(FigureCanvas):
 
         self.draw()
 
-    def myplot(x, y, s=16, bins=8):
-        heatmap, xedges, yedges = np.histogram2d(x, y, bins=bins)
-        heatmap = gaussian_filter(heatmap, sigma=s)
 
-        extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
-        return heatmap.T, extent
-
-
+##convert database timestamps into xaxis values for a graph
 class TimeScaleDraw(QwtScaleDraw):
     _logname = 'TimeScaleDraw'
     _log = logging.getLogger(f'{_logname}')
@@ -125,6 +124,7 @@ class TimeScaleDraw(QwtScaleDraw):
                 result.append("{} {}".format(value, name))
         return '\n '.join(result[:granularity])
 
+##convert database timestamps into xaxis time for fermenting
 class FermentTimeScaleDraw(TimeScaleDraw):
 
     _logname = 'FermentTimeScaleDraw'
@@ -145,7 +145,7 @@ class FermentTimeScaleDraw(TimeScaleDraw):
 #            self._log.debug(f"PROPER INDEX ERROR: {value}")
             return QwtText("0 Secs")
 
-
+##convert database timestamps into xaxis time for fboiling and mashing
 class BoilMashTimeScaleDraw(TimeScaleDraw):
 
     _logname = 'BoilMashTimeScaleDraw'
@@ -168,6 +168,7 @@ class BoilMashTimeScaleDraw(TimeScaleDraw):
             return QwtText("0 Secs")
 
 
+##Popup dialog to select what fermentation tank to send brew after boiling.
 class BoilFinishedPopup(QDialog):
 
     _logname = 'BoilFinishedPopup'

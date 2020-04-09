@@ -19,3 +19,6 @@ Things you can do so far:
 Things you will be able to do soon:
 * Create and auto enter recipes.
 * View historical data of brew dates/recipes.
+
+## Code Documentation
+https://jamielee183.github.io/Craft-brewing-system-DST5/html/index.html

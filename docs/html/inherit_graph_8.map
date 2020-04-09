@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" title=" " alt="" coords="7,205,85,231"/>
+<area shape="rect" id="node2" href="$classsql_brewing_comms_1_1_s_q_l_brewing_comms.html" title="SQLBrewingComms." alt="" coords="135,149,346,188"/>
+<area shape="rect" id="node8" href="$classu_ccoms_1_1_u_c_comms.html" title="UCComms abstract calss." alt="" coords="171,244,310,269"/>
+<area shape="rect" id="node3" href="$classsql_brewing_comms_1_1_s_q_l_boil.html" title="SQLBoil." alt="" coords="421,167,606,192"/>
+<area shape="rect" id="node4" href="$classsql_brewing_comms_1_1_s_q_l_boil_monitor.html" title="SQLBoilMonitor." alt="" coords="399,216,628,241"/>
+<area shape="rect" id="node5" href="$classsql_brewing_comms_1_1_s_q_l_ferment_monitor.html" title="SQLFermentMonitor." alt="" coords="407,5,620,44"/>
+<area shape="rect" id="node6" href="$classsql_brewing_comms_1_1_s_q_l_mash_monitor.html" title="SQLMashMonitor." alt="" coords="394,68,634,93"/>
+<area shape="rect" id="node7" href="$classsql_brewing_comms_1_1_s_q_l_new_brew.html" title="SQLNewBrew." alt="" coords="404,117,624,143"/>
+<area shape="rect" id="node9" href="$classu_ccoms_1_1_pi_radio.html" title="Pi Radio communications class." alt="" coords="453,265,574,291"/>
+<area shape="rect" id="node10" title=" " alt="" coords="14,255,78,280"/>
+<area shape="rect" id="node11" title=" " alt="" coords="5,156,87,181"/>
+</map>

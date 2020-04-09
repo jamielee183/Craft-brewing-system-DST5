@@ -1,0 +1,4 @@
+<map id="sqlHandler.SqlDatabaseHandler.checkDatabaseExists" name="sqlHandler.SqlDatabaseHandler.checkDatabaseExists">
+<area shape="rect" id="node1" title="check if a database exists" alt="" coords="304,5,553,44"/>
+<area shape="rect" id="node2" href="$classsql_handler_1_1_sql_database_handler.html#a51ac0f0db18338a8ff7080a7b87e68e6" title="Create a new Database." alt="" coords="5,5,256,44"/>
+</map>
