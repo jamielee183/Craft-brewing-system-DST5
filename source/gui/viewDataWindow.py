@@ -13,9 +13,9 @@ from PyQt5.QtGui import \
 from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, QTableWidget, QTabWidget, \
     QSlider, QPushButton, QLabel, QScrollArea,\
-    QMessageBox, QDialog, QLineEdit, \
+    QMessageBox, QDialog, QLineEdit, QSplitter, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox, \
-    QDateEdit, QComboBox, QCalendarWidget, QTableWidgetItem, QTableView \
+    QDateEdit, QComboBox, QCalendarWidget, QTableWidgetItem, QTableView\
 
 from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
             QwtPlotCurve, QwtPlotItem, QwtLogScaleEngine, QwtText,  \
@@ -134,19 +134,15 @@ class ViewDataWindow(QDialog):
         
         # Create QTableView of brew data
         header = ['Brew ID', 'Recipe', 'Date'] 
-        self.model = MyTableModel(self.db.readFromTable("Brews", "id, Recipe, Date"), header, self)     
+        self.model = MyTableModel(self.db.readFromTable("Brews", "id, Recipe, Date"), header, self)
         self.proxyModel = QSortFilterProxyModel(self)
         self.proxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.proxyModel.setSourceModel(self.model)
-        self.dataTable = QTableView()          
+        self.dataTable = QTableView() 
         self.dataTable.setModel(self.proxyModel)
         self.dataTable.setSortingEnabled(True)
         self.dataTable.setSelectionBehavior(1)
-        #table->setSelectionBehavior(QAbstractItemView::SelectRows);
         
-
-        # Database data
-        #self.db.readFromTable("Brews", "id, Recipe, Date")
 
         # Create bottom buttons
         self.but_quit = QPushButton("Quit")
@@ -161,7 +157,8 @@ class ViewDataWindow(QDialog):
         quitHLayout.addStretch(0)
 
         # Main vertical layout for left area
-        vLayoutL = QVBoxLayout()
+        lWidget = QWidget()
+        vLayoutL = QVBoxLayout(lWidget)
         vLayoutL.addWidget(filterGroupBox)
         vLayoutL.addWidget(self.dataTable)
         vLayoutL.addLayout(quitHLayout)
@@ -183,30 +180,34 @@ class ViewDataWindow(QDialog):
         hScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         hScrollArea.setFixedHeight(170)
         # Main v layout for displayed brews widget
-        displayTitle = QLabel("Displayed Brews")
+        displayTitle = QLabel("Displayed Brews:")
         displayTitle.setMaximumHeight(20)
         self.vLayoutDisplayed = QVBoxLayout()
         self.vLayoutDisplayed.addWidget(displayTitle)
         self.vLayoutDisplayed.addWidget(hScrollArea)
 
         # Main vertical layout for right area
-        vLayoutR = QVBoxLayout()
+        rWidget = QWidget()
+        vLayoutR = QVBoxLayout(rWidget)
         self.tabs = QTabWidget()
         self.tabMash = MashTab()
         self.tabBoil = BoilTab()
         self.tabFerment = FermentTab()
         self.tabs.resize(100,1000)
+        self.tabs.setMinimumSize(400,400)
         self.tabs.addTab(self.tabMash,"Mash")
         self.tabs.addTab(self.tabBoil, "Boil")
         self.tabs.addTab(self.tabFerment, "Ferment")
         vLayoutR.addLayout(self.vLayoutDisplayed)
         vLayoutR.addWidget(self.tabs)
 
-        
-        # Main layout for whole window
+        # Main layout for whole window - splitter so widget sizes are adjustable
         mainLayout = QHBoxLayout()
-        mainLayout.addLayout(vLayoutL, 1)
-        mainLayout.addLayout(vLayoutR, 2)
+        mainSplitter = QSplitter()
+        mainSplitter.addWidget(lWidget)
+        mainSplitter.addWidget(rWidget)
+        mainLayout.addWidget(mainSplitter)
+
 
         self.setLayout(mainLayout)
         #self.showFullScreen()
@@ -281,7 +282,7 @@ class ViewDataWindow(QDialog):
         # Create groupboxes for each of the process tabs to fill with brew info
         mashGroupBox = QGroupBox(str(self.displayNo))
         mashFormLayout = QFormLayout()
-        mashFormLayout.addRow(QLabel(f"Temperature({DEGREES}C): {self.recipedata['mashTemp']}"))
+        mashFormLayout.addRow(QLabel(f"Temp ({DEGREES}C): {self.recipedata['mashTemp']}"))
         mashFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['mashTime']}"))
         mashGroupBox.setLayout(mashFormLayout)
         self.tabMash.mashVLayout.insertWidget(self.displayNo - 1, mashGroupBox)
@@ -289,7 +290,7 @@ class ViewDataWindow(QDialog):
 
         boilGroupBox = QGroupBox(str(self.displayNo))
         boilFormLayout = QFormLayout()
-        boilFormLayout.addRow(QLabel(f"Temperature({DEGREES}C):{self.recipedata['boilTemp']}"))
+        boilFormLayout.addRow(QLabel(f"Temp ({DEGREES}C):{self.recipedata['boilTemp']}"))
         boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['boilTime']}"))
         boilFormLayout.addRow(QLabel(f"Hop 1: {self.recipedata['hop1'][0]}"))
         boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['hop1'][1]}"))
@@ -305,7 +306,7 @@ class ViewDataWindow(QDialog):
 
         fermentGroupBox = QGroupBox(str(self.displayNo))
         fermentFormLayout = QFormLayout()
-        fermentFormLayout.addRow(QLabel(f"Temperature({DEGREES}C): {self.recipedata['fermenttemp']}"))
+        fermentFormLayout.addRow(QLabel(f"Temp ({DEGREES}C): {self.recipedata['fermenttemp']}"))
         #fermentFormLayout.addRow(QLabel('Time (mins):'))
         fermentGroupBox.setLayout(fermentFormLayout)
         self.tabFerment.fermentVLayout.insertWidget(self.displayNo - 1, fermentGroupBox)
@@ -402,7 +403,14 @@ class ViewDataWindow(QDialog):
 class MyTableModel(QAbstractTableModel):
     def __init__(self, datain, headerdata, parent=None, *args):
         QAbstractTableModel.__init__(self, parent, *args)
-        self.arraydata = datain
+        
+        self.arraydata = []
+        # Loop to convert all dates to strings to be displayed in table
+        for i in range(len(datain)):
+            self.arraydata.append(list(datain[i]))
+            self.arraydata[i][2] = self.arraydata[i][2].strftime("%d/%m/%Y")
+
+
         self.headerdata = headerdata
 
     def rowCount(self, parent):
@@ -461,7 +469,7 @@ class MashTab(QTabWidget):
         
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
-        displayedWidget.setFixedWidth(200)
+        displayedWidget.setFixedWidth(150)
         self.mashVLayout = QVBoxLayout()
         self.mashVLayout.addStretch(1)
         self.mashVLayout.setSizeConstraint(5)
@@ -512,7 +520,7 @@ class BoilTab(QTabWidget):
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
-        displayedWidget.setFixedWidth(200)
+        displayedWidget.setFixedWidth(150)
         self.boilVLayout = QVBoxLayout()
         self.boilVLayout.addStretch(1)
         self.boilVLayout.setSizeConstraint(5)
@@ -526,6 +534,7 @@ class BoilTab(QTabWidget):
         hLayout.addWidget(boilScrollArea)
         hLayout.addWidget(self.plot, 1)
         self.setLayout(hLayout)
+
 
 class FermentTab(QTabWidget):
 
@@ -591,7 +600,7 @@ class FermentTab(QTabWidget):
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
-        displayedWidget.setFixedWidth(200)
+        displayedWidget.setFixedWidth(150)
         self.fermentVLayout = QVBoxLayout()       
         self.fermentVLayout.addStretch(1)
         self.fermentVLayout.setSizeConstraint(5)

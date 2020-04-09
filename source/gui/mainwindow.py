@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
         self.lab_fermenters = QLabel(self.tr('View Fermenter Data'))
         self.lab_test = QLabel(self.tr('Check System for Faults'))
         self.lab_newUser = QLabel(self.tr('Create New User'))
-        self.lab_mashBoil = QLabel(self.tr('Mash/Boil monitor'))
+        self.lab_mashBoil = QLabel(self.tr('Monitor Mash and Boil'))
 
         #Grid for buttons and labels
         gLay_buttons = QGridLayout()
