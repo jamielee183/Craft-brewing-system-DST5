@@ -82,6 +82,9 @@ class PiRadio(UCComms):
             FERMENT_COMMAND : self.ferment
         }
         self.sendRetryCount = 0
+
+        self.irTemp = np.ones((8,8))
+        print(self.irTemp)
         
 
     def _configure(self) -> None:
@@ -156,7 +159,15 @@ class PiRadio(UCComms):
             x.db.cursor.close()
             x.db.db.close()
         elif data[0] == 0x02: #if temp camera data, 8x8 array of 1 byte values
-            pass
+            row = data[1]
+            self.irTemp[row][0] = int.from_bytes(data[2:4], 'big', signed=False)/100
+            self.irTemp[row][1] = int.from_bytes(data[4:6], 'big', signed=False)/100
+            self.irTemp[row][2] = int.from_bytes(data[6:8], 'big', signed=False)/100
+            self.irTemp[row][3] = int.from_bytes(data[8:10], 'big', signed=False)/100
+            self.irTemp[row][4] = int.from_bytes(data[10:12], 'big', signed=False)/100
+            self.irTemp[row][5] = int.from_bytes(data[12:14], 'big', signed=False)/100
+            self.irTemp[row][6] = int.from_bytes(data[14:16], 'big', signed=False)/100
+            self.irTemp[row][7] = int.from_bytes(data[16:18], 'big', signed=False)/100
         else:
             self._log.warning("Wrong data type for Mash")
 

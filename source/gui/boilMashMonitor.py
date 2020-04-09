@@ -1,7 +1,8 @@
 import numpy as np
 import logging
 from datetime import datetime
-
+import warnings
+warnings.filterwarnings("ignore")
 import sys
 import os
 
@@ -10,7 +11,7 @@ from PyQt5 import QtCore, QtGui, Qt
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
-                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog
+                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog, QSlider
 
 from PyQt5.QtCore import QTimer, QDateTime, QTime, pyqtSignal
 
@@ -26,7 +27,7 @@ import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLBoil, SQLBoilMonitor, SQLFermentMonitor
 from source.tools.constants import *
-from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup
+from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, PlotCanvas
 
  
 
@@ -102,14 +103,14 @@ class TabGraph(QWidget):
 
         
         
-        buttonLayout = QVBoxLayout()
-        buttonLayout.addWidget(self.startButton)
-        buttonLayout.addWidget(self.stopButton)
-        buttonLayout.addLayout(self.recipeGrid)
-        buttonLayout.addStretch(100)
+        self.buttonLayout = QVBoxLayout()
+        self.buttonLayout.addWidget(self.startButton)
+        self.buttonLayout.addWidget(self.stopButton)
+        self.buttonLayout.addLayout(self.recipeGrid)
+        self.buttonLayout.addStretch(100)
 
         mainLayout = QHBoxLayout()
-        mainLayout.addLayout(buttonLayout)
+        mainLayout.addLayout(self.buttonLayout)
         mainLayout.addLayout(self.plotLayout)
 
         vLayout = QVBoxLayout(self)
@@ -148,9 +149,10 @@ class TabMash(TabGraph):
     _logname = 'TabMash'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None):
+    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
         self.recipedata = recipedata
         self.batchID = batchID
+        self.radio = radio
         super().__init__(LOGIN, parent)
         
         self.startButton.setText(self.tr('Start Mash'))
@@ -160,8 +162,35 @@ class TabMash(TabGraph):
 
         self.targetTimeLabel.setText(f"Set mash time: {self.recipedata['mashTime']} mins")
         self.targetTempLabel.setText(f"Set mash temp: {self.recipedata['mashTemp']}{DEGREESC}")
+
+        # self.colourgrid = [[QLabel() for _ in range(8)] for _ in range(8)]
+
+
+        if self.radio is not None:
+            self.slider = QSlider(QtCore.Qt.Vertical)
+            self.slider.setMinimum(0)
+            self.slider.setMaximum(50)
+            self.slider.setValue(10)
+            self.irCameraPlot = PlotCanvas(self, width=4, height=4)
+            self.slider.valueChanged.connect(lambda: self.sliderchanged())
+            ircameralayout = QHBoxLayout()
+            ircameralayout.addWidget(self.irCameraPlot)
+            ircameralayout.addWidget(self.slider)
+            self.buttonLayout.addLayout(ircameralayout)
+
+            self.irCameraTimer = QTimer(self)
+            self.irCameraTimer.timeout.connect(lambda: self.updateIr())
+            self.irCameraTimer.start(5000)
+
+    def sliderchanged(self):
+        self.irCameraPlot.scale = self.slider.value()
+
+    def updateIr(self):
+        if self.minuteTimer.isActive():
+            self.irCameraPlot.plot(self.radio.irTemp)
         
     def updatePlot(self):
+        
         self.db.flushTables()
         # db = dataBase(self.LOGIN, "Brewing")
         sql = f"SELECT Temp FROM Mash WHERE BatchID = '{self.batchID}'"
@@ -208,9 +237,10 @@ class TabBoil(TabGraph):
     _logname = 'TablesTabBoil'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None):
+    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
         self.recipedata = recipedata
         self.batchID = batchID
+        self.radio = radio
         super().__init__(LOGIN, parent)
         self.sqlBoilComms = SQLBoil(self.LOGIN)
         self.plot.setTitle("Boil")
@@ -371,8 +401,8 @@ class MonitorWindow(QDialog):
         self.recipedata['fermenttemp']= query[0][15]
         
         self.tabs = QTabWidget()
-        self.tabMash = TabMash(LOGIN, self.batchID, self.recipedata, parent=self)
-        self.tabBoil = TabBoil(LOGIN, self.batchID, self.recipedata, parent=self)
+        self.tabMash = TabMash(LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
+        self.tabBoil = TabBoil(LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
         self.tabs.resize(100,1000)
 
         self.tabs.addTab(self.tabMash,"Mash")
@@ -542,6 +572,9 @@ class MonitorWindow(QDialog):
         self.tabBoil.updatePlot()
 
     def closeWindow(self):
+        if self.radio is not None:
+            self.radio.stopMash()
+            self.radio.stopBoil()
         self.fakeBoilTimer.stop()
         self.boilPlotUpdateTimer.stop()
         self.tabBoil.minuteTimer.stop()

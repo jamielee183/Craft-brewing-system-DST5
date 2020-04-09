@@ -14,9 +14,8 @@ Things you can do so far:
     * Specific Gravity.
     * Boil start/end times
     * Hop Times
-
+* Monitoring of Mashing process.
 
 Things you will be able to do soon:
-* Monitoring of Mashing process.
 * Create and auto enter recipes.
 * View historical data of brew dates/recipes.

@@ -1,8 +1,18 @@
 
 from PyQt5.QtWidgets import QFrame, QComboBox, QLabel, \
-    QDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox
+    QDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QWidget, QSizePolicy
 from qwt import QwtScaleDraw, QwtText
 import logging
+
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from scipy.ndimage.filters import gaussian_filter
+import time
+import numpy as np
+
 
 import source.tools.exceptionLogging
 from source.tools.constants import *
@@ -21,6 +31,77 @@ class QVLine(QFrame):
         self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
 
+class QBoxColour(QFrame):
+    def __init__(self):
+        super(QBoxColour, self).__init__()
+        self.setStyleSheet("background-color: rgb(255, 0, 0);")
+
+
+class PlotCanvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=3, height=3, dpi=100):
+        
+        self.midpoint = 23
+        self.scale = 50
+
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self,
+                QSizePolicy.Expanding,
+                QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+
+        self.ax = self.figure.add_subplot(111)
+        self.ax.set_title('Ir camera')
+        self.ax.axes.get_yaxis().set_visible(False)
+        self.ax.axes.get_xaxis().set_visible(False)
+        self.data  = np.ones((8,8,3), dtype = int)
+
+
+    def convertTempToColour(self,value):
+        red, green, blue = 255, 255, 255
+
+        if value < self.midpoint:
+            value = np.abs(value -self.midpoint)
+            red -=  value*self.scale
+            green -= value*self.scale
+
+        elif value > self.midpoint:
+            value = np.abs(value -self.midpoint)
+            blue -= value*self.scale
+            green -= value*self.scale
+        elif value == self.midpoint:
+            pass
+
+        return int(red), int(green), int(blue)
+
+
+
+    def plot(self, datain=None):
+        self.midpoint = ((np.max(datain) - np.min(datain)) / 2) +np.min(datain)
+        print(self.midpoint)
+        self.ax.clear()
+        for i in range(8):
+            for j in range(8):
+                self.data[i][j] = self.convertTempToColour(datain[i][j])
+                self.ax.text(j-0.4 ,i, datain[i][j],fontsize=7)
+
+        self.ax.set_title('Ir camera')
+        self.ax.imshow(self.data)
+
+        self.draw()
+
+    def myplot(x, y, s=16, bins=8):
+        heatmap, xedges, yedges = np.histogram2d(x, y, bins=bins)
+        heatmap = gaussian_filter(heatmap, sigma=s)
+
+        extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+        return heatmap.T, extent
 
 
 class TimeScaleDraw(QwtScaleDraw):
