@@ -1,0 +1,6 @@
+<map id="boilMashMonitor.TabGraph" name="boilMashMonitor.TabGraph">
+<area shape="rect" id="node1" title="Parent class to hold graph instance." alt="" coords="95,79,276,104"/>
+<area shape="rect" id="node3" href="$classboil_mash_monitor_1_1_tab_boil.html" title="Tab specific to Boiling." alt="" coords="5,152,171,177"/>
+<area shape="rect" id="node4" href="$classboil_mash_monitor_1_1_tab_mash.html" title="Tab specific to mashing." alt="" coords="195,152,371,177"/>
+<area shape="rect" id="node2" title=" " alt="" coords="149,5,222,31"/>
+</map>

@@ -1,0 +1,115 @@
+\hypertarget{namespaceboil_mash_monitor}{}\section{boil\+Mash\+Monitor Namespace Reference}
+\label{namespaceboil_mash_monitor}\index{boilMashMonitor@{boilMashMonitor}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classboil_mash_monitor_1_1_monitor_window}{Monitor\+Window}}
+\item 
+class \mbox{\hyperlink{classboil_mash_monitor_1_1_tab_boil}{Tab\+Boil}}
+\begin{DoxyCompactList}\small\item\em Tab specific to Boiling. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classboil_mash_monitor_1_1_tab_graph}{Tab\+Graph}}
+\begin{DoxyCompactList}\small\item\em Parent class to hold graph instance. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classboil_mash_monitor_1_1_tab_mash}{Tab\+Mash}}
+\begin{DoxyCompactList}\small\item\em Tab specific to mashing. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+string \mbox{\hyperlink{namespaceboil_mash_monitor_aaf393e03ba47fb4d4cd4da6a0b885b6f}{H\+O\+ST}} = \char`\"{}localhost\char`\"{}
+\item 
+string \mbox{\hyperlink{namespaceboil_mash_monitor_aef5bd2fb4e6848fe82bf144234159d3a}{U\+S\+ER}} = \char`\"{}Test\char`\"{}
+\item 
+string \mbox{\hyperlink{namespaceboil_mash_monitor_a58770b0ee81ebb75662253e7c03d40d9}{P\+A\+S\+S\+W\+O\+RD}} = \char`\"{}Birra\+Mosfeti\char`\"{}
+\item 
+list \mbox{\hyperlink{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}{L\+O\+G\+IN}} = \mbox{[}\mbox{\hyperlink{namespaceboil_mash_monitor_aaf393e03ba47fb4d4cd4da6a0b885b6f}{H\+O\+ST}},\mbox{\hyperlink{namespaceboil_mash_monitor_aef5bd2fb4e6848fe82bf144234159d3a}{U\+S\+ER}},\mbox{\hyperlink{namespaceboil_mash_monitor_a58770b0ee81ebb75662253e7c03d40d9}{P\+A\+S\+S\+W\+O\+RD}}\mbox{]}
+\item 
+\mbox{\hyperlink{namespaceboil_mash_monitor_a4ef2a42c3df0b871a7b50b94074ff6a9}{database}} = db(\mbox{\hyperlink{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}{L\+O\+G\+IN}},\char`\"{}Brewing\char`\"{})
+\item 
+\mbox{\hyperlink{namespaceboil_mash_monitor_a92c0da44566d11f8b05a97da7dd7c72d}{batch\+ID}} = database.\+max\+Id\+From\+Table(\char`\"{}Brews\char`\"{})
+\item 
+\mbox{\hyperlink{namespaceboil_mash_monitor_a8521f8e50f37d60323e26f902bf40744}{app}} = Q\+Application(sys.\+argv)
+\item 
+\mbox{\hyperlink{namespaceboil_mash_monitor_a153037ae99a581f857b26b7ea6a9d53e}{window}} = \mbox{\hyperlink{classboil_mash_monitor_1_1_monitor_window}{Monitor\+Window}}(\mbox{\hyperlink{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}{L\+O\+G\+IN}}, \mbox{\hyperlink{namespaceboil_mash_monitor_a92c0da44566d11f8b05a97da7dd7c72d}{batch\+ID}})
+\end{DoxyCompactItemize}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespaceboil_mash_monitor_a8521f8e50f37d60323e26f902bf40744}\label{namespaceboil_mash_monitor_a8521f8e50f37d60323e26f902bf40744}} 
+\index{boilMashMonitor@{boilMashMonitor}!app@{app}}
+\index{app@{app}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{app}{app}}
+{\footnotesize\ttfamily boil\+Mash\+Monitor.\+app = Q\+Application(sys.\+argv)}
+
+
+
+Definition at line 568 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_a92c0da44566d11f8b05a97da7dd7c72d}\label{namespaceboil_mash_monitor_a92c0da44566d11f8b05a97da7dd7c72d}} 
+\index{boilMashMonitor@{boilMashMonitor}!batchID@{batchID}}
+\index{batchID@{batchID}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{batchID}{batchID}}
+{\footnotesize\ttfamily boil\+Mash\+Monitor.\+batch\+ID = database.\+max\+Id\+From\+Table(\char`\"{}Brews\char`\"{})}
+
+
+
+Definition at line 564 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_a4ef2a42c3df0b871a7b50b94074ff6a9}\label{namespaceboil_mash_monitor_a4ef2a42c3df0b871a7b50b94074ff6a9}} 
+\index{boilMashMonitor@{boilMashMonitor}!database@{database}}
+\index{database@{database}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{database}{database}}
+{\footnotesize\ttfamily boil\+Mash\+Monitor.\+database = db(\mbox{\hyperlink{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}{L\+O\+G\+IN}},\char`\"{}Brewing\char`\"{})}
+
+
+
+Definition at line 563 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_aaf393e03ba47fb4d4cd4da6a0b885b6f}\label{namespaceboil_mash_monitor_aaf393e03ba47fb4d4cd4da6a0b885b6f}} 
+\index{boilMashMonitor@{boilMashMonitor}!HOST@{HOST}}
+\index{HOST@{HOST}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{HOST}{HOST}}
+{\footnotesize\ttfamily string boil\+Mash\+Monitor.\+H\+O\+ST = \char`\"{}localhost\char`\"{}}
+
+
+
+Definition at line 554 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}\label{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}} 
+\index{boilMashMonitor@{boilMashMonitor}!LOGIN@{LOGIN}}
+\index{LOGIN@{LOGIN}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{LOGIN}{LOGIN}}
+{\footnotesize\ttfamily list boil\+Mash\+Monitor.\+L\+O\+G\+IN = \mbox{[}\mbox{\hyperlink{namespaceboil_mash_monitor_aaf393e03ba47fb4d4cd4da6a0b885b6f}{H\+O\+ST}},\mbox{\hyperlink{namespaceboil_mash_monitor_aef5bd2fb4e6848fe82bf144234159d3a}{U\+S\+ER}},\mbox{\hyperlink{namespaceboil_mash_monitor_a58770b0ee81ebb75662253e7c03d40d9}{P\+A\+S\+S\+W\+O\+RD}}\mbox{]}}
+
+
+
+Definition at line 562 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_a58770b0ee81ebb75662253e7c03d40d9}\label{namespaceboil_mash_monitor_a58770b0ee81ebb75662253e7c03d40d9}} 
+\index{boilMashMonitor@{boilMashMonitor}!PASSWORD@{PASSWORD}}
+\index{PASSWORD@{PASSWORD}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{PASSWORD}{PASSWORD}}
+{\footnotesize\ttfamily string boil\+Mash\+Monitor.\+P\+A\+S\+S\+W\+O\+RD = \char`\"{}Birra\+Mosfeti\char`\"{}}
+
+
+
+Definition at line 556 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_aef5bd2fb4e6848fe82bf144234159d3a}\label{namespaceboil_mash_monitor_aef5bd2fb4e6848fe82bf144234159d3a}} 
+\index{boilMashMonitor@{boilMashMonitor}!USER@{USER}}
+\index{USER@{USER}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{USER}{USER}}
+{\footnotesize\ttfamily string boil\+Mash\+Monitor.\+U\+S\+ER = \char`\"{}Test\char`\"{}}
+
+
+
+Definition at line 555 of file boil\+Mash\+Monitor.\+py.
+
+\mbox{\Hypertarget{namespaceboil_mash_monitor_a153037ae99a581f857b26b7ea6a9d53e}\label{namespaceboil_mash_monitor_a153037ae99a581f857b26b7ea6a9d53e}} 
+\index{boilMashMonitor@{boilMashMonitor}!window@{window}}
+\index{window@{window}!boilMashMonitor@{boilMashMonitor}}
+\subsubsection{\texorpdfstring{window}{window}}
+{\footnotesize\ttfamily boil\+Mash\+Monitor.\+window = \mbox{\hyperlink{classboil_mash_monitor_1_1_monitor_window}{Monitor\+Window}}(\mbox{\hyperlink{namespaceboil_mash_monitor_a8408c26ef74bdfc75af04aba577b439d}{L\+O\+G\+IN}}, \mbox{\hyperlink{namespaceboil_mash_monitor_a92c0da44566d11f8b05a97da7dd7c72d}{batch\+ID}})}
+
+
+
+Definition at line 570 of file boil\+Mash\+Monitor.\+py.
+

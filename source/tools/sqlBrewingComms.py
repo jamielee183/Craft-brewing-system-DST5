@@ -1,3 +1,8 @@
+##@package sqlBrewingComms
+#MySQL database python helper package for brewing specific data
+# 
+#a collection of functions to allow easy use of the MySQL brewing database.
+
 import sys
 import os
 
@@ -10,17 +15,23 @@ sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as Sql
 
+
+##SQLBrewingComms
+#
+#Collection of methods to help insert data into database
 class SQLBrewingComms(metaclass=ABCMeta):
 
     _logname = 'SQLBrewingComms'
     _log = logging.getLogger(f'{_logname}')
 
+    ##SQLBrewingComms constructor
     def __init__(self, LOGIN:list):
         self.LOGIN = LOGIN
         self.dbName = "Brewing"
         self.db = Sql(self.LOGIN, self.dbName)
         # self.batchID = self.getCurrentBrew()
-        
+    
+    ##Perform Custom SQL command
     def _custom(self, sql: str, val=None ):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
@@ -29,11 +40,13 @@ class SQLBrewingComms(metaclass=ABCMeta):
         elif val is not None:
             self.db.custom(sql,val)
 
+    ##Return the current brew 
     def getCurrentBrew(self):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
         return self.db.maxIdFromTable("Brews")
 
+    ## Return th recipe data for the current brew
     def getBrewData(self, batchID):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
@@ -60,6 +73,9 @@ class SQLBrewingComms(metaclass=ABCMeta):
     def record(self):
         pass
 
+##SQLMashMonitor
+#
+#Class to insert data into mash table
 class SQLMashMonitor(SQLBrewingComms):
 
     _logname = 'SQLMashMonitor'
@@ -68,7 +84,7 @@ class SQLMashMonitor(SQLBrewingComms):
     def __init__(self, LOGIN:list):
        super().__init__(LOGIN)
 
-    
+    ##Record Data into the passed data into the table
     def record(self, temp, volume, pH, SG):
         self.batchID = self.getCurrentBrew()
         insert = []
@@ -79,6 +95,9 @@ class SQLMashMonitor(SQLBrewingComms):
         self.db.insertToTable("Mash", insert)
         self.db.flushTables()
 
+##SQLBoilMonitor
+#
+#Class to insert data into boilMonitor table
 class SQLBoilMonitor(SQLBrewingComms):
 
     _logname = 'SQLBoilMonitor'
@@ -87,7 +106,7 @@ class SQLBoilMonitor(SQLBrewingComms):
     def __init__(self, LOGIN:list):
        super().__init__(LOGIN)
 
-    
+    ##Record passed data into the table
     def record(self, temp, volume):
         self.batchID = self.getCurrentBrew()
         insert = []
@@ -98,6 +117,9 @@ class SQLBoilMonitor(SQLBrewingComms):
         self.db.insertToTable("BoilMonitor", insert)
         self.db.flushTables()
 
+##SQLBoil
+#
+#Class to insert data into boil table
 class SQLBoil(SQLBrewingComms):
 
     _logname = 'SQLBoil'
@@ -116,42 +138,48 @@ class SQLBoil(SQLBrewingComms):
        self.hop3Flag = False
        self.hop4Flag = False
 
-
+    ##Start the timer for the boil
     def startTimer(self):
         self.starttime = datetime.now()
         self.activeFlag = True
         return datetime.time(datetime.now())
 
+    ##End the timer for the boil
     def endTimer(self):
         self.endtime = datetime.now()
         self.activeFlag = False
         self.record()
         return datetime.time(datetime.now())
 
+    ##call when hop1 has been added and record time
     def hop1Timer(self):
         self.hop1timer = datetime.time(datetime.now())
         self._log.info("Hop 1 added")
         self.hop1Flag = True
         return datetime.time(datetime.now())
 
+    ##call when hop2 has been added and record time
     def hop2Timer(self):
         self.hop2timer = datetime.time(datetime.now())
         self._log.info("Hop 2 added")
         self.hop2Flag = True
         return datetime.time(datetime.now())
 
+    ##call when hop3 has been added and record time
     def hop3Timer(self):
         self.hop3timer = datetime.time(datetime.now())
         self._log.info("Hop 3 added")
         self.hop3Flag = True
         return datetime.time(datetime.now())
 
+    ##call when hop4 has been added and record time
     def hop4Timer(self):
         self.hop4timer = datetime.time(datetime.now())
         self._log.info("Hop 4 added")
         self.hop4Flag = True
         return datetime.time(datetime.now())
 
+    ##Record passed data into the table
     def record(self):
         self.batchID = self.getCurrentBrew()
         insert = []
@@ -161,6 +189,9 @@ class SQLBoil(SQLBrewingComms):
         self.db.insertToTable("Boil", insert)
         self.db.flushTables()
 
+##SQLNewBrew
+#
+#Class to start a new brew, with a given recipe
 class SQLNewBrew(SQLBrewingComms):
 
     _logname = 'SQLNewBrew'
@@ -183,6 +214,7 @@ class SQLNewBrew(SQLBrewingComms):
         self.record()
         # self.batchID = self.getCurrentBrew()
 
+    ##Record passed data into the table
     def record(self):
         
         insert = []
@@ -218,7 +250,9 @@ class SQLNewBrew(SQLBrewingComms):
                      )
         
 
-
+##SQLFermentMonitor
+#
+#Class to insert data into the fermentation table
 class SQLFermentMonitor(SQLBrewingComms):
 
     _logname = 'SQLFermentMonitor'
@@ -232,6 +266,7 @@ class SQLFermentMonitor(SQLBrewingComms):
     def newBatch(self):
         self.batchID = self.getCurrentBrew()
 
+    ##Record passed data into the table
     def record(self, specificG, temp, volume):
         insert = []
         insert.append(("BatchID", "TimeStamp", "Fermenter", "Sg", "Temp", "Volume"))

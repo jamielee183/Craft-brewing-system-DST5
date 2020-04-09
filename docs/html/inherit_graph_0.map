@@ -1,0 +1,10 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" title=" " alt="" coords="5,153,75,179"/>
+<area shape="rect" id="node2" href="$classboil_mash_monitor_1_1_monitor_window.html" title="Monitoring window for boiling and mashing processes." alt="" coords="132,5,346,31"/>
+<area shape="rect" id="node3" href="$classferment_monitor_1_1_ferment_monitor.html" title=" " alt="" coords="135,55,344,80"/>
+<area shape="rect" id="node4" href="$classguitools_1_1_boil_finished_popup.html" title="Popup dialog to select what fermentation tank to send brew after boiling." alt="" coords="148,104,331,129"/>
+<area shape="rect" id="node5" href="$classlogin_window_1_1_login_window.html" title=" " alt="" coords="149,153,329,179"/>
+<area shape="rect" id="node6" href="$class_new_brew_window_1_1_new_brew_window.html" title=" " alt="" coords="123,203,356,228"/>
+<area shape="rect" id="node7" href="$classnew_user_window_1_1_new_user_window.html" title=" " alt="" coords="126,252,353,277"/>
+<area shape="rect" id="node8" href="$classview_data_window_1_1_view_data_window.html" title=" " alt="" coords="124,301,355,327"/>
+</map>

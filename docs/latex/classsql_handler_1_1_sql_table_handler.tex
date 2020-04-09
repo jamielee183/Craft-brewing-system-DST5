@@ -1,0 +1,144 @@
+\hypertarget{classsql_handler_1_1_sql_table_handler}{}\section{sql\+Handler.\+Sql\+Table\+Handler Class Reference}
+\label{classsql_handler_1_1_sql_table_handler}\index{sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}}
+
+
+\mbox{\hyperlink{classsql_handler_1_1_sql_table_handler}{Sql\+Table\+Handler}}.  
+
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a3eba23f872710ef3a21c172a9469a449}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, L\+O\+G\+IN, database\+Name)
+\begin{DoxyCompactList}\small\item\em \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler}{Sql\+Table\+Handler}} constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a70fc8504c5f3b3a5d7fe482f6907cb74}\label{classsql_handler_1_1_sql_table_handler_a70fc8504c5f3b3a5d7fe482f6907cb74}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a70fc8504c5f3b3a5d7fe482f6907cb74}{flush\+Tables}} (self)
+\begin{DoxyCompactList}\small\item\em Update the tables for all users. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a153cbc56e8b7a0b595566d4e28c1d482}{custom}} (self, str sql, val=None)
+\begin{DoxyCompactList}\small\item\em Perform custom S\+QL command. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a9ccdd57a7de36b369c28d194550cdff1}\label{classsql_handler_1_1_sql_table_handler_a9ccdd57a7de36b369c28d194550cdff1}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a9ccdd57a7de36b369c28d194550cdff1}{create\+Table}} (self, str table\+Name, list columns)
+\begin{DoxyCompactList}\small\item\em Create a table in the database. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a86f46ba78bfd8014a528ab54c3f86679}\label{classsql_handler_1_1_sql_table_handler_a86f46ba78bfd8014a528ab54c3f86679}} 
+bool \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a86f46ba78bfd8014a528ab54c3f86679}{check\+Table\+Exists}} (self, str table\+Name)
+\begin{DoxyCompactList}\small\item\em Check if a table exists. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a549b05c25620b0a24c94203bc7a6c5fd}\label{classsql_handler_1_1_sql_table_handler_a549b05c25620b0a24c94203bc7a6c5fd}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a549b05c25620b0a24c94203bc7a6c5fd}{delete\+Table}} (self, str table\+Name)
+\begin{DoxyCompactList}\small\item\em Delete a table from the database. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a6d9536ea33d030274be1abb74471239d}\label{classsql_handler_1_1_sql_table_handler_a6d9536ea33d030274be1abb74471239d}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a6d9536ea33d030274be1abb74471239d}{describe\+Table}} (self, str table\+Name)
+\begin{DoxyCompactList}\small\item\em Find information regarding a table. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a0b726791958aa4a469f4ec8b37f8d53b}{create\+Field}} (self, str name, str datatype, length=None, decimal=None)
+\begin{DoxyCompactList}\small\item\em S\+QL field genorator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a43625806bd22c7004eea81abc0842722}\label{classsql_handler_1_1_sql_table_handler_a43625806bd22c7004eea81abc0842722}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a43625806bd22c7004eea81abc0842722}{show\+All\+Tables}} (self)
+\begin{DoxyCompactList}\small\item\em Show all the tablse in a database. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_ac163d7adefd1e0fa1822af9573f7f17f}\label{classsql_handler_1_1_sql_table_handler_ac163d7adefd1e0fa1822af9573f7f17f}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_ac163d7adefd1e0fa1822af9573f7f17f}{view\+Table}} (self, str table\+Name)
+\begin{DoxyCompactList}\small\item\em View all the contents of a table. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a2df898628c21609eac4d07a57da5c01e}\label{classsql_handler_1_1_sql_table_handler_a2df898628c21609eac4d07a57da5c01e}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a2df898628c21609eac4d07a57da5c01e}{delete\+From\+Table}} (self, str table\+Name, str field, str value)
+\begin{DoxyCompactList}\small\item\em Delete an entry from a tbale. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_abb045e0eb6c1d6c5cb737938f7e25080}\label{classsql_handler_1_1_sql_table_handler_abb045e0eb6c1d6c5cb737938f7e25080}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_abb045e0eb6c1d6c5cb737938f7e25080}{insert\+To\+Table}} (self, str table\+Name, list data)
+\begin{DoxyCompactList}\small\item\em insert data into a given table \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a38b741237173d13702d3e33f245617c7}\label{classsql_handler_1_1_sql_table_handler_a38b741237173d13702d3e33f245617c7}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a38b741237173d13702d3e33f245617c7}{read\+From\+Table}} (self, str table\+Name, str fields)
+\begin{DoxyCompactList}\small\item\em Read fields forom a table. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_aaba3f0eabad64b67ba40c82d4f7767ae}\label{classsql_handler_1_1_sql_table_handler_aaba3f0eabad64b67ba40c82d4f7767ae}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_aaba3f0eabad64b67ba40c82d4f7767ae}{max\+Id\+From\+Table}} (self, str table\+Name)
+\begin{DoxyCompactList}\small\item\em Return the maximum primary key from table. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a9b6cd30d7a66446a90148a4fc1fd25a6}\label{classsql_handler_1_1_sql_table_handler_a9b6cd30d7a66446a90148a4fc1fd25a6}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a9b6cd30d7a66446a90148a4fc1fd25a6}{max\+Value\+From\+Table}} (self, value, str table\+Name)
+\begin{DoxyCompactList}\small\item\em Return the maximum value froma given table. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a0fb215bae725756d2d481d17bced197c}\label{classsql_handler_1_1_sql_table_handler_a0fb215bae725756d2d481d17bced197c}} 
+def \mbox{\hyperlink{classsql_handler_1_1_sql_table_handler_a0fb215bae725756d2d481d17bced197c}{inner\+Join}} (self, str primary\+Table, str field\+Select, str secondary\+Table, str field\+Select2, str field\+Match)
+\begin{DoxyCompactList}\small\item\em Perform an Inner Join. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_ada170d8ab0c04adf6287db974402ddf8}\label{classsql_handler_1_1_sql_table_handler_ada170d8ab0c04adf6287db974402ddf8}} 
+{\bfseries db}
+\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_ac623d974cb22588805eb13be7734cf20}\label{classsql_handler_1_1_sql_table_handler_ac623d974cb22588805eb13be7734cf20}} 
+{\bfseries database\+Name}
+\item 
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a7bdec7849bd13c933e5cc56e344babb8}\label{classsql_handler_1_1_sql_table_handler_a7bdec7849bd13c933e5cc56e344babb8}} 
+{\bfseries cursor}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\mbox{\hyperlink{classsql_handler_1_1_sql_table_handler}{Sql\+Table\+Handler}}. 
+
+Collection of methods to help manage a table in the database 
+
+Definition at line 107 of file sql\+Handler.\+py.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a3eba23f872710ef3a21c172a9469a449}\label{classsql_handler_1_1_sql_table_handler_a3eba23f872710ef3a21c172a9469a449}} 
+\index{sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}}
+\subsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def sql\+Handler.\+Sql\+Table\+Handler.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{L\+O\+G\+IN,  }\item[{}]{database\+Name }\end{DoxyParamCaption})}
+
+
+
+\mbox{\hyperlink{classsql_handler_1_1_sql_table_handler}{Sql\+Table\+Handler}} constructor. 
+
+Log in to the database and create connection 
+\begin{DoxyParams}{Parameters}
+{\em L\+O\+G\+IN} & The login details of the My\+S\+QL connection. \\
+\hline
+{\em database\+Name} & The database to acess \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 117 of file sql\+Handler.\+py.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a0b726791958aa4a469f4ec8b37f8d53b}\label{classsql_handler_1_1_sql_table_handler_a0b726791958aa4a469f4ec8b37f8d53b}} 
+\index{sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}!createField@{createField}}
+\index{createField@{createField}!sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}}
+\subsubsection{\texorpdfstring{createField()}{createField()}}
+{\footnotesize\ttfamily def sql\+Handler.\+Sql\+Table\+Handler.\+create\+Field (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{str}]{name,  }\item[{str}]{datatype,  }\item[{}]{length = {\ttfamily None},  }\item[{}]{decimal = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+S\+QL field genorator. 
+
+Helper method to check validity of a field and return an S\+QL command to create a field of a given type 
+
+Definition at line 191 of file sql\+Handler.\+py.
+
+\mbox{\Hypertarget{classsql_handler_1_1_sql_table_handler_a153cbc56e8b7a0b595566d4e28c1d482}\label{classsql_handler_1_1_sql_table_handler_a153cbc56e8b7a0b595566d4e28c1d482}} 
+\index{sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}!custom@{custom}}
+\index{custom@{custom}!sqlHandler.SqlTableHandler@{sqlHandler.SqlTableHandler}}
+\subsubsection{\texorpdfstring{custom()}{custom()}}
+{\footnotesize\ttfamily def sql\+Handler.\+Sql\+Table\+Handler.\+custom (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{str}]{sql,  }\item[{}]{val = {\ttfamily None} }\end{DoxyParamCaption})}
+
+
+
+Perform custom S\+QL command. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sql} & The S\+QL string to execute \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the returned query results 
+\end{DoxyReturn}
+
+
+Definition at line 141 of file sql\+Handler.\+py.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+source/tools/sql\+Handler.\+py\end{DoxyCompactItemize}

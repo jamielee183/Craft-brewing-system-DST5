@@ -1,0 +1,5 @@
+<map id="guitools.FermentTimeScaleDraw" name="guitools.FermentTimeScaleDraw">
+<area shape="rect" id="node1" title="convert database timestamps into xaxis time for fermenting" alt="" coords="5,152,220,177"/>
+<area shape="rect" id="node2" href="$classguitools_1_1_time_scale_draw.html" title="convert database timestamps into xaxis values for a graph" alt="" coords="30,79,195,104"/>
+<area shape="rect" id="node3" title=" " alt="" coords="58,5,167,31"/>
+</map>

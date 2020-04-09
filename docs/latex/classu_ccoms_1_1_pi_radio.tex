@@ -1,0 +1,313 @@
+\hypertarget{classu_ccoms_1_1_pi_radio}{}\section{u\+Ccoms.\+Pi\+Radio Class Reference}
+\label{classu_ccoms_1_1_pi_radio}\index{uCcoms.PiRadio@{uCcoms.PiRadio}}
+
+
+Pi Radio communications class.  
+
+
+
+
+Inheritance diagram for u\+Ccoms.\+Pi\+Radio\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=283pt]{classu_ccoms_1_1_pi_radio__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for u\+Ccoms.\+Pi\+Radio\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=283pt]{classu_ccoms_1_1_pi_radio__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_ae0022ce300195d9fd5de907e925ec739}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self, L\+O\+G\+IN)
+\begin{DoxyCompactList}\small\item\em \mbox{\hyperlink{classu_ccoms_1_1_pi_radio}{Pi\+Radio}} constructor. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a319c15c0bf996c01e7b6032c56292ffe}{read\+Data}} (self)
+\begin{DoxyCompactList}\small\item\em Read Data from the radio module. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a78cdababf2338a12369f6df3b5be792c}{send\+Data}} (self, data, channel=P\+I\+\_\+\+R\+A\+D\+I\+O\+\_\+\+C\+H\+A\+N\+N\+EL, retries=5)
+\begin{DoxyCompactList}\small\item\em Send data to a brewing module. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a6a6fa8055cf1688958aa352a455f5f9a}{callback}} (self, channel=0)
+\begin{DoxyCompactList}\small\item\em Callback method called on Interupt. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a1d5a545a875881e2285dab568d56b119}{case\+Switcher}} (self, data)
+\begin{DoxyCompactList}\small\item\em Case Switcher. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a20e5d7ecc576a999860cdbda75040dd9}{mash}} (self, data)
+\begin{DoxyCompactList}\small\item\em Mash data recived method. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a28563902e7831d23b5eaca2d9b832d7e}{start\+Mash}} (self, temp)
+\begin{DoxyCompactList}\small\item\em Start Mash. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_afbacd87b43c6f0b6faff82fc608a7386}{stop\+Mash}} (self)
+\begin{DoxyCompactList}\small\item\em Stop Mash. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a1005053135e020acd9a954190f0b34ec}{boil}} (self, data)
+\begin{DoxyCompactList}\small\item\em Boil data recived method. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a4b28166c3a76316148e953988ef4033b}{start\+Boil}} (self, temp)
+\begin{DoxyCompactList}\small\item\em Start Boil. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_aa2f56d29043646663269b11db7d8d6d0}{stop\+Boil}} (self)
+\begin{DoxyCompactList}\small\item\em Stop Boil. \end{DoxyCompactList}\item 
+def \mbox{\hyperlink{classu_ccoms_1_1_pi_radio_a0a350355ff295c76bb11780aafe38c81}{ferment}} (self, data)
+\begin{DoxyCompactList}\small\item\em Feremntaion data recived. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a609c5891e2055b7a2bf28c9117bc524c}\label{classu_ccoms_1_1_pi_radio_a609c5891e2055b7a2bf28c9117bc524c}} 
+{\bfseries L\+O\+G\+IN}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a07d2408e4b18d67a3790fb30b3d5ddc4}\label{classu_ccoms_1_1_pi_radio_a07d2408e4b18d67a3790fb30b3d5ddc4}} 
+{\bfseries db}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a994c96ed99a9d186fd96f742185cda3e}\label{classu_ccoms_1_1_pi_radio_a994c96ed99a9d186fd96f742185cda3e}} 
+{\bfseries pipes}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a94bdb965de8969f0bfb652e19a73bc6d}\label{classu_ccoms_1_1_pi_radio_a94bdb965de8969f0bfb652e19a73bc6d}} 
+{\bfseries P\+I\+\_\+\+I\+N\+T\+E\+R\+U\+P\+T\+\_\+\+P\+IN}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a3a7421aafd46ca7ad14de8869b191c7b}\label{classu_ccoms_1_1_pi_radio_a3a7421aafd46ca7ad14de8869b191c7b}} 
+{\bfseries cases}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a4f2b2dc72f2c0b24f9d560f311b841b5}\label{classu_ccoms_1_1_pi_radio_a4f2b2dc72f2c0b24f9d560f311b841b5}} 
+{\bfseries send\+Retry\+Count}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a15bc47116613dd142580323091aff118}\label{classu_ccoms_1_1_pi_radio_a15bc47116613dd142580323091aff118}} 
+{\bfseries ir\+Temp}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a25380f92cb2d9a29ac076d3ac6161577}\label{classu_ccoms_1_1_pi_radio_a25380f92cb2d9a29ac076d3ac6161577}} 
+{\bfseries radio}
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a5fd5c79bb8627fbefc2dc07367dfa777}\label{classu_ccoms_1_1_pi_radio_a5fd5c79bb8627fbefc2dc07367dfa777}} 
+list {\bfseries C\+O\+N\+F\+I\+G\+U\+R\+E\+\_\+\+A\+R\+U\+D\+I\+NO} = \mbox{[}0x05\mbox{]}
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_aa5b916329cbebfd52d6399fff11c44b4}\label{classu_ccoms_1_1_pi_radio_aa5b916329cbebfd52d6399fff11c44b4}} 
+int {\bfseries B\+O\+I\+L\+\_\+\+C\+O\+M\+M\+A\+ND} = 0x02
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a9eb91b743a9baace636c7e5a28910641}\label{classu_ccoms_1_1_pi_radio_a9eb91b743a9baace636c7e5a28910641}} 
+int {\bfseries M\+A\+S\+H\+\_\+\+C\+O\+M\+M\+A\+ND} = 0x01
+\item 
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_aa60c3a94afeab931f5d320aacbecabdd}\label{classu_ccoms_1_1_pi_radio_aa60c3a94afeab931f5d320aacbecabdd}} 
+int {\bfseries F\+E\+R\+M\+E\+N\+T\+\_\+\+C\+O\+M\+M\+A\+ND} = 0x03
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Pi Radio communications class. 
+
+Event driven class using n\+R\+F24\+L01+ to communicate with brewing modules 
+
+Definition at line 75 of file u\+Ccoms.\+py.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_ae0022ce300195d9fd5de907e925ec739}\label{classu_ccoms_1_1_pi_radio_ae0022ce300195d9fd5de907e925ec739}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{L\+O\+G\+IN }\end{DoxyParamCaption})}
+
+
+
+\mbox{\hyperlink{classu_ccoms_1_1_pi_radio}{Pi\+Radio}} constructor. 
+
+set up the pipes for communications 
+\begin{DoxyParams}{Parameters}
+{\em L\+O\+G\+IN} & The login details of the My\+S\+QL database. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 88 of file u\+Ccoms.\+py.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a1005053135e020acd9a954190f0b34ec}\label{classu_ccoms_1_1_pi_radio_a1005053135e020acd9a954190f0b34ec}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!boil@{boil}}
+\index{boil@{boil}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{boil()}{boil()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+boil (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Boil data recived method. 
+
+If boil data recieved, check if its IR camera data or temprature data and enter into database. 
+
+Definition at line 225 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a6a6fa8055cf1688958aa352a455f5f9a}\label{classu_ccoms_1_1_pi_radio_a6a6fa8055cf1688958aa352a455f5f9a}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!callback@{callback}}
+\index{callback@{callback}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{callback()}{callback()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+callback (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{channel = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Callback method called on Interupt. 
+
+Decide what to do with the data when its recived on G\+P\+IO interupt 
+
+Definition at line 157 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a1d5a545a875881e2285dab568d56b119}\label{classu_ccoms_1_1_pi_radio_a1d5a545a875881e2285dab568d56b119}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!caseSwitcher@{caseSwitcher}}
+\index{caseSwitcher@{caseSwitcher}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{caseSwitcher()}{caseSwitcher()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+case\+Switcher (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Case Switcher. 
+
+send the data to the appropiated function for processing 
+
+Definition at line 174 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a0a350355ff295c76bb11780aafe38c81}\label{classu_ccoms_1_1_pi_radio_a0a350355ff295c76bb11780aafe38c81}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!ferment@{ferment}}
+\index{ferment@{ferment}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{ferment()}{ferment()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+ferment (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Feremntaion data recived. 
+
+decifer what btach is in what tank and place data into database. 
+
+Definition at line 260 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a20e5d7ecc576a999860cdbda75040dd9}\label{classu_ccoms_1_1_pi_radio_a20e5d7ecc576a999860cdbda75040dd9}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!mash@{mash}}
+\index{mash@{mash}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{mash()}{mash()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+mash (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data }\end{DoxyParamCaption})}
+
+
+
+Mash data recived method. 
+
+If mash data recieved, check if its IR camera data or temprature data and enter into database. 
+
+Definition at line 183 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a319c15c0bf996c01e7b6032c56292ffe}\label{classu_ccoms_1_1_pi_radio_a319c15c0bf996c01e7b6032c56292ffe}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!readData@{readData}}
+\index{readData@{readData}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{readData()}{readData()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+read\+Data (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Read Data from the radio module. 
+
+If there is data ready, ready it and return whats been recived 
+
+Reimplemented from \mbox{\hyperlink{classu_ccoms_1_1_u_c_comms_aba3c5a6a0e277e721590343626b5a700}{u\+Ccoms.\+U\+C\+Comms}}.
+
+
+
+Definition at line 124 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a78cdababf2338a12369f6df3b5be792c}\label{classu_ccoms_1_1_pi_radio_a78cdababf2338a12369f6df3b5be792c}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!sendData@{sendData}}
+\index{sendData@{sendData}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{sendData()}{sendData()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+send\+Data (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{data,  }\item[{}]{channel = {\ttfamily PI\+\_\+RADIO\+\_\+CHANNEL},  }\item[{}]{retries = {\ttfamily 5} }\end{DoxyParamCaption})}
+
+
+
+Send data to a brewing module. 
+
+try send data to a module. If failed try resending. 
+\begin{DoxyParams}{Parameters}
+{\em data} & The data to send to the brewing module (32 bytes maximum). \\
+\hline
+{\em channel} & The channel to send the data on. \\
+\hline
+{\em retries} & the number of times to try resending the data before giving up and warning user. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if sending sucessful, False if failed. 
+\end{DoxyReturn}
+
+
+Definition at line 137 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a4b28166c3a76316148e953988ef4033b}\label{classu_ccoms_1_1_pi_radio_a4b28166c3a76316148e953988ef4033b}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!startBoil@{startBoil}}
+\index{startBoil@{startBoil}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{startBoil()}{startBoil()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+start\+Boil (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{temp }\end{DoxyParamCaption})}
+
+
+
+Start Boil. 
+
+method to send command to brewing module to start a boil 
+\begin{DoxyParams}{Parameters}
+{\em temp} & The temprature to set the boil to. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 244 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_a28563902e7831d23b5eaca2d9b832d7e}\label{classu_ccoms_1_1_pi_radio_a28563902e7831d23b5eaca2d9b832d7e}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!startMash@{startMash}}
+\index{startMash@{startMash}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{startMash()}{startMash()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+start\+Mash (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{temp }\end{DoxyParamCaption})}
+
+
+
+Start Mash. 
+
+method to send command to brewing module to start a mash 
+\begin{DoxyParams}{Parameters}
+{\em temp} & The temprature to set the mash to. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 209 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_aa2f56d29043646663269b11db7d8d6d0}\label{classu_ccoms_1_1_pi_radio_aa2f56d29043646663269b11db7d8d6d0}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!stopBoil@{stopBoil}}
+\index{stopBoil@{stopBoil}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{stopBoil()}{stopBoil()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+stop\+Boil (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Stop Boil. 
+
+Send command to brewing module to stop the boil. 
+
+Definition at line 254 of file u\+Ccoms.\+py.
+
+\mbox{\Hypertarget{classu_ccoms_1_1_pi_radio_afbacd87b43c6f0b6faff82fc608a7386}\label{classu_ccoms_1_1_pi_radio_afbacd87b43c6f0b6faff82fc608a7386}} 
+\index{uCcoms.PiRadio@{uCcoms.PiRadio}!stopMash@{stopMash}}
+\index{stopMash@{stopMash}!uCcoms.PiRadio@{uCcoms.PiRadio}}
+\subsubsection{\texorpdfstring{stopMash()}{stopMash()}}
+{\footnotesize\ttfamily def u\+Ccoms.\+Pi\+Radio.\+stop\+Mash (\begin{DoxyParamCaption}\item[{}]{self }\end{DoxyParamCaption})}
+
+
+
+Stop Mash. 
+
+Send command to brewing module to stop the mash. 
+
+Definition at line 219 of file u\+Ccoms.\+py.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+source/tools/u\+Ccoms.\+py\end{DoxyCompactItemize}
