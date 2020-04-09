@@ -38,7 +38,7 @@ class NewBrewWindow(QDialog):
         nameGroupBox = QGroupBox('Recipe')
         nameForm = QFormLayout() 
         self.recipeNameEdit = QLineEdit()
-        nameForm.addRow(QLabel('Recipe Name'), self.recipeNameEdit)
+        nameForm.addRow(QLabel('Recipe Name:'), self.recipeNameEdit)
         nameGroupBox.setLayout(nameForm)
 
         # Mash group box
@@ -59,7 +59,7 @@ class NewBrewWindow(QDialog):
         boilForm.addRow(QLabel('Time (mins):'), self.boilTimeEdit)
        
         # Create 4 hop boxes using createHopBox function
-        self.hopBoxes = [self.createHopBox(i,0) for i in range(4)]
+        self.hopBoxes = [self.createHopBox(i+1,0) for i in range(4)]
         # Create hBoxes for hop boxes
         hopHLayout = QHBoxLayout()
         hopHLayout2 = QHBoxLayout()
@@ -77,7 +77,7 @@ class NewBrewWindow(QDialog):
         fermentGroupBox = QGroupBox('Fermentation')
         fermentForm = QFormLayout()
         self.fermentTempEdit = QLineEdit()
-        fermentForm.addRow(QLabel('Temperature:'), self.fermentTempEdit)
+        fermentForm.addRow(QLabel(f"Temperature ({DEGREES}C): "), self.fermentTempEdit)
         fermentGroupBox.setLayout(fermentForm)
 
         # Buttons at bottom of page

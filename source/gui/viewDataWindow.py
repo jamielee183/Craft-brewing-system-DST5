@@ -26,16 +26,13 @@ from source.tools.sqlHandler import SqlTableHandler as db
 from source.tools.sqlBrewingComms import SQLNewBrew
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 
-my_array = [('1','Carling','01/01/19'),
-            ('2','Tennents','13/10/19'),
-            ('3','Drygate','21/01/20'),
-            ('4','Asahi','01/03/20')]
 
 class ViewDataWindow(QDialog):
     formSubmitted = pyqtSignal()
 
     def __init__(self, LOGIN, parent=None):
-        super(ViewDataWindow, self).__init__(parent)
+        #super(ViewDataWindow, self).__init__(parent)
+        super().__init__(parent)
         self.LOGIN = LOGIN
         self.db = db(self.LOGIN,"Brewing")
         self.displayNo = 0
