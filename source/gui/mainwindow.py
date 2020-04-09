@@ -158,6 +158,7 @@ class MainWindow(QMainWindow):
         database.flushTables()
         batchID = database.maxIdFromTable("Brews")
         if self.isRunningOnPi:
+            ##Create instance of MashBoilMonitor
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)
         else:
             self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None)            
