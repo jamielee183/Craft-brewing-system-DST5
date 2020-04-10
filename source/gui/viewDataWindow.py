@@ -2,7 +2,10 @@
 
 import sys
 import os
+import numpy as np
+from datetime import timedelta
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
+
 
 #from PySide2 import QtWidgets
 from PyQt5.QtCore import \
@@ -25,6 +28,7 @@ from source.tools.constants import DEGREES
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.tools.sqlBrewingComms import SQLNewBrew
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
+from source.gui.guitools import TimeScaleDraw
 
 
 class ViewDataWindow(QDialog):
@@ -43,6 +47,7 @@ class ViewDataWindow(QDialog):
         #print(self.db.readFromTable("Brews", "id, Recipe, Date"))
         self.create_layout_viewData()
         self.setWindowTitle('Data Viewer')
+        self.curvedict = {}
         
     # Function to create layout of New Brew window
     def create_layout_viewData(self):
@@ -174,7 +179,6 @@ class ViewDataWindow(QDialog):
         displayedWidget.setLayout(self.hLayoutDisplayed)
         # Scroll area for horizontal displayed brews
         hScrollArea = QScrollArea()
-        #hScrollArea.setBackgroundRole(QPalette.Base)
         hScrollArea.setWidget(displayedWidget)
         hScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         hScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -218,7 +222,6 @@ class ViewDataWindow(QDialog):
         self.but_quit.clicked.connect(self.quitButtonClicked)
 
 
-
     def quitButtonClicked(self):     
         
         self.close()
@@ -260,6 +263,7 @@ class ViewDataWindow(QDialog):
     # Slot for adding brew info to each of the process tabs
     def viewButtonClickedTabs(self):
 
+        batchID = self.brewInfo[0].text()
         # Query database to get recipe data for the brew selected to view
         # brewInfo[0].text() gives brew ID for selected brew from table
         sql = f"SELECT * FROM Brews WHERE id = '{self.brewInfo[0].text()}'"
@@ -312,6 +316,37 @@ class ViewDataWindow(QDialog):
         self.tabFerment.fermentVLayout.insertWidget(self.displayNo - 1, fermentGroupBox)
         self.displayedBrewsVFerment.append(fermentGroupBox)
 
+        ### PUTTING DATA ONTO GRAPHS ###
+        # Query database to get data to plot on graphs
+        sqlMash = f"SELECT TimeStamp, Temp FROM Mash WHERE BatchID = '{batchID}'"        
+        sqlBoil = f"SELECT TimeStamp, Temp FROM BoilMonitor WHERE BatchID = '{batchID}'"
+        sqlFermentTemp = f"SELECT TimeStamp, Temp FROM Ferment WHERE BatchID = '{batchID}'"
+        sqlFermentSG = f"SELECT TimeStamp, Sg FROM Ferment WHERE BatchID = '{batchID}'"
+        mashDataX, mashDataY = self.createData(sqlMash)
+        boilDataX, boilDataY = self.createData(sqlBoil)
+        fermentTempDataX, fermentTempDataY = self.createData(sqlFermentTemp)
+        fermentSGDataX, fermentSGDataY = self.createData(sqlFermentSG)
+
+        self.tabMash.graph.createCurve(mashDataX, mashDataY)
+        self.tabBoil.graph.createCurve(boilDataX, boilDataY)
+        self.tabFerment.tempGraph.createCurve(fermentTempDataX[1:], fermentTempDataY[1:])
+        self.tabFerment.gravGraph.createCurve(fermentSGDataX[1:], fermentSGDataY[1:])
+
+    # Get data from database using sql query
+    def createData(self, sql):
+        timestamps = []
+        tempdat = []
+        for data in self.db.custom(sql):
+            timestamps.append(data[0])
+            tempdat.append(data[1])
+        
+        startTime = timestamps[0]
+        print("startTime = ", startTime)
+        for i in range(len(timestamps)):
+            timestamps[i] = (timestamps[i] - startTime).seconds
+
+        return timestamps, tempdat
+
 
     def removeBrewClicked(self, brewToRemove):
 
@@ -323,6 +358,7 @@ class ViewDataWindow(QDialog):
         # Loop to renumber the remaining displayed groupboxes using the array
         for i in range(len(self.displayedBrewsH)):
             self.displayedBrewsH[i].setTitle(str(i+1))
+
 
     # Slot for removing group boxes of brew info in mash tab
     def removeBrewClickedMash(self, brewToRemove):
@@ -336,8 +372,14 @@ class ViewDataWindow(QDialog):
         # Use position to delete from vertical array
         del self.displayedBrewsVMash[brewArrayPos]
         # Renumber groupboxes in vertical display
-        for i in range(len(self.displayedBrewsVMash)):
+        for i in range(len(self.displayedBrewsVMash)): 
             self.displayedBrewsVMash[i].setTitle(str(i+1))
+        
+        # Remove curve from graph
+        self.tabMash.graph.removeCurve(brewArrayPos)
+        
+        
+
 
     # Slot for removing group boxes of brew info in boil tab
     def removeBrewClickedBoil(self, brewToRemove):
@@ -354,6 +396,8 @@ class ViewDataWindow(QDialog):
         for i in range(len(self.displayedBrewsVBoil)):
             self.displayedBrewsVBoil[i].setTitle(str(i+1))
 
+        self.tabBoil.graph.removeCurve(brewArrayPos)
+
     # Slot for removing group boxes of brew info in ferment tab
     def removeBrewClickedFerment(self, brewToRemove):
         
@@ -368,6 +412,9 @@ class ViewDataWindow(QDialog):
         # Renumber groupboxes in vertical display
         for i in range(len(self.displayedBrewsVFerment)):
             self.displayedBrewsVFerment[i].setTitle(str(i+1))
+
+        self.tabFerment.tempGraph.removeCurve(brewArrayPos)
+        self.tabFerment.gravGraph.removeCurve(brewArrayPos)
 
     # Slot for filtering by Batch IDdisplayed
     def filter_batchID(self):
@@ -410,7 +457,6 @@ class MyTableModel(QAbstractTableModel):
             self.arraydata.append(list(datain[i]))
             self.arraydata[i][2] = self.arraydata[i][2].strftime("%d/%m/%Y")
 
-
         self.headerdata = headerdata
 
     def rowCount(self, parent):
@@ -441,31 +487,10 @@ class MashTab(QTabWidget):
 
     def create_layout_mashTab(self):
 
-        # Create text for graph and axis titles
-        titleFont = QFont("Helvetica", 12, QFont.Bold)
-        titleText = QwtText()
-        titleText.setText("Mash Temperature")
-        titleText.setFont(titleFont)
-        axisFont = QFont("Helvetica", 11, QFont.Bold)
-        timeTitle = QwtText()
-        timeTitle.setText("Time (mins)")
-        timeTitle.setFont(axisFont)
-
-        tempTitle = QwtText()
-        tempTitle.setText(f"Temperature ({DEGREES}C)")
-        tempTitle.setFont(axisFont)
-
-        # Temp graph
-        self.plot = QwtPlot()
-        self.plot.setTitle(titleText)
-        self.plot.setAxisTitle(self.plot.yLeft, tempTitle)
-        self.plot.setAxisTitle(self.plot.xBottom, timeTitle)
-        self.curve = QwtPlotCurve()
-        self.curve.attach(self.plot)
-        #self.curve.setData(self.dataX, self.dataY)
-        self.plot.resize(1000, 1000)
-        self.plot.replot()
-        self.plot.show()
+        self.graph = NewGraph()
+        self.graph.createGraph()
+        self.graph.setTitle("Mash Temperature")
+        self.graph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time")
         
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -481,8 +506,9 @@ class MashTab(QTabWidget):
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
         hLayout.addWidget(mashScrollArea)
-        hLayout.addWidget(self.plot, 1)
+        hLayout.addWidget(self.graph.plot, 1)
         self.setLayout(hLayout)
+
 
 class BoilTab(QTabWidget):
 
@@ -491,32 +517,11 @@ class BoilTab(QTabWidget):
         self.create_layout_boilTab()
 
     def create_layout_boilTab(self):
-        
-        # Create text for graph and axis titles
-        titleFont = QFont("Helvetica", 12, QFont.Bold)
-        titleText = QwtText()
-        titleText.setText("Boil Temperature")
-        titleText.setFont(titleFont)
-        axisFont = QFont("Helvetica", 11, QFont.Bold)
-        timeTitle = QwtText()
-        timeTitle.setText("Time (mins)")
-        timeTitle.setFont(axisFont)
 
-        tempTitle = QwtText()
-        tempTitle.setText(f"Temperature ({DEGREES}C)")
-        tempTitle.setFont(axisFont)
-
-        # Temp graph
-        self.plot = QwtPlot()
-        self.plot.setTitle(titleText)
-        self.plot.setAxisTitle(self.plot.yLeft, tempTitle)
-        self.plot.setAxisTitle(self.plot.xBottom, timeTitle)
-        self.curve = QwtPlotCurve()
-        self.curve.attach(self.plot)
-        #self.curve.setData(self.dataX, self.dataY)
-        self.plot.resize(1000, 1000)
-        self.plot.replot()
-        self.plot.show()
+        self.graph = NewGraph()
+        self.graph.createGraph()
+        self.graph.setTitle("Boil Temperature")
+        self.graph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time")
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -532,9 +537,8 @@ class BoilTab(QTabWidget):
         # Main H layout for mash tab
         hLayout = QHBoxLayout()
         hLayout.addWidget(boilScrollArea)
-        hLayout.addWidget(self.plot, 1)
+        hLayout.addWidget(self.graph.plot, 1)
         self.setLayout(hLayout)
-
 
 class FermentTab(QTabWidget):
 
@@ -545,58 +549,24 @@ class FermentTab(QTabWidget):
     def create_layout_fermentTab(self):
 
         tabs = QTabWidget()
-        # Create text for graph and axis titles
-        titleFont = QFont("Helvetica", 12, QFont.Bold)
-        tempTitleText = QwtText()
-        tempTitleText.setText("Fermentation Temperature")
-        tempTitleText.setFont(titleFont)
-        gravTitleText = QwtText()
-        gravTitleText.setText("Specific Gravity")
-        gravTitleText.setFont(titleFont)
-        axisFont = QFont("Helvetica", 11, QFont.Bold)
-        timeTitle = QwtText()
-        timeTitle.setText("Time (hours)")
-        timeTitle.setFont(axisFont)
-
-        tempTitle = QwtText()
-        tempTitle.setText(f"Temperature ({DEGREES}C)")
-        tempTitle.setFont(axisFont)
-
-        gravTitle = QwtText()
-        gravTitle.setText("Specific Gravity")
-        gravTitle.setFont(axisFont)
-
-        # Tab for Temp graph
         tabTemp = QTabWidget()
-        self.tempPlot = QwtPlot()
-        self.tempPlot.setTitle(tempTitleText)
-        self.tempPlot.setAxisTitle(self.tempPlot.yLeft, tempTitle)
-        self.tempPlot.setAxisTitle(self.tempPlot.xBottom, timeTitle)
-        self.tempCurve = QwtPlotCurve()
-        self.tempCurve.attach(self.tempPlot)
-        #self.curve.setData(self.dataX, self.dataY)
-        self.tempPlot.resize(1000, 1000)
-        self.tempPlot.replot()
-        self.tempPlot.show()
-        plotLayout = QVBoxLayout()
-        plotLayout.addWidget(self.tempPlot)
-        tabTemp.setLayout(plotLayout)
-
-        # Tab for Specific Gravity Graph
         tabGrav = QTabWidget()
-        self.gravPlot = QwtPlot()
-        self.gravPlot.setTitle(gravTitleText)
-        self.gravPlot.setAxisTitle(self.gravPlot.yLeft, gravTitle)
-        self.gravPlot.setAxisTitle(self.gravPlot.xBottom, timeTitle)
-        self.gravCurve = QwtPlotCurve()
-        self.gravCurve.attach(self.gravPlot)
-        #self.curve.setData(self.dataX, self.dataY)
-        self.gravPlot.resize(1000, 1000)
-        self.gravPlot.replot()
-        self.gravPlot.show()
-        plotLayout = QVBoxLayout()
-        plotLayout.addWidget(self.gravPlot)
-        tabGrav.setLayout(plotLayout)
+
+        self.tempGraph = NewGraph()
+        self.tempGraph.createGraph()
+        self.tempGraph.setTitle("Fermentation Temperature")
+        self.tempGraph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time")
+        tempLayout = QVBoxLayout()
+        tempLayout.addWidget(self.tempGraph.plot)
+        tabTemp.setLayout(tempLayout)
+
+        self.gravGraph = NewGraph()
+        self.gravGraph.createGraph()
+        self.gravGraph.setTitle("Specific Gravity")
+        self.gravGraph.setAxisTitles("Specific Gravity", "Time")
+        gravLayout = QVBoxLayout()
+        gravLayout.addWidget(self.gravGraph.plot)
+        tabGrav.setLayout(gravLayout)
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -622,3 +592,53 @@ class FermentTab(QTabWidget):
         self.setLayout(hLayout)
 
 
+class NewGraph():
+
+    def __init__(self):
+
+        self.curves = []
+        self.titleFont = QFont("Helvetica", 12, QFont.Bold)
+        self.axisFont = QFont("Helvetica", 11, QFont.Bold)
+
+    def createGraph(self):
+
+        self.plot = QwtPlot()
+        self.plot.resize(1000, 1000)
+        #self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+        self.plot.replot()
+        self.plot.show()
+
+    def createCurve(self, x, y):
+                
+        curve = QwtPlotCurve()
+        curve.setData(x,y)
+        curve.attach(self.plot)
+        #self.plot.replot()
+        self.curves.append(curve)
+
+    def removeCurve(self, curveIndex):
+        print("curves = ", self.curves)
+        print("index = ", curveIndex)
+        self.curves[curveIndex].attach(0)
+        del self.curves[curveIndex]
+
+    def setAxisTitles(self, yAxis, xAxis):
+        
+        # Create text for graph and axis titles      
+        xTitle = QwtText()
+        xTitle.setText(xAxis)
+        xTitle.setFont(self.axisFont)
+        yTitle = QwtText()
+        yTitle.setText(yAxis)
+        yTitle.setFont(self.axisFont)
+
+        self.plot.setAxisTitle(self.plot.yLeft, yTitle)
+        self.plot.setAxisTitle(self.plot.xBottom, xTitle)
+
+
+    def setTitle(self, title):
+
+        titleText = QwtText()
+        titleText.setText(title)
+        titleText.setFont(self.titleFont)
+        self.plot.setTitle(titleText)
