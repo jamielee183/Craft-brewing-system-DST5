@@ -125,7 +125,7 @@ class TimeScaleDraw(QwtScaleDraw):
         return '\n '.join(result[:granularity])
 
     def label(self, value):
-        return QwtText(self.display_time(value))
+        return QwtText(self.display_time(value, granularity=1))
 
 ##convert database timestamps into xaxis time for fermenting
 class FermentTimeScaleDraw(TimeScaleDraw):

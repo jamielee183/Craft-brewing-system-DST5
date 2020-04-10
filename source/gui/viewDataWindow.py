@@ -12,7 +12,7 @@ from PyQt5.QtCore import \
     Qt,pyqtSignal, QDate, QObject, QAbstractTableModel, QVariant,\
     QSortFilterProxyModel #, pyqtSlot
 from PyQt5.QtGui import \
-    QFont, QPalette
+    QFont, QPalette, QColor
 from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, QTableWidget, QTabWidget, \
     QSlider, QPushButton, QLabel, QScrollArea,\
@@ -285,6 +285,7 @@ class ViewDataWindow(QDialog):
 
         # Create groupboxes for each of the process tabs to fill with brew info
         mashGroupBox = QGroupBox(str(self.displayNo))
+        #mashGroupBox.setStyleSheet("border: 2px solid red")
         mashFormLayout = QFormLayout()
         mashFormLayout.addRow(QLabel(f"Temp ({DEGREES}C): {self.recipedata['mashTemp']}"))
         mashFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['mashTime']}"))
@@ -490,7 +491,7 @@ class MashTab(QTabWidget):
         self.graph = NewGraph()
         self.graph.createGraph()
         self.graph.setTitle("Mash Temperature")
-        self.graph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time")
+        self.graph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time (mins)")
         
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -521,7 +522,7 @@ class BoilTab(QTabWidget):
         self.graph = NewGraph()
         self.graph.createGraph()
         self.graph.setTitle("Boil Temperature")
-        self.graph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time")
+        self.graph.setAxisTitles(f"Temperature ({DEGREES}C)", "Time (mins)")
 
         # V layout for input box inside widget to allow fixed width
         displayedWidget = QWidget()
@@ -608,17 +609,17 @@ class NewGraph():
         self.plot.replot()
         self.plot.show()
 
-    def createCurve(self, x, y):
+    def createCurve(self, x, y): #, colour):
                 
         curve = QwtPlotCurve()
+        #curve.setPen(colour)
         curve.setData(x,y)
         curve.attach(self.plot)
         #self.plot.replot()
         self.curves.append(curve)
 
     def removeCurve(self, curveIndex):
-        print("curves = ", self.curves)
-        print("index = ", curveIndex)
+
         self.curves[curveIndex].attach(0)
         del self.curves[curveIndex]
 
