@@ -27,7 +27,7 @@ import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLBoil, SQLBoilMonitor, SQLFermentMonitor
 from source.tools.constants import *
-from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, PlotCanvas
+from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, PlotCanvas, TimeScaleDraw
 
  
 ##Parent class to hold graph instance
@@ -188,41 +188,53 @@ class TabMash(TabGraph):
     def updatePlot(self):
         self.db.flushTables()
         # db = dataBase(self.LOGIN, "Brewing")
-        sql = f"SELECT Temp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        sql = f"SELECT TimeStamp, Temp FROM Mash WHERE BatchID = '{self.batchID}'"
+        # query = self.db.custom(sql)
 
-        results = [i[0] for i in query]
+        # results = [i[0] for i in query]
+        # self.dataY = np.fromiter(results, dtype=float)
 
-        sql = f"SELECT TimeStamp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        # sql = f"SELECT TimeStamp FROM Mash WHERE BatchID = '{self.batchID}'"
+        # query = self.db.custom(sql)
 
+        timestamps = []
+        results = []
+        for data in self.db.custom(sql):
+            timestamps.append(data[0])
+            results.append(data[1])
 
-        self.timeStamps = [i[0] for i in query]
-        self.dataY = np.fromiter(results, dtype=float)
+        startTime = timestamps[0]
+        for i in range(len(timestamps)):
+            timestamps[i] = (timestamps[i]-startTime).seconds
+            # timestamps[i] = timestamps[i].seconds
+
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+
+        # self.timeStamps = [i[0] for i in query]
         
-        self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
-        self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
+        # self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
+        self.curve.setData(timestamps, results)
+        # self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
         self.plot.replot()
         self.plot.show()
 
-        if len(self.dataX) == 0:
+        if len(timestamps) == 0:
             self.timeLabel.setText("Timer:")
             self.tempLabel.setText("Temp:")
         else:
-            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
-            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))     
+            self.timeLabel.setText("Timer: {}".format(self.display_time(timestamps[-1])))
+            self.tempLabel.setText("Temp: {}{}".format(results[-1],DEGREESC))     
 
-            if (self.dataY[-1] < (self.recipedata['mashTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['mashTemp']+0.5)):
+            if (results[-1] < (self.recipedata['mashTemp']-0.5)) or (results[-1] > (self.recipedata['mashTemp']+0.5)):
                 self.tempStatusLED.value=False
             else:
                 self.tempStatusLED.value=True
-        if len(self.dataX) == 0:
+        if len(timestamps) == 0:
             self.timeLabel.setText("Timer:")
             self.tempLabel.setText("Temp:")
         else:
-            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
-            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))
+            self.timeLabel.setText("Timer: {}".format(self.display_time(timestamps[-1])))
+            self.tempLabel.setText("Temp: {}{}".format(results[-1],DEGREESC))
 
 ##Tab specific to Boiling
 class TabBoil(TabGraph):
@@ -315,41 +327,58 @@ class TabBoil(TabGraph):
     def updatePlot(self):
         self.db.flushTables()
         # db = dataBase(self.LOGIN, "Brewing")
-        sql = f"SELECT Temp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
+        sql = f"SELECT TimeStamp, Temp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
         query = self.db.custom(sql)
 
         # results = [i[0] for i in query]
-        results = np.asarray(query)
+        # results = np.asarray(query)
+        # self.dataY = np.fromiter(results, dtype=float)
 
-        sql = f"SELECT TimeStamp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        # sql = f"SELECT TimeStamp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
+        # query = self.db.custom(sql)
 
+        timestamps = []
+        results = []
+        for data in self.db.custom(sql):
+            timestamps.append(data[0])
+            results.append(data[1])
 
-        self.timeStamps = [i[0] for i in query]
-        self.dataY = np.fromiter(results, dtype=float)
         
-        self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
-        self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
+        if len(timestamps) == 0:
+            return
+
+        startTime = timestamps[0]
+        for i in range(len(timestamps)):
+            timestamps[i] = (timestamps[i]-startTime).seconds
+            # timestamps[i] = timestamps[i].seconds
+
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+
+        # self.timeStamps = [i[0] for i in query]
+        # self.dataY = np.fromiter(results, dtype=float)
+        
+        # self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
+        self.curve.setData(timestamps, results)
+        # self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
         self.plot.replot()
         self.plot.show()
 
-        if len(self.dataX) == 0:
+        if len(timestamps) == 0:
             self.timeLabel.setText("Timer:")
             self.tempLabel.setText("Temp:")
         else:
 
-            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
-            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))     
+            self.timeLabel.setText("Timer: {}".format(self.display_time(timestamps[-1])))
+            self.tempLabel.setText("Temp: {}{}".format(results[-1],DEGREESC))     
 
-            if (self.dataY[-1] < (self.recipedata['boilTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['boilTemp']+0.5)):
+            if (results[-1] < (self.recipedata['boilTemp']-0.5)) or (results[-1] > (self.recipedata['boilTemp']+0.5)):
                 self.tempStatusLED.value=False
             else:
                 self.tempStatusLED.value=True
 
         for i in range(4):
             if self.recipedata[f'hop{i+1}'][1] is not None:
-                if self.count/60 >= self.recipedata['boilTime']-self.recipedata[f'hop{i+1}'][1]:
+                if timestamps[-1]/60 >= self.recipedata['boilTime']-self.recipedata[f'hop{i+1}'][1]:
                     self.recipeLED[i].setOffColour(QLed.Yellow)
 
 ##Monitoring window for boiling and mashing processes
@@ -366,8 +395,8 @@ class MonitorWindow(QDialog):
         self.LOGIN = LOGIN
         self.db = dataBase(self.LOGIN, "Brewing")
         self.batchID = batchID
-        if radio is not None:
-            self.radio = radio
+        
+        self.radio = radio
 
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
         query = self.db.custom(sql)
