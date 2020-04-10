@@ -107,13 +107,15 @@ class TimeScaleDraw(QwtScaleDraw):
     _logname = 'TimeScaleDraw'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self, timeStamps=None, *args):
+    def __init__(self, timeStamps=None, names=True, granularity=2, *args):
         QwtScaleDraw.__init__(self, *args)
         self.timeStamps = timeStamps
         self.fmtFull='%H:%M:%S\n%Y-%m-%d'
         self.fmtTime='%H:%M:%S'
+        self.granularity=granularity
+        self.names = names
 
-    def display_time(self, seconds, granularity=2):
+    def display_time(self, seconds):
         result = []
         for name, count in TIME_INTERVALS:
             value = seconds // count
@@ -121,11 +123,19 @@ class TimeScaleDraw(QwtScaleDraw):
                 seconds -= value * count
                 if value == 1:
                     name = name.rstrip('s')
-                result.append("{} {}".format(value, name))
-        return '\n '.join(result[:granularity])
+
+                if self.names:
+                    result.append("{} {}".format(int(value), name))
+                else:
+                    result.append("{}".format(int(value)))
+
+        if self.names:
+            return '\n '.join(result[:self.granularity])
+        else:
+            return '.'.join(result[:self.granularity])
 
     def label(self, value):
-        return QwtText(self.display_time(value))
+        return QwtText(self.display_time(seconds=value))
 
 ##convert database timestamps into xaxis time for fermenting
 class FermentTimeScaleDraw(TimeScaleDraw):
