@@ -35,7 +35,7 @@ from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinis
 #Subclassed by TabBoil and TabMash
 #@sa TabBoil and TabMash
 class TabGraph(QWidget):
-
+    
     _logname = 'TabGraph'
     _log = logging.getLogger(f'{_logname}')
 
@@ -43,10 +43,11 @@ class TabGraph(QWidget):
     ##TabGraph constructor
     #
     #Create the graph and accompanying buttons
-    def __init__(self, LOGIN, parent=None):
+    def __init__(self, db, parent=None):
         super().__init__(parent)
-        self.LOGIN = LOGIN
-        self.db = dataBase(self.LOGIN, "Brewing")
+        # self.LOGIN = LOGIN
+        # self.db = dataBase(self.LOGIN, "Brewing")
+        self.db=db
         self.dataY = np.zeros(0)
         self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
 
@@ -145,11 +146,11 @@ class TabMash(TabGraph):
     _log = logging.getLogger(f'{_logname}')
 
     ##Create tab layout and setup plot for camera
-    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
+    def __init__(self, db, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
         self.recipedata = recipedata
         self.batchID = batchID
         self.radio = radio
-        super().__init__(LOGIN, parent)
+        super().__init__(db, parent)
         
         self.startButton.setText(self.tr('Start Mash'))
         self.stopButton.setText(self.tr('&Stop Mash'))
@@ -242,12 +243,12 @@ class TabBoil(TabGraph):
     _log = logging.getLogger(f'{_logname}')
 
     ##Create tab layout and setup plot and recipe data timings
-    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
+    def __init__(self, db, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
         self.recipedata = recipedata
         self.batchID = batchID
         self.radio = radio
-        super().__init__(LOGIN, parent)
-        self.sqlBoilComms = SQLBoil(self.LOGIN)
+        super().__init__(db, parent)
+        self.sqlBoilComms = SQLBoil(LOGIN)
         self.plot.setTitle("Boil")
         self.curve.setTitle("Temprature")
 
@@ -416,8 +417,8 @@ class MonitorWindow(QDialog):
         self.recipedata['fermenttemp']= query[0][15]
         
         self.tabs = QTabWidget()
-        self.tabMash = TabMash(LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
-        self.tabBoil = TabBoil(LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
+        self.tabMash = TabMash(self.db, LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
+        self.tabBoil = TabBoil(self.db, LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
         self.tabs.resize(100,1000)
 
         self.tabs.addTab(self.tabMash,"Mash")
