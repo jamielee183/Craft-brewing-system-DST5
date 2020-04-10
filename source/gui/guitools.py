@@ -15,6 +15,7 @@ import matplotlib.cm as cm
 from scipy.ndimage.filters import gaussian_filter
 import time
 import numpy as np
+import datetime 
 
 
 import source.tools.exceptionLogging
@@ -136,6 +137,17 @@ class TimeScaleDraw(QwtScaleDraw):
 
     def label(self, value):
         return QwtText(self.display_time(seconds=value))
+
+class DateTimeTimeScaleDraw(TimeScaleDraw):
+    _logname = 'DateTimeTimeScaleDraw'
+    _log = logging.getLogger(f'{_logname}')
+
+    def label(self,value):
+        # output = QwtText(datetime.timedelta(seconds=value))
+
+        return QwtText(str(datetime.timedelta(seconds=value)))
+
+
 
 ##convert database timestamps into xaxis time for fermenting
 class FermentTimeScaleDraw(TimeScaleDraw):
