@@ -85,7 +85,7 @@ class SQLMashMonitor(SQLBrewingComms):
        super().__init__(LOGIN)
 
     ##Record Data into the passed data into the table
-    def record(self, temp, volume, pH, SG):
+    def record(self, temp, volume=0, pH=0, SG=0):
         self.batchID = self.getCurrentBrew()
         insert = []
         insert.append(("BatchID", "TimeStamp", "Temp", "Volume", "pH","SG"))
@@ -267,7 +267,7 @@ class SQLFermentMonitor(SQLBrewingComms):
         self.batchID = self.getCurrentBrew()
 
     ##Record passed data into the table
-    def record(self, specificG, temp, volume):
+    def record(self, specificG, temp, volume=None):
         insert = []
         insert.append(("BatchID", "TimeStamp", "Fermenter", "Sg", "Temp", "Volume"))
         insert.append((self.batchID, datetime.now(), self.fermenterID, specificG, temp, volume))
