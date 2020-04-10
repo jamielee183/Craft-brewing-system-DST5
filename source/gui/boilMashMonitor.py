@@ -27,7 +27,7 @@ import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLBoil, SQLBoilMonitor, SQLFermentMonitor
 from source.tools.constants import *
-from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, PlotCanvas
+from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, PlotCanvas, TimeScaleDraw
 
  
 ##Parent class to hold graph instance
@@ -192,17 +192,27 @@ class TabMash(TabGraph):
         query = self.db.custom(sql)
 
         results = [i[0] for i in query]
+        self.dataY = np.fromiter(results, dtype=float)
 
         sql = f"SELECT TimeStamp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        # query = self.db.custom(sql)
 
+        timestamps = []
+        for data in self.db.custom(sql):
+            timestamps.append(data[0])
 
-        self.timeStamps = [i[0] for i in query]
-        self.dataY = np.fromiter(results, dtype=float)
+        startTime = timestamps[0]
+        for i in range(len(timestamps)):
+            timestamps[i] -= startTime
+            timestamps[i] = timestamps[i].seconds
+
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+
+        # self.timeStamps = [i[0] for i in query]
         
-        self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
-        self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
+        # self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
+        self.curve.setData(timestamps, self.dataY)
+        # self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
         self.plot.replot()
         self.plot.show()
 
@@ -366,8 +376,8 @@ class MonitorWindow(QDialog):
         self.LOGIN = LOGIN
         self.db = dataBase(self.LOGIN, "Brewing")
         self.batchID = batchID
-        if radio is not None:
-            self.radio = radio
+        
+        self.radio = radio
 
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
         query = self.db.custom(sql)
