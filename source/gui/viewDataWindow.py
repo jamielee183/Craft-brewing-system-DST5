@@ -28,7 +28,7 @@ from source.tools.constants import DEGREES
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.tools.sqlBrewingComms import SQLNewBrew
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
-from source.gui.guitools import TimeScaleDraw
+from source.gui.guitools import TimeScaleDraw, DateTimeTimeScaleDraw
 
 
 class ViewDataWindow(QDialog):
@@ -605,7 +605,7 @@ class NewGraph():
 
         self.plot = QwtPlot()
         self.plot.resize(1000, 1000)
-        #self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, DateTimeTimeScaleDraw(names=False))
         self.plot.replot()
         self.plot.show()
 
