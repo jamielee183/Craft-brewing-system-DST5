@@ -44,10 +44,12 @@ class ViewDataWindow(QDialog):
         self.displayedBrewsVMash = []
         self.displayedBrewsVBoil = []
         self.displayedBrewsVFerment = []
-        #print(self.db.readFromTable("Brews", "id, Recipe, Date"))
         self.create_layout_viewData()
         self.setWindowTitle('Data Viewer')
-        self.curvedict = {}
+        self.activeColours = []
+        self.colours = ["red", "green", "blue", "black",\
+                        "cyan", "magenta", "yellow", "gray"]
+        
         
     # Function to create layout of New Brew window
     def create_layout_viewData(self):
@@ -211,11 +213,12 @@ class ViewDataWindow(QDialog):
         mainSplitter.addWidget(lWidget)
         mainSplitter.addWidget(rWidget)
         mainLayout.addWidget(mainSplitter)
+        mainSplitter.setSizes([260,740])
 
 
         self.setLayout(mainLayout)
         #self.showFullScreen()
-        self.setGeometry(0, 0, 1000, 1000)
+        self.setGeometry(0, 0, 1500, 1000)
 
         self.but_view.clicked.connect(self.viewButtonClicked)
         self.but_view.clicked.connect(self.viewButtonClickedTabs)
@@ -237,8 +240,13 @@ class ViewDataWindow(QDialog):
         for i in range(3):
             self.brewInfo.append(QLabel(str(index.sibling(index.row(), i).data())))
 
+        # Choose colour to use for this displayed brew
+        self.colourToUse = self.chooseColour()
+
         # Create group box with all brew info displayed and Remove button
         brewGroupBox = QGroupBox(str(self.displayNo))
+        brewGroupBox.setObjectName("ColouredGroupBox")
+        brewGroupBox.setStyleSheet("QGroupBox#ColouredGroupBox { border: 2px solid %s;}" % self.colourToUse)
         brewForm = QFormLayout()
         brewForm.addRow(QLabel('Brew ID:'), self.brewInfo[0])
         brewForm.addRow(QLabel('Recipe:'), self.brewInfo[1])
@@ -285,7 +293,8 @@ class ViewDataWindow(QDialog):
 
         # Create groupboxes for each of the process tabs to fill with brew info
         mashGroupBox = QGroupBox(str(self.displayNo))
-        #mashGroupBox.setStyleSheet("border: 2px solid red")
+        mashGroupBox.setObjectName("MashColouredGroupBox")
+        mashGroupBox.setStyleSheet("QGroupBox#MashColouredGroupBox { border: 2px solid %s;}" % self.colourToUse)
         mashFormLayout = QFormLayout()
         mashFormLayout.addRow(QLabel(f"Temp ({DEGREES}C): {self.recipedata['mashTemp']}"))
         mashFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['mashTime']}"))
@@ -294,6 +303,8 @@ class ViewDataWindow(QDialog):
         self.displayedBrewsVMash.append(mashGroupBox)
 
         boilGroupBox = QGroupBox(str(self.displayNo))
+        boilGroupBox.setObjectName("BoilColouredGroupBox")
+        boilGroupBox.setStyleSheet("QGroupBox#BoilColouredGroupBox { border: 2px solid %s;}" % self.colourToUse)
         boilFormLayout = QFormLayout()
         boilFormLayout.addRow(QLabel(f"Temp ({DEGREES}C):{self.recipedata['boilTemp']}"))
         boilFormLayout.addRow(QLabel(f"Time (mins): {self.recipedata['boilTime']}"))
@@ -310,6 +321,8 @@ class ViewDataWindow(QDialog):
         self.displayedBrewsVBoil.append(boilGroupBox)
 
         fermentGroupBox = QGroupBox(str(self.displayNo))
+        fermentGroupBox.setObjectName("FermentColouredGroupBox")
+        fermentGroupBox.setStyleSheet("QGroupBox#FermentColouredGroupBox { border: 2px solid %s;}" % self.colourToUse)
         fermentFormLayout = QFormLayout()
         fermentFormLayout.addRow(QLabel(f"Temp ({DEGREES}C): {self.recipedata['fermenttemp']}"))
         #fermentFormLayout.addRow(QLabel('Time (mins):'))
@@ -328,10 +341,27 @@ class ViewDataWindow(QDialog):
         fermentTempDataX, fermentTempDataY = self.createData(sqlFermentTemp)
         fermentSGDataX, fermentSGDataY = self.createData(sqlFermentSG)
 
-        self.tabMash.graph.createCurve(mashDataX, mashDataY)
-        self.tabBoil.graph.createCurve(boilDataX, boilDataY)
-        self.tabFerment.tempGraph.createCurve(fermentTempDataX[1:], fermentTempDataY[1:])
-        self.tabFerment.gravGraph.createCurve(fermentSGDataX[1:], fermentSGDataY[1:])
+        # Create and add curves to each of the plots
+        self.tabMash.graph.createCurve(mashDataX, mashDataY, self.colourToUse)
+        self.tabBoil.graph.createCurve(boilDataX, boilDataY, self.colourToUse)
+        self.tabFerment.tempGraph.createCurve(fermentTempDataX[1:], fermentTempDataY[1:], self.colourToUse)
+        self.tabFerment.gravGraph.createCurve(fermentSGDataX[1:], fermentSGDataY[1:], self.colourToUse)
+
+    # Function to choose first available colour
+    def chooseColour(self):
+        # Loop through dictionary, checking if self.colours[j] appear
+        for j in range(len(self.colours)):
+            # If it does appear, continue to next colour
+            if self.colours[j] in self.activeColours:
+                continue
+            else:
+                # If it doesn't appear, add colour to dictionary and assign this self.colourToUse
+                #self.activeColours[self.colours[j]] = self.colours[j]
+                self.activeColours.append(self.colours[j])
+                self.colourToUse = self.colours[j]
+                break
+        
+        return self.colourToUse
 
     # Get data from database using sql query
     def createData(self, sql):
@@ -342,14 +372,15 @@ class ViewDataWindow(QDialog):
             tempdat.append(data[1])
         
         startTime = timestamps[0]
-        print("startTime = ", startTime)
         for i in range(len(timestamps)):
             timestamps[i] = (timestamps[i] - startTime).seconds
 
         return timestamps, tempdat
 
-
+    # Slot for removing group boxes from horizontal tab
     def removeBrewClicked(self, brewToRemove):
+        
+        brewArrayPos = self.displayedBrewsH.index(brewToRemove)
 
         self.hLayoutDisplayed.removeWidget(brewToRemove) # remove widget from layout
         brewToRemove.setParent(None) # remove parent so widget dissappears
@@ -359,6 +390,8 @@ class ViewDataWindow(QDialog):
         # Loop to renumber the remaining displayed groupboxes using the array
         for i in range(len(self.displayedBrewsH)):
             self.displayedBrewsH[i].setTitle(str(i+1))
+        
+        del self.activeColours[brewArrayPos]
 
 
     # Slot for removing group boxes of brew info in mash tab
@@ -378,8 +411,6 @@ class ViewDataWindow(QDialog):
         
         # Remove curve from graph
         self.tabMash.graph.removeCurve(brewArrayPos)
-        
-        
 
 
     # Slot for removing group boxes of brew info in boil tab
@@ -510,7 +541,6 @@ class MashTab(QTabWidget):
         hLayout.addWidget(self.graph.plot, 1)
         self.setLayout(hLayout)
 
-
 class BoilTab(QTabWidget):
 
     def __init__(self, parent=None):
@@ -592,7 +622,6 @@ class FermentTab(QTabWidget):
         hLayout.addLayout(vLayout2, 2)
         self.setLayout(hLayout)
 
-
 class NewGraph():
 
     def __init__(self):
@@ -609,14 +638,16 @@ class NewGraph():
         self.plot.replot()
         self.plot.show()
 
-    def createCurve(self, x, y): #, colour):
+    def createCurve(self, x, y, colour):
                 
         curve = QwtPlotCurve()
-        #curve.setPen(colour)
+        colour = QColor(colour)
+        curve.setPen(colour)
         curve.setData(x,y)
         curve.attach(self.plot)
         #self.plot.replot()
         self.curves.append(curve)
+        
 
     def removeCurve(self, curveIndex):
 

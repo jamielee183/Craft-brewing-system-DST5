@@ -25,7 +25,7 @@ import source.tools.exceptionLogging
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLFermentMonitor
-from source.gui.guitools import FermentTimeScaleDraw, QHLine, TimeScaleDraw
+from source.gui.guitools import FermentTimeScaleDraw, QHLine
 
 
 class FermentPlot(QWidget):
@@ -140,26 +140,15 @@ class FermentPlot(QWidget):
         sql = (f"SELECT TimeStamp FROM Ferment "
             f"WHERE BatchID = '{self.batchID}' "
             f"AND Fermenter = '{self.tankID}'")
-        
         self.db.flushTables()
         data = self.db.custom(sql)
         self.timeStamp = data
         self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
         self.dataY = self.displayData
-
-
-        timestamps = []
-        for data in self.db.custom(sql):
-            timestamps.append(data[0])
-
-        startTime = timestamps[0]
-        for i in range(len(timestamps)):
-            timestamps[i] -= startTime
-            timestamps[i] = timestamps[i].seconds
-        self.curve.setData(timestamps, self.dataY)
-
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
- 
+        self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
+        self.curve.setData(self.dataX, self.dataY)
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, FermentTimeScaleDraw(self.timeStamp))
+        # self.curve.setData(self.dataY)
         self.plot.replot()
 
     def updateLabels(self):
@@ -188,6 +177,9 @@ class FermentPlot(QWidget):
         #self._log.debug(f"batchID: {self.batchID}, sql return: {data}")
         
         return np.fromiter(data, dtype=float)
+        # return np.asarray(data, dtype=float)
+        # except:
+        #     return data
 
 
 
@@ -214,7 +206,7 @@ class FermentMonitor(QDialog):
 
         self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")
         # super().__init__(parent)
-        self.setWindowTitle('Fermentation monitor')
+        self.setWindowTitle('Fermentation Monitor')
         
         self.dropDownBox = QComboBox()
         self.dropDownGraphBox = QComboBox()
