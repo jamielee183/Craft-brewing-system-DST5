@@ -229,7 +229,7 @@ class ViewDataWindow(QDialog):
     def quitButtonClicked(self):     
         
         self.close()
-        # self.closeSignal.emit()
+        self.closeSignal.emit()
 
 
     # Slot for adding selected brew to widget

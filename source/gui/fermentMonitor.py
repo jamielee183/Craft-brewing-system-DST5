@@ -194,7 +194,7 @@ class FermentMonitor(QDialog):
         "Specific Gravity" : "Sg",
         "Volume" : "Volume"
     }
-    fermentClose = pyqtSignal()
+    closeSignal = pyqtSignal()
     
 
     def __init__(self, LOGIN, parent=None):
@@ -212,7 +212,7 @@ class FermentMonitor(QDialog):
         self.dropDownGraphBox = QComboBox()
         self.dropDownGraphBox.addItem("Specific Gravity")
         self.dropDownGraphBox.addItem("Temperature")
-        self.dropDownGraphBox.addItem("Volume")
+        # self.dropDownGraphBox.addItem("Volume")
 
         # if self.numberTotalTanks == None:
         #    raise Exception("No fermentations active")
@@ -308,6 +308,7 @@ class FermentMonitor(QDialog):
     def closeWindow(self):
         self.stopTimers()
         self.close()
+        self.closeSignal.emit()
 
 
 if __name__ == "__main__":
