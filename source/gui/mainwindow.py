@@ -8,14 +8,14 @@ import logging
 
 #from PySide2 import QtWidgets
 from PyQt5.QtCore import \
-    Qt, QThread, pyqtSignal, pyqtSlot, QTimer, QThreadPool, QCoreApplication #, pyqtSlot
+    Qt, QThread, pyqtSignal, pyqtSlot, QTimer, QThreadPool, QCoreApplication#, QMdiArea #, pyqtSlot
 from PyQt5.QtGui import \
     QFont
 from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
-    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox
+    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox,QMdiArea, QMdiSubWindow
 
 
 # if running from command line, need to append the parent directories to the PATH
@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import \
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 import source.tools.exceptionLogging
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
-from source.gui.fermentMonitor import FermentMonitor, FermentMonitorThread
+from source.gui.fermentMonitor import FermentMonitor
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.gui.NewBrewWindow import NewBrewWindow
@@ -39,11 +39,6 @@ from source.gui.viewDataWindow import ViewDataWindow
 
 
 
-# isRunningOnPi = False
-
-
-# if isRunningOnPi:
-#     from source.tools.uCcoms import PiRadio
 
 class MainWindow(QMainWindow):
 
@@ -52,12 +47,40 @@ class MainWindow(QMainWindow):
 
     def __init__(self,LOGIN, isRunningOnPi=False, parent = None):
         super(MainWindow, self).__init__()
-        self.LOGIN = LOGIN
+
+        self.mdi = QMdiArea()
         self.main_widget = QWidget()
+        self.setCentralWidget(self.main_widget)
+        bar = self.menuBar()
+        file = bar.addMenu("File")
+
+        file.addAction("New")
+        file.addAction("cascade")
+        file.addAction("Tiled")
+
+        self.mainwindow = MdiMainWindow(LOGIN, isRunningOnPi=isRunningOnPi, parent = self)
+        layout = QHBoxLayout()
+        layout.addWidget(self.mainwindow)
+        layout.addWidget(self.mdi)
+        self.main_widget.setLayout(layout)
+        
+
+
+class MdiMainWindow(QWidget):
+
+    _logname = 'MainWindow'
+    _log = logging.getLogger(f'{_logname}')
+
+    def __init__(self,LOGIN, isRunningOnPi=False, parent = None):
+        super(MdiMainWindow, self).__init__()
+        self.LOGIN = LOGIN
+        # self.main_widget = QWidget()
         self.create_layout()
         self.setWindowTitle('Brew Monitoring System')
-        self.setCentralWidget(self.main_widget)
+        # self.setCentralWidget(self.main_widget)
         self.isRunningOnPi = isRunningOnPi
+        self.parent = parent
+
 
         if self.isRunningOnPi:
             from source.tools.uCcoms import PiRadio
@@ -123,7 +146,7 @@ class MainWindow(QMainWindow):
         vLay_main.addStretch(1)
         vLay_main.addLayout(hLay_quit)
         vLay_main.addStretch(0)
-        self.main_widget.setLayout(vLay_main)
+        self.setLayout(vLay_main)
 
         # connect new brew buttton with open brew window
         self.but_start_brew.clicked.connect(self.startBrewClicked)
@@ -149,7 +172,12 @@ class MainWindow(QMainWindow):
         self.fermentMonitor = FermentMonitor(self.LOGIN)
 #        self.fermentMonitor.startTimers()
         self.fermentMonitor.restartTankDropdown()
-        self.fermentMonitor.show()
+        # self.fermentMonitor.show()
+
+        sub = QMdiSubWindow()
+        sub.setWidget(self.fermentMonitor)
+        self.parent.mdi.addSubWindow(sub)
+        sub.show()
 
 
 
@@ -157,20 +185,32 @@ class MainWindow(QMainWindow):
         database = db(self.LOGIN,"Brewing")
         database.flushTables()
         batchID = database.maxIdFromTable("Brews")
+
+        sub = QMdiSubWindow()
         if self.isRunningOnPi:
             ##Create instance of MashBoilMonitor
-            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio)
+            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=self.radio, parent=self)
         else:
-            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None)            
-        self.mashBoilMonitor.show()
+            self.mashBoilMonitor = MashBoilMonitor(self.LOGIN, batchID, radio=None, parent=self)            
+        # self.mashBoilMonitor.show()
         self.mashBoilMonitor.finishedSignal.connect(lambda: self.fermentMonitor.restartTankDropdown())
+
+        
+        sub.setWidget(self.mashBoilMonitor)
+        self.parent.mdi.addSubWindow(sub)
+        sub.show()
         
 
     def startBrewClicked(self):
         newBrewWindow = NewBrewWindow(LOGIN=self.LOGIN, parent=self)
         newBrewWindow.formSubmitted.connect(self.mashBoilButtonClicked)
         #newBrewWindow.exec_()
-        newBrewWindow.show()
+        # newBrewWindow.show()
+
+        sub = QMdiSubWindow()
+        sub.setWidget(newBrewWindow)
+        self.parent.mdi.addSubWindow(sub)
+        sub.show()
         # pass
 
     def viewDataClicked(self):
@@ -178,15 +218,24 @@ class MainWindow(QMainWindow):
         #viewDataWindow.exec_()
         viewDataWindow.show()
         # pass
+        sub = QMdiSubWindow()
+        sub.setWidget(viewDataWindow)
+        self.parent.mdi.addSubWindow(sub)
+        sub.show()
 
     def newUserClicked(self):
         newuserWindow = NewUserWindow(LOGIN=self.LOGIN, parent=self)
         #newuserWindow.exec_()
         newuserWindow.show()
         # pass
+        sub = QMdiSubWindow()
+        sub.setWidget(newuserWindow)
+        self.parent.mdi.addSubWindow(sub)
+        sub.show()
 
     def quitClicked(self):
         self.close()
+        self.parent.close()
 
 
 if __name__ == "__main__":

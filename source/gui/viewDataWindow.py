@@ -33,6 +33,7 @@ from source.gui.guitools import TimeScaleDraw, DateTimeTimeScaleDraw
 
 class ViewDataWindow(QDialog):
     formSubmitted = pyqtSignal()
+    closeSignal = pyqtSignal()
 
     def __init__(self, LOGIN, parent=None):
         #super(ViewDataWindow, self).__init__(parent)
@@ -228,6 +229,7 @@ class ViewDataWindow(QDialog):
     def quitButtonClicked(self):     
         
         self.close()
+        # self.closeSignal.emit()
 
 
     # Slot for adding selected brew to widget

@@ -309,27 +309,6 @@ class FermentMonitor(QDialog):
         self.stopTimers()
         self.close()
 
-class FermentMonitorThread(QRunnable):
-
-    def __init__(self, LOGIN, parent=None):
-        super().__init__()
-        # self.fermentMonitor = FermentMonitor(LOGIN)
-        # self.mainLayout = QVBoxLayout()
-        # self.mainLayout.addWidget(self.fermentMonitor)
-        # self.fermentMonitor = None
-        self.LOGIN = LOGIN
-        # self.app = QCoreApplication.instance()
-        
-
-    def run(self):
-        # self.fermentMonitor.startMonitor()
-        # self.mainLayout = QVBoxLayout()
-        # self.mainLayout.addWidget(self.fermentMonitor)
-        # app = QCoreApplication.instance()
-        FermentMonitor(LOGIN=LOGIN)
-
-    # def __del__(self):
-    #     self.wait()
 
 if __name__ == "__main__":
     import logging

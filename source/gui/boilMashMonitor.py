@@ -573,6 +573,7 @@ class MonitorWindow(QDialog):
         self.mashPlotUpdateTimer.stop()
         self.tabMash.minuteTimer.stop()
         self.close()
+        
 
 
 
