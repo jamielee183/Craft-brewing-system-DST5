@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import \
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 import source.tools.exceptionLogging
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
-from source.gui.fermentMonitor import FermentMonitor, FermentMonitorThread
+from source.gui.fermentMonitor import FermentMonitor
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.gui.NewBrewWindow import NewBrewWindow
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
 
         self.but_view_data.clicked.connect(self.viewDataClicked)
 
-        self.fermentMonitor = FermentMonitor(self.LOGIN)
+        # self.fermentMonitor = FermentMonitor(self.LOGIN)
 
         # database = db(LOGIN,"Brewing")
         # batchID = database.maxIdFromTable("Brews")
@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
     def fermentButtonClicked(self):
         self.fermentMonitor = FermentMonitor(self.LOGIN)
 #        self.fermentMonitor.startTimers()
-        self.fermentMonitor.restartTankDropdown()
+        self.fermentMonitor.updateTankDropdown()
         self.fermentMonitor.show()
 
 
