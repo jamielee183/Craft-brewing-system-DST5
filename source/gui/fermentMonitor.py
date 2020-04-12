@@ -25,7 +25,7 @@ import source.tools.exceptionLogging
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLFermentMonitor
-from source.gui.guitools import FermentTimeScaleDraw, QHLine
+from source.gui.guitools import FermentTimeScaleDraw, QHLine, NewGraph
 
 
 class FermentPlot(QWidget):
@@ -275,7 +275,7 @@ class FermentMonitor(QDialog):
         else:
             tanks = []
             for i in range(self.numberTotalTanks):
-                tanks.append(f"Fermentation tank {i+1}")
+                tanks.append(f"Fermentation Tank {i+1}")
 
             self.dropDownBox.addItems(tanks)
 

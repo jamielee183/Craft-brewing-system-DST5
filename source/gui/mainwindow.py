@@ -80,10 +80,10 @@ class MainWindow(QMainWindow):
 
         self.lab_start_brew = QLabel(self.tr('Start New Brew'))
         self.lab_view_data = QLabel(self.tr('View Past Brew Data'))
-        self.lab_fermenters = QLabel(self.tr('View Fermenter Data'))
+        self.lab_fermenters = QLabel(self.tr('Monitor Fermentation Vessels'))
         self.lab_test = QLabel(self.tr('Check System for Faults'))
         self.lab_newUser = QLabel(self.tr('Create New User'))
-        self.lab_mashBoil = QLabel(self.tr('Monitor Mash and Boil'))
+        self.lab_mashBoil = QLabel(self.tr('Monitor Mash and Boil Vessels'))
 
         #Grid for buttons and labels
         gLay_buttons = QGridLayout()

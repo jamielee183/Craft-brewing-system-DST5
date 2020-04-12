@@ -3,7 +3,6 @@
 import sys
 import os
 import numpy as np
-from datetime import timedelta
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 
 
@@ -28,7 +27,7 @@ from source.tools.constants import DEGREES
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.tools.sqlBrewingComms import SQLNewBrew
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
-from source.gui.guitools import TimeScaleDraw, DateTimeTimeScaleDraw
+from source.gui.guitools import TimeScaleDraw, DateTimeTimeScaleDraw, NewGraph
 
 
 class ViewDataWindow(QDialog):
@@ -45,7 +44,7 @@ class ViewDataWindow(QDialog):
         self.displayedBrewsVBoil = []
         self.displayedBrewsVFerment = []
         self.create_layout_viewData()
-        self.setWindowTitle('Data Viewer')
+        self.setWindowTitle('Past Brew Viewer')
         self.activeColours = []
         self.colours = ["red", "green", "blue", "black",\
                         "cyan", "magenta", "yellow", "gray"]
@@ -154,7 +153,7 @@ class ViewDataWindow(QDialog):
         # Create bottom buttons
         self.but_quit = QPushButton("Quit")
         self.but_quit.setAutoDefault(0)
-        self.but_view = QPushButton("View Data")
+        self.but_view = QPushButton("Display Brew")
         self.but_view.setAutoDefault(0)
         quitHLayout = QHBoxLayout()
         quitHLayout.addStretch(0)
@@ -349,20 +348,16 @@ class ViewDataWindow(QDialog):
 
     # Function to choose first available colour
     def chooseColour(self):
-        # Loop through dictionary, checking if self.colours[j] appear
-        for j in range(len(self.colours)):
-            # If it does appear, continue to next colour
-            if self.colours[j] in self.activeColours:
-                continue
-            else:
-                # If it doesn't appear, add colour to dictionary and assign this self.colourToUse
-                #self.activeColours[self.colours[j]] = self.colours[j]
-                self.activeColours.append(self.colours[j])
-                self.colourToUse = self.colours[j]
-                break
         
-        return self.colourToUse
+        # Loop through dictionary, checking if self.colours[j] appear
+        for colours in self.colours:
+            # If it does appear, continue to next colour
+            if colours not in self.activeColours:
+                # If it doesn't appear, add colour to dictionary and return colour
+                self.activeColours.append(colours)
+                return colours
 
+                
     # Get data from database using sql query
     def createData(self, sql):
         timestamps = []
@@ -622,55 +617,3 @@ class FermentTab(QTabWidget):
         hLayout.addLayout(vLayout2, 2)
         self.setLayout(hLayout)
 
-class NewGraph():
-
-    def __init__(self):
-
-        self.curves = []
-        self.titleFont = QFont("Helvetica", 12, QFont.Bold)
-        self.axisFont = QFont("Helvetica", 11, QFont.Bold)
-
-    def createGraph(self):
-
-        self.plot = QwtPlot()
-        self.plot.resize(1000, 1000)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, DateTimeTimeScaleDraw(names=False))
-        self.plot.replot()
-        self.plot.show()
-
-    def createCurve(self, x, y, colour):
-                
-        curve = QwtPlotCurve()
-        colour = QColor(colour)
-        curve.setPen(colour)
-        curve.setData(x,y)
-        curve.attach(self.plot)
-        #self.plot.replot()
-        self.curves.append(curve)
-        
-
-    def removeCurve(self, curveIndex):
-
-        self.curves[curveIndex].attach(0)
-        del self.curves[curveIndex]
-
-    def setAxisTitles(self, yAxis, xAxis):
-        
-        # Create text for graph and axis titles      
-        xTitle = QwtText()
-        xTitle.setText(xAxis)
-        xTitle.setFont(self.axisFont)
-        yTitle = QwtText()
-        yTitle.setText(yAxis)
-        yTitle.setFont(self.axisFont)
-
-        self.plot.setAxisTitle(self.plot.yLeft, yTitle)
-        self.plot.setAxisTitle(self.plot.xBottom, xTitle)
-
-
-    def setTitle(self, title):
-
-        titleText = QwtText()
-        titleText.setText(title)
-        titleText.setFont(self.titleFont)
-        self.plot.setTitle(titleText)

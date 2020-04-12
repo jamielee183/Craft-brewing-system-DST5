@@ -111,26 +111,13 @@ class NewBrewWindow(QDialog):
         hopNameEdit = QLineEdit()
         hopTimeEdit = QLineEdit()
         hopForm.addRow(QLabel('Name:'), hopNameEdit)
-        hopForm.addRow(QLabel('Boil Time (mins):'), hopTimeEdit)
+        timeLabel = QLabel('Boil Time (mins):')
+        timeLabel.setToolTip("The amount of time that the hop must be boiled for.")
+        hopForm.addRow(timeLabel, hopTimeEdit)
         hopBox.setLayout(hopForm)
 
         return hopBox, hopNameEdit, hopTimeEdit
 
-    
-    # Function to check whether hop box is checked and deal with data accordingly
-    # def checkHopBox(self, hopBoxes):
-
-    #     for i in range(4):
-    #         if (hopBoxes[i][0].isChecked() == False):
-                
-    #             hopBoxes[i][1].setText(None)
-    #             hopBoxes[i][2].setText(None)
-
-    #             hopBoxes[i][1] = None
-    #             hopBoxes[i][2] = None
-                
-    #         else:
-    #             int(hopBoxes[i][2].text(),10)
 
     def checkHopBox(self, hopBox):
 

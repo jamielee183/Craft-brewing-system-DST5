@@ -1,10 +1,11 @@
 ##@package guitools
 #Tools package to help with ome gui functionality
 
-
+from PyQt5.QtGui import \
+    QFont, QPalette, QColor
 from PyQt5.QtWidgets import QFrame, QComboBox, QLabel, \
     QDialog, QHBoxLayout, QVBoxLayout, QDialogButtonBox, QWidget, QSizePolicy
-from qwt import QwtScaleDraw, QwtText
+from qwt import QwtScaleDraw, QwtText, QwtPlot, QwtPlotCurve
 import logging
 
 
@@ -237,3 +238,57 @@ class BoilFinishedPopup(QDialog):
         # fermtank.record(None,None,None)
         self._log.info('Batch {} sent to fermentation tank {}'.format(self.recipeData['batchID'],self.selectedTank))
         self.accept()
+
+
+class NewGraph():
+
+    def __init__(self):
+
+        self.curves = []
+        self.titleFont = QFont("Helvetica", 12, QFont.Bold)
+        self.axisFont = QFont("Helvetica", 11, QFont.Bold)
+
+    def createGraph(self):
+
+        self.plot = QwtPlot()
+        self.plot.resize(1000, 1000)
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, DateTimeTimeScaleDraw(names=False))
+        self.plot.replot()
+        self.plot.show()
+
+    def createCurve(self, x, y, colour):
+                
+        curve = QwtPlotCurve()
+        colour = QColor(colour)
+        curve.setPen(colour)
+        curve.setData(x,y)
+        curve.attach(self.plot)
+        #self.plot.replot()
+        self.curves.append(curve)
+        
+
+    def removeCurve(self, curveIndex):
+
+        self.curves[curveIndex].attach(0)
+        del self.curves[curveIndex]
+
+    def setAxisTitles(self, yAxis, xAxis):
+        
+        # Create text for graph and axis titles      
+        xTitle = QwtText()
+        xTitle.setText(xAxis)
+        xTitle.setFont(self.axisFont)
+        yTitle = QwtText()
+        yTitle.setText(yAxis)
+        yTitle.setFont(self.axisFont)
+
+        self.plot.setAxisTitle(self.plot.yLeft, yTitle)
+        self.plot.setAxisTitle(self.plot.xBottom, xTitle)
+
+
+    def setTitle(self, title):
+
+        titleText = QwtText()
+        titleText.setText(title)
+        titleText.setFont(self.titleFont)
+        self.plot.setTitle(titleText)
