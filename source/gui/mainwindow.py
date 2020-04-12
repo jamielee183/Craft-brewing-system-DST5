@@ -31,15 +31,6 @@ from source.gui.NewBrewWindow import NewBrewWindow
 from source.gui.newUserWindow import NewUserWindow
 from source.gui.viewDataWindow import ViewDataWindow
 
-# from source.gui.guitools import MyPyQtSlot
-
-# import NewBrewWindow
-# import loginWindow
-# import newUserWindow
-
-
-
-
 class MainWindow(QMainWindow):
 
     _logname = 'MainWindow'
@@ -54,7 +45,14 @@ class MainWindow(QMainWindow):
         bar = self.menuBar()
         filebar = bar.addMenu("File")
         filebar.addAction("New User")
+        filebar.addAction("New Brew")
         filebar.triggered.connect(self.fileaction)
+
+        viewbar = bar.addMenu("View")
+        viewbar.addAction("Fermentation tanks")
+        viewbar.addAction("Mash and Boil tank")
+        viewbar.addAction("Past Brews")
+        viewbar.triggered.connect(self.viewaction)
 
         windowbar = bar.addMenu("Window")
         windowbar.addAction("Cascade")
@@ -81,19 +79,27 @@ class MainWindow(QMainWindow):
 
     
     def fileaction(self,selected):
-        if selected.text() == "New User":
+        selected = selected.text()
+        if selected == "New User":
             self.mainwindow.newUserClicked()
+        elif selected == "New Brew":
+            self.mainwindow.startBrewClicked()
 
     def windowaction(self,selected):
-
         selected = selected.text()
         if selected == "Cascade":
             self.mdi.cascadeSubWindows()
         elif selected == "Tiled":
             self.mdi.tileSubWindows()
 
-
-
+    def viewaction(self,selected):
+        selected = selected.text()
+        if selected == "Fermentation tanks":
+            self.mainwindow.fermentButtonClicked()
+        elif selected == "Mash and Boil tank":
+            self.mainwindow.mashBoilButtonClicked()
+        elif selected == "Past Brews":
+            self.mainwindow.viewDataClicked()
 
 class MdiMainWindow(QWidget):
 
@@ -110,7 +116,6 @@ class MdiMainWindow(QWidget):
         self.isRunningOnPi = isRunningOnPi
         self.parent = parent
 
-
         if self.isRunningOnPi:
             from source.tools.uCcoms import PiRadio
             self.radio = PiRadio(self.LOGIN)
@@ -124,7 +129,7 @@ class MdiMainWindow(QWidget):
         self.label_title.setFont(self.font_title)
         self.but_start_brew = QPushButton(self.tr('Start New Brew'))
         self.but_view_data = QPushButton(self.tr('View Past Brew Data'))
-        self.but_fermenters = QPushButton(self.tr('View Fermenter Data'))
+        self.but_fermenters = QPushButton(self.tr('Fermentation tanks'))
         self.but_mashBoil = QPushButton(self.tr('Monitor Mash and Boil'))
         self.but_test = QPushButton(self.tr('Check System for Faults'))
         self.but_newUser = QPushButton(self.tr('Create New User'))
