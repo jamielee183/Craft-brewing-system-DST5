@@ -212,7 +212,7 @@ class FermentMonitor(QDialog):
         self.dropDownGraphBox = QComboBox()
         self.dropDownGraphBox.addItem("Specific Gravity")
         self.dropDownGraphBox.addItem("Temperature")
-        self.dropDownGraphBox.addItem("Volume")
+        # self.dropDownGraphBox.addItem("Volume")
 
         # if self.numberTotalTanks == None:
         #    raise Exception("No fermentations active")

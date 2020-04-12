@@ -102,9 +102,9 @@ class TabGraph(QWidget):
 
         self.plotLayout = QVBoxLayout()
         self.plotLayout.addLayout(self.timeLayout)
-        self.plotLayout.addStretch(10)
+        # self.plotLayout.addStretch(10)
         self.plotLayout.addLayout(self.tempLayout)
-        self.plotLayout.addStretch(10)
+        # self.plotLayout.addStretch(10)
         self.plotLayout.addWidget(self.plot)
     
         self.buttonLayout = QVBoxLayout()
