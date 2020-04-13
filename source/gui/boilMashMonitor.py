@@ -393,7 +393,8 @@ class MonitorWindow(QDialog):
     _logname = 'MonitorWindow'
     _log = logging.getLogger(f'{_logname}')
 
-    finishedSignal= pyqtSignal()
+    closeSignal= pyqtSignal()
+    finishedSignal = pyqtSignal()
     ##Setup to window 
     def __init__(self, LOGIN, batchID, radio=None ,parent=None):
         super().__init__(parent)
@@ -578,6 +579,8 @@ class MonitorWindow(QDialog):
         self.mashPlotUpdateTimer.stop()
         self.tabMash.minuteTimer.stop()
         self.close()
+        self.closeSignal.emit()
+        
 
 
 

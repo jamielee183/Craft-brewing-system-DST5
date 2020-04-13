@@ -5,7 +5,7 @@ import os
 
 #from PySide2 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import \
-    Qt #, pyqtSlot
+    Qt, pyqtSignal #, pyqtSlot
 from PyQt5.QtGui import \
     QFont
 from PyQt5.QtWidgets import \
@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.tools.sqlHandler import SqlDatabaseHandler
 
 class NewUserWindow(QDialog):
+    closeSignal= pyqtSignal()
 
     def __init__(self,LOGIN, parent=None):
         super(NewUserWindow, self).__init__(parent)
@@ -64,6 +65,7 @@ class NewUserWindow(QDialog):
     def quitNewUserButtonClicked(self):
 
         self.close()
+        self.closeSignal.emit()
 
 
     def createUserButtonClicked(self):
@@ -100,7 +102,7 @@ class NewUserWindow(QDialog):
             userSuccess.setWindowTitle("Success!")
             userSuccess.exec_()
 
-            self.close()
+            self.quitNewUserButtonClicked()
 
 
 

@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from scipy.ndimage.filters import gaussian_filter
 
-from PyQt5 import Qt, QtCore,
+from PyQt5 import Qt, QtCore
 from PyQt5.QtWidgets import QWidget,  QSlider
 from PyQt5.QtCore import QTimer
 
@@ -87,22 +87,23 @@ class IrCameraWidget(QWidget):
     def __init__(self, radio=None, parent = None):
         assert radio is not None
 
-        slider = QSlider(QtCore.Qt.Vertical)
-        slider.setMinimum(0)
-        slider.setMaximum(50)
-        slider.setValue(10)
-        cameraPlot = PlotCanvas(self, width=4, height=4)
-        slider.valueChanged.connect(lambda: cameraPlot.scale = slider.value())
+        self.slider = QSlider(QtCore.Qt.Vertical)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(50)
+        self.slider.setValue(10)
+        self.cameraPlot = PlotCanvas(self, width=4, height=4)
+        self.slider.valueChanged.connect(self.sliderUpdate)
 
         updateTimer = QTimer(self)
-        updateTimer.timeout.connect(lambda: cameraPlot.plot(radio.irTemp))
+        updateTimer.timeout.connect(lambda: self.cameraPlot.plot(radio.irTemp))
         updateTimer.start(5000)
 
 
         ircameralayout = QHBoxLayout()
-        ircameralayout.addWidget(cameraPlot)
-        ircameralayout.addWidget(slider)
+        ircameralayout.addWidget(self.cameraPlot)
+        ircameralayout.addWidget(self.slider)
 
-        setLayout(ircameralayout)
+        self.setLayout(ircameralayout)
 
-
+    def sliderUpdate(self):
+        self.cameraPlot.scale = self.slider.value()

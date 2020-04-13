@@ -149,6 +149,10 @@ class FermentMonitor(QDialog):
 
         self.dropDownBox = QComboBox()
         self.updateTankDropdown()
+        self.dropDownGraphBox = QComboBox()
+        self.dropDownGraphBox.addItem("Specific Gravity")
+        self.dropDownGraphBox.addItem("Temperature")
+        # self.dropDownGraphBox.addItem("Volume")
 
         self.dropDownBox.currentIndexChanged.connect(self.indexChanged)
 
@@ -257,21 +261,18 @@ class FermentMonitor(QDialog):
             self.currentSgValue.setText(f"{self.tabSg.results[-1]}")
             self.currentTempValue.setText(f"{self.tabTemp.results[-1]}")
         except IndexError:
-            pass
+            self.currentSgValue.setText("None")
+            self.currentTempValue.setText("None")
+            
 
 
     def indexChanged(self):
         # print(self.batchInTank)
         tankNo = self.dropDownBox.currentIndex()+1
-
         if self.isVisible():
             self.recipeUpdate(self.batchInTank[f"{tankNo}"])
             self.tabSg.changeTank(tankNo)
             self.tabTemp.changeTank(tankNo)
-
-            # self._log.debug(f"INDEX {self.dropDownBox.currentIndex()}")
-            # self.plot.updateData(self.dropDownBox.currentIndex()+1, self.textGraphDrop[f"{self.dropDownGraphBox.currentText()}"])
-
 
     def closeWindow(self):
         self.close()

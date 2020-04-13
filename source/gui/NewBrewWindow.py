@@ -23,6 +23,7 @@ from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 
 class NewBrewWindow(QDialog):
     formSubmitted = pyqtSignal()
+    closeSignal = pyqtSignal()
 
     def __init__(self, LOGIN, parent=None):
         super(NewBrewWindow, self).__init__(parent)
@@ -185,5 +186,6 @@ class NewBrewWindow(QDialog):
     # Function run if Quit button is pressed
     def brewquitClicked(self):
         self.close()
+        self.closeSignal.emit()
 
 
