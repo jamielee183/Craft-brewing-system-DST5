@@ -291,6 +291,7 @@ if __name__ == '__main__':
     PASSWORD = "BirraMosfeti"
 
     HOST = "192.168.10.223"
+    HOST = "192.168.0.17"
     USER = "jamie"
     PASSWORD = "beer"
 

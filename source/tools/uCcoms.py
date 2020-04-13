@@ -305,6 +305,7 @@ if __name__=="__main__":
     # PASSWORD = getpass()
     if HOST == "Pi":
         HOST = "192.168.10.223"
+        HOST = "192.168.0.17"
 
     LOGIN = [HOST,USER,PASSWORD]
     senddata = [0x01,0x02,0x03,0x04,0x05]
