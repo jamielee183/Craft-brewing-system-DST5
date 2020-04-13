@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
     QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, \
-    QGroupBox,QMdiArea, QMdiSubWindow, QScrollArea, QToolButton
+    QGroupBox,QMdiArea, QMdiSubWindow, QScrollArea, QToolButton, QSplitter
 
 
 # if running from command line, need to append the parent directories to the PATH
@@ -74,14 +74,22 @@ class MainWindow(QMainWindow):
         quitLayout.addStretch(10)
         quitLayout.addWidget(quitButton)
 
+        splitter = QSplitter()
+        splitter.setOrientation(2)
+        splitter.addWidget(self.mainwindow)
+        splitter.addWidget(self.mdi)
+        
         layout = QVBoxLayout()
-        layout.addWidget(self.mainwindow)
-        layout.addWidget(self.mdi)
-        layout.addLayout(quitLayout)
-        self.main_widget.setLayout(layout)
+        #layout.addWidget(self.mainwindow)
+        #layout.addWidget(self.mdi)
+        layout.addWidget(splitter)
+        #layout.addLayout(quitLayout)
+        #self.main_widget.setLayout(layout)
         # self.main_widget.showFullScreen()
+        
+        self.main_widget.setLayout(layout)
 
-        self.setMinimumSize(700,700)
+        self.setMinimumSize(700, 500)
         self.resize(0,0)
 
         self.setCentralWidget(self.main_widget)
