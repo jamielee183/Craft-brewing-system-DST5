@@ -256,15 +256,15 @@ class MdiMainWindow(QWidget):
     def startBrewClicked(self):
         newBrewWindow = NewBrewWindow(LOGIN=self.LOGIN, parent=self)
         newBrewWindow.formSubmitted.connect(self.mashBoilButtonClicked)
-        #newBrewWindow.exec_()
+        newBrewWindow.exec_()
         # newBrewWindow.show()
 
 
-        sub = QMdiSubWindow()
-        sub.setWidget(newBrewWindow)
-        self.parent.mdi.addSubWindow(sub)
-        newBrewWindow.closeSignal.connect(lambda : sub.close())
-        sub.show()
+        # sub = QMdiSubWindow()
+        # sub.setWidget(newBrewWindow)
+        # self.parent.mdi.addSubWindow(sub)
+        # newBrewWindow.closeSignal.connect(lambda : sub.close())
+        # sub.show()
         # pass
 
     def viewDataClicked(self):
