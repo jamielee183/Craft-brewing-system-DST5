@@ -162,9 +162,9 @@ class TabMash(TabGraph):
         self.targetTempLabel.setText(f"Set mash temp: {self.recipedata['mashTemp']}{DEGREESC}")
 
 
-        if self.radio is not None:
-            irCamera = IrCameraWidget(radio=self.radio, parent=parent)
-            self.buttonLayout.addWidget(irCamera)
+        # if self.radio is not None:
+        #     irCamera = IrCameraWidget(radio=self.radio, parent=parent)
+        #     self.buttonLayout.addWidget(irCamera)
 
         # if self.radio is not None:
         #     self.slider = QSlider(QtCore.Qt.Vertical)

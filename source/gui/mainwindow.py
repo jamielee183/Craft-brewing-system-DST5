@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
-    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox,QMdiArea, QMdiSubWindow
+    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox,QMdiArea, QMdiSubWindow, QScrollArea
 
 
 # if running from command line, need to append the parent directories to the PATH
@@ -40,9 +40,9 @@ class MainWindow(QMainWindow):
     def __init__(self,LOGIN, isRunningOnPi=False, parent = None):
         super(MainWindow, self).__init__()
 
-        self.mdi = QMdiArea()
         self.main_widget = QWidget()
-        self.setCentralWidget(self.main_widget)
+        self.mdi = QMdiArea()
+        
         bar = self.menuBar()
         filebar = bar.addMenu("File")
         filebar.addAction("New User")
@@ -77,6 +77,13 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.mdi)
         layout.addLayout(quitLayout)
         self.main_widget.setLayout(layout)
+        # self.main_widget.showFullScreen()
+
+        self.setMinimumSize(700,700)
+        self.resize(0,0)
+
+        self.setCentralWidget(self.main_widget)
+        # self.showFullScreen()
 
     
     def fileaction(self,selected):
@@ -251,6 +258,7 @@ class MdiMainWindow(QWidget):
         newBrewWindow.formSubmitted.connect(self.mashBoilButtonClicked)
         #newBrewWindow.exec_()
         # newBrewWindow.show()
+
 
         sub = QMdiSubWindow()
         sub.setWidget(newBrewWindow)
