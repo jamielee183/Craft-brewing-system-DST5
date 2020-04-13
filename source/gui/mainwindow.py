@@ -30,6 +30,7 @@ from source.gui.NewBrewWindow import NewBrewWindow
 
 from source.gui.newUserWindow import NewUserWindow
 from source.gui.viewDataWindow import ViewDataWindow
+from source.gui.irCameraWidget import IrCameraWidget
 
 # from source.gui.guitools import MyPyQtSlot
 
@@ -144,7 +145,14 @@ class MainWindow(QMainWindow):
         self.but_mashBoil.clicked.connect(self.mashBoilButtonClicked)
 
 
-    
+    def irCameraclick(self):
+
+        if self.isRunningOnPi:
+            irCamera = IrCameraWidget(radio=self.radio, parent=parent)
+            irCamera.show()
+        else:
+            self._log.warning("Cannot open camera as application running in remote mode")
+
     def fermentButtonClicked(self):
         self.fermentMonitor = FermentMonitor(self.LOGIN)
 #        self.fermentMonitor.startTimers()

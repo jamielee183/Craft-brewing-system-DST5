@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, Qt
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
-                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog, QSlider
+                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog
 
 from PyQt5.QtCore import QTimer, QDateTime, QTime, pyqtSignal
 
@@ -27,7 +27,8 @@ import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLBoil, SQLBoilMonitor, SQLFermentMonitor
 from source.tools.constants import *
-from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, PlotCanvas, TimeScaleDraw
+from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, TimeScaleDraw
+from source.gui.irCameraWidget import IrCameraWidget
 
  
 ##Parent class to hold graph instance
@@ -162,28 +163,32 @@ class TabMash(TabGraph):
 
 
         if self.radio is not None:
-            self.slider = QSlider(QtCore.Qt.Vertical)
-            self.slider.setMinimum(0)
-            self.slider.setMaximum(50)
-            self.slider.setValue(10)
-            self.irCameraPlot = PlotCanvas(self, width=4, height=4)
-            self.slider.valueChanged.connect(lambda: self.sliderchanged())
-            ircameralayout = QHBoxLayout()
-            ircameralayout.addWidget(self.irCameraPlot)
-            ircameralayout.addWidget(self.slider)
-            self.buttonLayout.addLayout(ircameralayout)
+            irCamera = IrCameraWidget(radio=self.radio, parent=parent)
+            self.buttonLayout.addWidget(irCamera)
 
-            self.irCameraTimer = QTimer(self)
-            self.irCameraTimer.timeout.connect(lambda: self.updateIr())
-            self.irCameraTimer.start(5000)
+        # if self.radio is not None:
+        #     self.slider = QSlider(QtCore.Qt.Vertical)
+        #     self.slider.setMinimum(0)
+        #     self.slider.setMaximum(50)
+        #     self.slider.setValue(10)
+        #     self.irCameraPlot = PlotCanvas(self, width=4, height=4)
+        #     self.slider.valueChanged.connect(lambda: self.sliderchanged())
+        #     ircameralayout = QHBoxLayout()
+        #     ircameralayout.addWidget(self.irCameraPlot)
+        #     ircameralayout.addWidget(self.slider)
+        #     self.buttonLayout.addLayout(ircameralayout)
 
-    def sliderchanged(self):
-        self.irCameraPlot.scale = self.slider.value()
+        #     self.irCameraTimer = QTimer(self)
+        #     self.irCameraTimer.timeout.connect(lambda: self.updateIr())
+        #     self.irCameraTimer.start(5000)
 
-    ##Update the IR camera plot every 5 seconds
-    def updateIr(self):
-        if self.minuteTimer.isActive():
-            self.irCameraPlot.plot(self.radio.irTemp)
+    # def sliderchanged(self):
+    #     self.irCameraPlot.scale = self.slider.value()
+
+    # ##Update the IR camera plot every 5 seconds
+    # def updateIr(self):
+    #     if self.minuteTimer.isActive():
+    #         self.irCameraPlot.plot(self.radio.irTemp)
         
     ##Update the mash plot with new data from the database
     def updatePlot(self):
