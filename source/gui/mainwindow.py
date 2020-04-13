@@ -8,14 +8,15 @@ import logging
 
 #from PySide2 import QtWidgets
 from PyQt5.QtCore import \
-    Qt, QThread, pyqtSignal, pyqtSlot, QTimer, QThreadPool, QCoreApplication#, QMdiArea #, pyqtSlot
+    Qt, QThread, pyqtSignal, pyqtSlot, QTimer, QThreadPool, QCoreApplication, QSize#, QMdiArea #, pyqtSlot
 from PyQt5.QtGui import \
-    QFont
+    QFont, QIcon, QPixmap
 from PyQt5.QtWidgets import \
     QApplication, QMainWindow, QWidget, \
     QSlider, QPushButton, QLabel, \
     QMessageBox, QDialog, QLineEdit, \
-    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, QGroupBox,QMdiArea, QMdiSubWindow, QScrollArea
+    QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout, \
+    QGroupBox,QMdiArea, QMdiSubWindow, QScrollArea, QToolButton
 
 
 # if running from command line, need to append the parent directories to the PATH
@@ -42,6 +43,7 @@ class MainWindow(QMainWindow):
 
         self.main_widget = QWidget()
         self.mdi = QMdiArea()
+        self.setWindowTitle('Brew Monitoring System')
         
         bar = self.menuBar()
         filebar = bar.addMenu("File")
@@ -50,9 +52,9 @@ class MainWindow(QMainWindow):
         filebar.triggered.connect(self.fileaction)
 
         viewbar = bar.addMenu("View")
-        viewbar.addAction("Fermentation tanks")
-        viewbar.addAction("Mash and Boil tank")
-        viewbar.addAction("Past Brews")
+        viewbar.addAction("Mash and Boil Vessels")
+        viewbar.addAction("Fermentation Vessels")
+        viewbar.addAction("Past Brew Data")
         viewbar.triggered.connect(self.viewaction)
 
         windowbar = bar.addMenu("Window")
@@ -61,7 +63,7 @@ class MainWindow(QMainWindow):
         windowbar.triggered.connect(self.windowaction)
 
         systembar = bar.addMenu("System")
-        systembar.addAction("Check for faults")
+        systembar.addAction("Check For Faults")
 
         self.mainwindow = MdiMainWindow(LOGIN, isRunningOnPi=isRunningOnPi, parent = self)
 
@@ -102,11 +104,11 @@ class MainWindow(QMainWindow):
 
     def viewaction(self,selected):
         selected = selected.text()
-        if selected == "Fermentation tanks":
+        if selected == "Fermentation Vessels":
             self.mainwindow.fermentButtonClicked()
-        elif selected == "Mash and Boil tank":
+        elif selected == "Mash and Boil Vessels":
             self.mainwindow.mashBoilButtonClicked()
-        elif selected == "Past Brews":
+        elif selected == "Past Brew Data":
             self.mainwindow.viewDataClicked()
 
 class MdiMainWindow(QWidget):
@@ -119,7 +121,7 @@ class MdiMainWindow(QWidget):
         self.LOGIN = LOGIN
         # self.main_widget = QWidget()
         self.create_layout()
-        self.setWindowTitle('Brew Monitoring System')
+        self.setWindowTitle("Brew Monitoring System")
         # self.setCentralWidget(self.main_widget)
         self.isRunningOnPi = isRunningOnPi
         self.parent = parent
@@ -132,16 +134,36 @@ class MdiMainWindow(QWidget):
 
     def create_layout(self):
 
-        self.font_title = QFont('Helvetica', 16)
-        self.font_title.setBold(True)
-        self.label_title = QLabel('Brew Monitoring System')
-        self.label_title.setFont(self.font_title)
-        self.but_start_brew = QPushButton(self.tr('Start New Brew'))
-        self.but_view_data = QPushButton(self.tr('View Past Brew Data'))
-        self.but_fermenters = QPushButton(self.tr('Fermentation tanks'))
-        self.but_mashBoil = QPushButton(self.tr('Monitor Mash and Boil'))
+        #self.font_title = QFont('Helvetica', 16)
+        #self.font_title.setBold(True)
+        #self.label_title = QLabel('Brew Monitoring System')
+        #self.label_title.setFont(self.font_title)
+        #self.but_start_brew = QPushButton(self.tr('Start New Brew'))
+        #self.but_view_data = QPushButton(self.tr('View Past Brew Data'))
+        #self.but_fermenters = QPushButton(self.tr('Fermentation tanks'))
+        #self.but_mashBoil = QPushButton(self.tr('Monitor Mash and Boil'))
+        icon_size = 25
+        self.but_start_brew = QToolButton()
+        self.but_start_brew.setToolTip("Start New Brew")
+        self.but_start_brew.setIcon(QIcon(QPixmap("icons/new_brew.png")))
+        self.but_start_brew.setIconSize(QSize(icon_size,icon_size))
+        self.but_view_data = QToolButton()
+        self.but_view_data.setToolTip("View Past Brew Data")
+        self.but_view_data.setIcon(QIcon(QPixmap("icons/view_past_brew.png")))
+        self.but_view_data.setIconSize(QSize(icon_size,icon_size))
+        self.but_fermenters = QToolButton()
+        self.but_fermenters.setToolTip("View Fermentation Vessels")
+        self.but_fermenters.setIcon(QIcon(QPixmap("icons/view_fermenters.png")))
+        self.but_fermenters.setIconSize(QSize(icon_size,icon_size))
+        self.but_mashBoil = QToolButton()
+        self.but_mashBoil.setToolTip("View Mash and Boil Vessels")
+        self.but_mashBoil.setIcon(QIcon(QPixmap("icons/view_mashboil.png")))
+        self.but_mashBoil.setIconSize(QSize(icon_size, icon_size))
         self.but_test = QPushButton(self.tr('Check System for Faults'))
-        self.but_newUser = QPushButton(self.tr('Create New User'))
+        self.but_newUser = QPushButton()
+        self.but_newUser.setToolTip("Create New User")
+        self.but_newUser.setIcon(QIcon(QPixmap("icons/new_user_icon.png")))
+        self.but_newUser.setIconSize(QSize(icon_size, icon_size))
         self.but_quit = QPushButton(self.tr('&Quit'))
 
         self.lab_start_brew = QLabel(self.tr('Start New Brew'))
@@ -153,6 +175,7 @@ class MdiMainWindow(QWidget):
 
         #Grid for buttons and labels
         gLay_buttons = QHBoxLayout()
+        
         gLay_buttons.addWidget(self.but_start_brew)
         # gLay_buttons.addWidget(self.lab_start_brew, 0, 1)
         gLay_buttons.addWidget(self.but_view_data)
@@ -160,6 +183,7 @@ class MdiMainWindow(QWidget):
         gLay_buttons.addWidget(self.but_fermenters)
         # gLay_buttons.addWidget(self.lab_fermenters)
         gLay_buttons.addWidget(self.but_mashBoil)
+        gLay_buttons.addWidget(self.but_newUser)
         # gLay_buttons.addWidget(self.lab_mashBoil)
         # gLay_buttons.addWidget(self.but_test)
         # gLay_buttons.addWidget(self.lab_test)
@@ -171,10 +195,10 @@ class MdiMainWindow(QWidget):
         hLay_grid.addStretch(1)
 
         #H Layout for title button
-        hLay_title = QHBoxLayout()
+        #hLay_title = QHBoxLayout()
         # hLay_title.addStretch(1)
-        hLay_title.addWidget(self.label_title)
-        hLay_title.addStretch(1)
+        #hLay_title.addWidget(self.label_title)
+        #hLay_title.addStretch(1)
 
         #H Layout for quit button
         hLay_quit = QHBoxLayout()
@@ -183,7 +207,7 @@ class MdiMainWindow(QWidget):
 
         #V layout for main layout
         vLay_main = QVBoxLayout()
-        vLay_main.addLayout(hLay_title)
+        #vLay_main.addLayout(hLay_title)
         # vLay_main.addStretch(1)
         vLay_main.addLayout(hLay_grid)
         # vLay_main.addStretch(1)
