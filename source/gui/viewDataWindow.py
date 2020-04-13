@@ -152,7 +152,7 @@ class ViewDataWindow(QDialog):
         
 
         # Create bottom buttons
-        self.but_quit = QPushButton("Quit")
+        self.but_quit = QPushButton("Close")
         self.but_quit.setAutoDefault(0)
         self.but_view = QPushButton("Display Brew")
         self.but_view.setAutoDefault(0)

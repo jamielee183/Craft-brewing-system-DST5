@@ -156,7 +156,7 @@ class FermentMonitor(QDialog):
 
         self.dropDownBox.currentIndexChanged.connect(self.indexChanged)
 
-        quitButton = QPushButton(self.tr('&Quit'))
+        quitButton = QPushButton(self.tr('&Close'))
         quitButton.clicked.connect(self.closeWindow)
         quitLayout = QHBoxLayout()
         quitLayout.addStretch(10)

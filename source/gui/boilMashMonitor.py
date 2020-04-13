@@ -430,7 +430,7 @@ class MonitorWindow(QDialog):
         self.tabs.addTab(self.tabMash,"Mash")
         self.tabs.addTab(self.tabBoil,"Boil")
 
-        self.quitButton = QPushButton(self.tr('&Quit'))
+        self.quitButton = QPushButton(self.tr('&Close'))
         self.quitButton.clicked.connect(self.closeWindow)
         
         self.tabBoil.startButton.clicked.connect(self.boilStartClicked)
