@@ -15,10 +15,11 @@ Things you can do so far:
     * Boil start/end times
     * Hop Times
 * Monitoring of Mashing process.
+* View IR camera of the Mash tun
+* View historical data of brew dates/recipes.
 
 Things you will be able to do soon:
 * Create and auto enter recipes.
-* View historical data of brew dates/recipes.
 
 ## Code Documentation
 https://jamielee183.github.io/Craft-brewing-system-DST5/html/index.html
