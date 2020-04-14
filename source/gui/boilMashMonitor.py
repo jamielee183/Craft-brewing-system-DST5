@@ -13,6 +13,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
                     QLabel, QGridLayout, QFrame, QMessageBox, QDialog
 
+from PyQt5.QtGui import QFont
+
 from PyQt5.QtCore import QTimer, QDateTime, QTime, pyqtSignal
 
 from qwt import QwtPlot, QwtPlotMarker, QwtSymbol, QwtLegend, QwtPlotGrid, \
@@ -59,6 +61,9 @@ class TabGraph(QWidget):
         self.tempLabel = QLabel("Temp:")
         self.tempLabel.setAlignment(QtCore.Qt.AlignRight)
 
+        self.targetTemp=QLabel("Set temp:")
+        self.targetTime=QLabel(f"Set temp:")
+
         self.targetTimeLabel = QLabel("Target: ")
         self.targetTimeLabel.setAlignment(QtCore.Qt.AlignRight)
         self.targetTempLabel = QLabel("Target: ")
@@ -74,32 +79,54 @@ class TabGraph(QWidget):
         self.plot.replot()
         self.plot.show()
 
+        axisFont = QFont("Helvetica", 11, QFont.Bold)
+        titleFont = QFont("Helvetica", 12, QFont.Bold)
+
+        xTitle = QwtText()
+        xTitle.setText("Time")
+        xTitle.setFont(axisFont)
+        self.plot.setAxisTitle(self.plot.xBottom, xTitle)
+        yTitle = QwtText()
+        yTitle.setText(f"Temperature {DEGREESC}")
+        yTitle.setFont(axisFont)
+        self.plot.setAxisTitle(self.plot.yLeft, yTitle)
+
+
         self.tempStatusLED = QLed(self, onColour=QLed.Green, offColour=QLed.Red, shape=QLed.Circle)
         self.tempStatusLED.value=False
+        self.tempStatusLED.setMaximumSize(25,25)
 
         self.timeStatusLED = QLed(self, onColour=QLed.Green, offColour=QLed.Red, shape=QLed.Circle)
         self.timeStatusLED.value=False
+        self.timeStatusLED.setMaximumSize(25,25)
 
 
         self.recipeGrid = QGridLayout()
         self.recipeGrid.addWidget(QLabel(f"Recipe:"),0,0)
         self.recipeGrid.addWidget(QLabel(f"{self.recipedata['recipeName']}"),0,1)
         self.recipeGrid.addWidget(QHLine(), 1, 0, 1, 2)
+        self.recipeGrid.addWidget(self.targetTemp)
+        self.recipeGrid.addWidget(self.targetTempLabel)
+        self.recipeGrid.addWidget(self.targetTime)
+        self.recipeGrid.addWidget(self.targetTimeLabel)
+        self.recipeGrid.addWidget(QHLine(), 4, 0, 1, 2)
 
 
         self.tempLayout = QHBoxLayout()
-        self.tempLayout.addWidget(self.targetTempLabel)
-        self.tempLayout.addStretch(10)
+        # self.tempLayout.addWidget(self.targetTempLabel)
+        # self.tempLayout.addStretch(10)
         self.tempLayout.addWidget(self.tempLabel)
-        self.tempLayout.addStretch(10)
+        # self.tempLayout.addStretch(10)
         self.tempLayout.addWidget(self.tempStatusLED)
+        self.tempLayout.addStretch(10)
 
         self.timeLayout = QHBoxLayout()
-        self.timeLayout.addWidget(self.targetTimeLabel)
-        self.timeLayout.addStretch(10)
+        # self.timeLayout.addWidget(self.targetTimeLabel)
+        # self.timeLayout.addStretch(10)
         self.timeLayout.addWidget(self.timeLabel)
-        self.timeLayout.addStretch(10)
+        # self.timeLayout.addStretch(10)
         self.timeLayout.addWidget(self.timeStatusLED)
+        self.timeLayout.addStretch(10)
 
         self.plotLayout = QVBoxLayout()
         self.plotLayout.addLayout(self.timeLayout)
@@ -158,8 +185,8 @@ class TabMash(TabGraph):
         self.plot.setTitle("Mash")
         self.curve.setTitle("Temprature")
 
-        self.targetTimeLabel.setText(f"Set mash time: {self.recipedata['mashTime']} mins")
-        self.targetTempLabel.setText(f"Set mash temp: {self.recipedata['mashTemp']}{DEGREESC}")
+        self.targetTimeLabel.setText(f"{self.recipedata['mashTime']} mins")
+        self.targetTempLabel.setText(f"{self.recipedata['mashTemp']}{DEGREESC}")
 
 
         # if self.radio is not None:
@@ -260,8 +287,11 @@ class TabBoil(TabGraph):
         self.startButton.setText(self.tr('Start Boil'))
         self.stopButton.setText(self.tr('&Stop Boil'))
 
-        self.targetTimeLabel.setText(f"Set boil time: {self.recipedata['boilTime']} mins")
-        self.targetTempLabel.setText(f"Set boil temp: {self.recipedata['boilTemp']}{DEGREESC}")
+        # self.targetTimeLabel.setText(f"Set boil time: {self.recipedata['boilTime']} mins")
+        # self.targetTempLabel.setText(f"Set boil temp: {self.recipedata['boilTemp']}{DEGREESC}")
+
+        self.targetTimeLabel.setText(f"{self.recipedata['boilTime']} mins")
+        self.targetTempLabel.setText(f"{self.recipedata['boilTemp']}{DEGREESC}")
 
 
         self.recipeLED = [QLed(self, onColour=QLed.Green, 
@@ -281,21 +311,21 @@ class TabBoil(TabGraph):
 
         self.hopTimeLabels = [QLabel("") for _ in range(4)]
 
-        self.recipeGrid.addWidget(QLabel(f"Hop"),3,0)
-        self.recipeGrid.addWidget(QLabel(f"Time"),3,1)
-        self.recipeGrid.addWidget(QLabel(f"Hop\nStatus"),3,2)
-        self.recipeGrid.addWidget(QLabel(f"Time\nadded"),3,3)
+        self.recipeGrid.addWidget(QLabel(f"Hop"),5,0)
+        self.recipeGrid.addWidget(QLabel(f"Time"),5,1)
+        self.recipeGrid.addWidget(QLabel(f"Hop\nStatus"),5,2)
+        self.recipeGrid.addWidget(QLabel(f"Time\nadded"),5,3)
         for i in range(4):
             if self.recipedata[f'hop{i+1}'][0] is None:
-                self.recipeGrid.addWidget(QLabel(""),4+i,0)
-                self.recipeGrid.addWidget(QLabel(""),4+i,1)
+                self.recipeGrid.addWidget(QLabel(""),6+i,0)
+                self.recipeGrid.addWidget(QLabel(""),6+i,1)
 
             else:
-                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][0])),4+i,0)
-                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][1])),4+i,1)
-                self.recipeGrid.addWidget(self.recipeLED[i],4+i,2)
-            self.recipeLED[i].setMaximumSize(35,35)
-            self.recipeGrid.addWidget(self.hopTimeLabels[i],4+i,3)
+                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][0])),6+i,0)
+                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][1])),6+i,1)
+                self.recipeGrid.addWidget(self.recipeLED[i],6+i,2)
+            self.recipeLED[i].setMaximumSize(25,25)
+            self.recipeGrid.addWidget(self.hopTimeLabels[i],6+i,3)
 
 
         #Doesn't work in for loop for some reason

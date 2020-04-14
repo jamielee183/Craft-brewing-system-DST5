@@ -127,11 +127,11 @@ class MdiMainWindow(QWidget):
     def __init__(self,LOGIN, isRunningOnPi=False, parent = None):
         super(MdiMainWindow, self).__init__()
         self.LOGIN = LOGIN
+        self.isRunningOnPi = isRunningOnPi
         # self.main_widget = QWidget()
         self.create_layout()
         self.setWindowTitle("Brew Monitoring System")
-        # self.setCentralWidget(self.main_widget)
-        self.isRunningOnPi = isRunningOnPi
+        # self.setCentralWidget(self.main_widget)=
         self.parent = parent
 
         if self.isRunningOnPi:
@@ -167,6 +167,12 @@ class MdiMainWindow(QWidget):
         self.but_mashBoil.setToolTip("View Mash and Boil Vessels")
         self.but_mashBoil.setIcon(QIcon(QPixmap("icons/view_mashboil.png")))
         self.but_mashBoil.setIconSize(QSize(icon_size, icon_size))
+        if self.isRunningOnPi:
+            self.but_irCam = QToolButton()
+            self.but_irCam.setToolTip("View Ir camera")
+            """
+            #TODO: CREATE BUTTON FOR MASH CAMERA
+            """
         self.but_test = QPushButton(self.tr('Check System for Faults'))
         self.but_newUser = QPushButton()
         self.but_newUser.setToolTip("Create New User")
