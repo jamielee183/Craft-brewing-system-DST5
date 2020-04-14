@@ -240,6 +240,9 @@ class MdiMainWindow(QWidget):
 
         self.but_view_data.clicked.connect(self.viewDataClicked)
 
+        if self.isRunningOnPi:
+            self.but_irCam.clicked.connect(self.irCameraclick)
+
         # self.fermentMonitor = FermentMonitor(self.LOGIN)
 
         # database = db(LOGIN,"Brewing")
