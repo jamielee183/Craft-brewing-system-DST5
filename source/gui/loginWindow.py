@@ -16,8 +16,10 @@ from PyQt5.QtWidgets import \
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.gui.mainwindow import MainWindow
 from source.tools.sqlHandler import SqlTableHandler, LoginError
+
 from source.tools.constants import *
 import mysql.connector as sql
+from  mysql.connector.errors import OperationalError, InterfaceError
 
 class LoginWindow(QDialog):
 
@@ -81,7 +83,7 @@ class LoginWindow(QDialog):
         LOGIN = [HOST, USER, PASSWORD]
 
         try:
-            # SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
+            SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
 
             # self.close()
             self.window = MainWindow(LOGIN=LOGIN, isRunningOnPi=self.piCheckBox.isChecked())
@@ -95,4 +97,21 @@ class LoginWindow(QDialog):
             loginFail.setStandardButtons(QMessageBox.Ok)
             loginFail.setWindowTitle("Warning")
             loginFail.exec_()
+
+        except OperationalError as e:
+            conerror = QMessageBox()
+            conerror.setIcon(QMessageBox.Critical)
+            conerror.setText(f"Connection timeout\n{e}")
+            conerror.setStandardButtons(QMessageBox.Ok)
+            conerror.setWindowTitle("Warning")
+            conerror.exec_()
+        except InterfaceError as e: 
+            cantconnect = QMessageBox()
+            cantconnect.setIcon(QMessageBox.Critical)
+            cantconnect.setText(f"Can't connect to database\n{e}")
+            cantconnect.setStandardButtons(QMessageBox.Ok)
+            cantconnect.setWindowTitle("Warning")
+            cantconnect.exec_()
+
+
 
