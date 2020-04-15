@@ -52,7 +52,7 @@ class LoginWindow(QDialog):
         self.piCheckBox = QCheckBox('Pi log in?')
         hLayoutButtons.addWidget(self.quitLoginButton)
         hLayoutButtons.addStretch(1)
-        hLayoutButtons.addWidget(self.piCheckBox)
+        # hLayoutButtons.addWidget(self.piCheckBox)
         hLayoutButtons.addWidget(self.loginButton)
 
         # Main V layout
@@ -85,10 +85,17 @@ class LoginWindow(QDialog):
         try:
             SqlTableHandler(LOGIN=LOGIN, databaseName="Brewing")
 
-            # self.close()
-            self.window = MainWindow(LOGIN=LOGIN, isRunningOnPi=self.piCheckBox.isChecked())
-            self.close()
-            self.window.show()
+            try:
+                self.window = MainWindow(LOGIN=LOGIN, isRunningOnPi=True)#self.piCheckBox.isChecked())
+                self.close()
+                self.window.show()
+            except ModuleNotFoundError as e:
+                if str(e)=="No module named 'RPi'":
+                    self.window = MainWindow(LOGIN=LOGIN, isRunningOnPi=False)
+                    self.close()
+                    self.window.show()
+                else:
+                    raise e
         
         except LoginError:
             loginFail = QMessageBox()
