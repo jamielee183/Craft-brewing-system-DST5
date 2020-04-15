@@ -115,6 +115,8 @@ class SqlTableHandler():
     #@param LOGIN The login details of the MySQL connection. 
     #@param databaseName The database to acess
     def __init__(self, LOGIN, databaseName):
+        self.databaseName = databaseName
+        self._log.debug(f"Opening \"{databaseName}\"")
         try:
             # self.sql = sql
             self.db= sql.connect(
@@ -122,9 +124,6 @@ class SqlTableHandler():
                 user=LOGIN[1],
                 passwd=LOGIN[2],
                 database=databaseName)
-
-            self.databaseName = databaseName
-            self._log.debug(f"Opening \"{databaseName}\"")
             self.cursor = self.db.cursor()
 
         except ProgrammingError:

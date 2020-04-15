@@ -46,7 +46,7 @@ class SQLBrewingComms(metaclass=ABCMeta):
         self.db.flushTables()
         return self.db.maxIdFromTable("Brews")
 
-    ## Return th recipe data for the current brew
+    ## Return the recipe data for the current brew
     def getBrewData(self, batchID):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
