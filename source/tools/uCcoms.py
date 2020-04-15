@@ -5,7 +5,7 @@
 
 import numpy as np
 from abc import ABCMeta, abstractmethod
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 import time
 import logging
 import sys, os
@@ -99,6 +99,7 @@ class PiRadio(UCComms):
         self.sendRetryCount = 0
 
         self.irTemp = np.ones((8,8))
+        self.mutex = Lock()
         
     ##PiRadio configure
     #
@@ -117,6 +118,7 @@ class PiRadio(UCComms):
         GPIO.add_event_detect(self.PI_INTERUPT_PIN, GPIO.FALLING, callback=self.callback)
         self.radio.startListening()
         self.sendData(CONFIGURE_ARUDINO)
+
 
     ##Read Data from the radio module
     #
@@ -159,7 +161,11 @@ class PiRadio(UCComms):
         if rx or self.radio.available():
             dataIn = self.readData()
             if dataIn is not None:
-                self.caseSwitcher(dataIn)
+
+                thread = Thread(target=self.caseSwitcher, args=(dataIn))
+                thread.daemon = True   # Daemonize thread
+                thread.start()    
+                # self.caseSwitcher(dataIn)
                 self._log.debug("Data available")
 
         if tx:
@@ -191,6 +197,7 @@ class PiRadio(UCComms):
             x.db.db.close()
         elif data[0] == 0x02: #if temp camera data, 8x8 array of 1 byte values
             row = data[1]
+            self.mutex.acquire()
             self.irTemp[row][0] = int.from_bytes(data[2:4], 'big', signed=False)/100
             self.irTemp[row][1] = int.from_bytes(data[4:6], 'big', signed=False)/100
             self.irTemp[row][2] = int.from_bytes(data[6:8], 'big', signed=False)/100
@@ -199,6 +206,7 @@ class PiRadio(UCComms):
             self.irTemp[row][5] = int.from_bytes(data[12:14], 'big', signed=False)/100
             self.irTemp[row][6] = int.from_bytes(data[14:16], 'big', signed=False)/100
             self.irTemp[row][7] = int.from_bytes(data[16:18], 'big', signed=False)/100
+            self.mutex.release()
         else:
             self._log.warning("Wrong data type for Mash")
 

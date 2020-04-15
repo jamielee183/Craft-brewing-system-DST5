@@ -370,13 +370,17 @@ class ViewDataWindow(QDialog):
     def createData(self, sql):
         timestamps = []
         tempdat = []
-        for data in self.db.custom(sql):
-            timestamps.append(data[0])
-            tempdat.append(data[1])
-        
-        startTime = timestamps[0]
-        for i in range(len(timestamps)):
-            timestamps[i] = (timestamps[i] - startTime).seconds
+        try:
+            for data in self.db.custom(sql):
+                timestamps.append(data[0])
+                tempdat.append(data[1])
+            
+            startTime = timestamps[0]
+            for i in range(len(timestamps)):
+                timestamps[i] = (timestamps[i] - startTime).seconds
+        except IndexError:
+            return [0], [0]
+
 
         return timestamps, tempdat
 
