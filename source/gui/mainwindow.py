@@ -173,6 +173,8 @@ class MdiMainWindow(QWidget):
             """
             #TODO: CREATE BUTTON FOR MASH CAMERA
             """
+            self.but_irCam.setIconSize(QSize(icon_size, icon_size))
+            
         self.but_test = QPushButton(self.tr('Check System for Faults'))
         self.but_newUser = QPushButton()
         self.but_newUser.setToolTip("Create New User")

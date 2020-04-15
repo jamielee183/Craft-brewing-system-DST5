@@ -61,8 +61,8 @@ class TabGraph(QWidget):
         self.tempLabel = QLabel("Temp:")
         self.tempLabel.setAlignment(QtCore.Qt.AlignRight)
 
-        self.targetTemp=QLabel("Set temp:")
-        self.targetTime=QLabel(f"Set temp:")
+        self.targetTemp=QLabel("Set Temp:")
+        self.targetTime=QLabel("Set Time:")
 
         self.targetTimeLabel = QLabel("Target: ")
         self.targetTimeLabel.setAlignment(QtCore.Qt.AlignRight)
