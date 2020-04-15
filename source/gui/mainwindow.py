@@ -169,10 +169,8 @@ class MdiMainWindow(QWidget):
         self.but_mashBoil.setIconSize(QSize(icon_size, icon_size))
         if self.isRunningOnPi:
             self.but_irCam = QToolButton()
-            self.but_irCam.setToolTip("View Ir camera")
-            """
-            #TODO: CREATE BUTTON FOR MASH CAMERA
-            """
+            self.but_irCam.setToolTip("View IR Camera Readings")
+            self.but_irCam.setIcon(QIcon(QPixmap("icons/ir_camera.png")))
             self.but_irCam.setIconSize(QSize(icon_size, icon_size))
             
         self.but_test = QPushButton(self.tr('Check System for Faults'))
