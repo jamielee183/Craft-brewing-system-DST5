@@ -5,27 +5,27 @@ import time
 
 sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 from source.tools.sqlBrewingComms import *
-HOST = "192.168.10.223"
+HOST = "192.168.0.17"
 USER = "jamie"
 PASSWORD = "beer"
 LOGIN = [HOST,USER,PASSWORD]
 
 
 #Brew recipe
-# brewName = "Simcoe IPA"
-# mashTime = "60"
-# mashTemp = "80"
-# boilTime = "60"
-# boilTemp = "100"
-# hop1 = ("Simcoe","60")
-# hop2 = ("Simcoe","30")
-# hop3 = ("Simcoe","20")
-# hop4 = ("Simcoe","10")
-# fermentTemp = "22"
-# fermentationTankNo = "1"
-# startG = "1.053"
-# endG =  "1.041"
-# fermtime = "600"
+brewName = "Alpha dog"
+mashTime = "90"
+mashTemp = "68"
+boilTime = "60"
+boilTemp = "95"
+hop1 = ("Simcoe","60")
+hop2 = ("Citra","30")
+hop3 = ("Chinook","20")
+hop4 = ("Columbus","10")
+fermentTemp = "19"
+fermentationTankNo = "1"
+startG = "1.062"
+endG =  "1.020"
+fermtime = "600"
 
 # brewName = "Simcoe IPA"
 # mashTime = "60"
@@ -42,20 +42,20 @@ LOGIN = [HOST,USER,PASSWORD]
 # endG =  "1.030"
 # fermtime = "600"
 
-brewName = "Tennents"
-mashTime = "60"
-mashTemp = "70"
-boilTime = "60"
-boilTemp = "100"
-hop1 = ("Special","60")
-hop2 = ("Snaz","30")
-hop3 = ("SomeHop","20")
-hop4 = ("Hiphops","5")
-fermentTemp = "22"
-fermentationTankNo = "3"
-startG = "1.060"
-endG =  "1.050"
-fermtime = "600"
+# brewName = "Tennents"
+# mashTime = "60"
+# mashTemp = "60"
+# boilTime = "60"
+# boilTemp = "100"
+# hop1 = ("Special","60")
+# hop2 = ("Snaz","30")
+# hop3 = ("SomeHop","20")
+# hop4 = ("Hiphops","5")
+# fermentTemp = "22"
+# fermentationTankNo = "3"
+# startG = "1.060"
+# endG =  "1.045"
+# fermtime = "60"
 
 # brewName = "Tennents"
 # mashTime = "60"
@@ -90,6 +90,7 @@ fermtime = "600"
 
 
 
+
 brew = SQLNewBrew(LOGIN=LOGIN, brewName=brewName, 
         mashTime=mashTime, mashTemp=mashTemp, 
         boilTemp=boilTemp, boilTime=boilTime,
@@ -102,29 +103,34 @@ mash = SQLMashMonitor(LOGIN=LOGIN)
 mashtemps = np.zeros(0)
 mashtemps = np.append(mashtemps, np.linspace(0,int(mashTemp)*0.8,int(mashTime)/12))
 mashtemps = np.append(mashtemps, np.linspace(int(mashTemp)*0.8,int(mashTemp),int(mashTime)/12))
-mashtemps = np.append(mashtemps, [int(mashTemp) for _ in range(int(10*int(mashTime)/12))])
+mashtemps = np.append(mashtemps, [int(mashTemp) for _ in range(int(10*int(mashTime)/12)+10)])
+
+
+boiltemps = np.zeros(0)
+boiltemps = np.append(boiltemps, np.linspace(0,int(boilTemp)*0.8,int(boilTime)/12))
+boiltemps = np.append(boiltemps, np.linspace(int(boilTemp)*0.8,int(boilTemp),int(boilTime)/12))
+boiltemps = np.append(boiltemps, [int(boilTemp) for _ in range(int(10*int(boilTime)/12)+10)])
+
+fermentG = np.zeros(0)
+fermentG = np.append(fermentG, np.linspace(float(startG), float(endG), int(fermtime)*0.8))
+fermentG = np.append(fermentG, np.linspace(float(endG), float(endG), int(fermtime)*0.2))
 
 
 print(mashtemps)
 for i in range(int(mashTime)):
     mash.record(temp=float(mashtemps[i]), volume=0, pH=0, SG=0)
-    time.sleep(5)
+    time.sleep(60)
 print(f"Fake Mash Complete: BatchID - {batchID}")
 
 
 boil = SQLBoil(LOGIN=LOGIN)
 boilMonitor = SQLBoilMonitor(LOGIN=LOGIN)
 
-boiltemps = np.zeros(0)
-boiltemps = np.append(boiltemps, np.linspace(0,int(boilTemp)*0.8,int(boilTime)/12))
-boiltemps = np.append(boiltemps, np.linspace(int(boilTemp)*0.8,int(boilTemp),int(boilTime)/12))
-boiltemps = np.append(boiltemps, [int(boilTemp) for _ in range(int(10*int(boilTime)/12))])
-
 
 
 boil.startTimer()
 for i in range(int(boilTime)):
-    time.sleep(5)
+    time.sleep(60)
     boilMonitor.record(temp=float(boiltemps[i]), volume=0)
     if int(boilTime)-i == int(hop1[1]):
         boil.hop1Timer()
@@ -142,11 +148,8 @@ ferment = SQLFermentMonitor(LOGIN=LOGIN, batchID=batchID ,fermenterID=int(fermen
 ferment.record(specificG=None,temp=None,volume=None)
 
 
-fermentG = np.zeros(0)
-fermentG = np.append(fermentG, np.linspace(float(startG), float(endG), int(fermtime)*0.8))
-fermentG = np.append(fermentG, np.linspace(float(endG), float(endG), int(fermtime)*0.2))
 for i in range(int(fermtime)):
-    time.sleep(10)
+    time.sleep(60)
     ferment.record(specificG=float(fermentG[i]), temp=int(fermentTemp), volume=0)
 print(f"Fake Fermentation complete: BatchID - {batchID}")
 
