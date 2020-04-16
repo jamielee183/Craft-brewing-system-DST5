@@ -19,7 +19,7 @@ from source.tools.sqlHandler import SqlTableHandler, LoginError
 
 from source.tools.constants import *
 import mysql.connector as sql
-from  mysql.connector.errors import OperationalError, InterfaceError
+from  mysql.connector.errors import OperationalError, InterfaceError, DatabaseError
 
 class LoginWindow(QDialog):
 
@@ -109,6 +109,13 @@ class LoginWindow(QDialog):
             conerror = QMessageBox()
             conerror.setIcon(QMessageBox.Critical)
             conerror.setText(f"Connection timeout\n{e}")
+            conerror.setStandardButtons(QMessageBox.Ok)
+            conerror.setWindowTitle("Warning")
+            conerror.exec_()
+        except DatabaseError as e:
+            conerror = QMessageBox()
+            conerror.setIcon(QMessageBox.Critical)
+            conerror.setText(f"Database Error\n{e}")
             conerror.setStandardButtons(QMessageBox.Ok)
             conerror.setWindowTitle("Warning")
             conerror.exec_()
