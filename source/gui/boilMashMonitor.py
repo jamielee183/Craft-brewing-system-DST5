@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, Qt
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
-                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog
+                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog, QSlider
 
 from PyQt5.QtGui import QFont
 
