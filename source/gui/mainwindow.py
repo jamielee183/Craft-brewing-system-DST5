@@ -28,7 +28,7 @@ from source.gui.fermentMonitor import FermentMonitor
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as db
 from source.gui.NewBrewWindow import NewBrewWindow
-
+from source.gui.irCameraWidget import IrCameraWidget
 from source.gui.newUserWindow import NewUserWindow
 from source.gui.viewDataWindow import ViewDataWindow
 
@@ -207,6 +207,8 @@ class MdiMainWindow(QWidget):
         # gLay_buttons.addWidget(self.lab_test)
         # gLay_buttons.addWidget(self.but_newUser)
         # gLay_buttons.addWidget(self.lab_newUser)
+
+
         hLay_grid = QHBoxLayout()
         # hLay_grid.addStretch(1)
         hLay_grid.addLayout(gLay_buttons)
