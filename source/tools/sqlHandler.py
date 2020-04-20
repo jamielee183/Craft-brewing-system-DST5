@@ -337,7 +337,7 @@ if __name__ == "__main__":
     fileds.append(t.createField("TimeStamp","DATETIME"))
     fileds.append(t.createField("Temp","DOUBLE", 225, 2))
     fileds.append(t.createField("pH","DOUBLE",255,2))
-    fileds.append(t.createField("SG","DOUBLE",255,3))
+    fileds.append(t.createField("SG","DOUBLE",255,5))
     fileds.append(t.createField("Volume","DOUBLE",255,4))
     t.createTable("Mash", fileds)
 
