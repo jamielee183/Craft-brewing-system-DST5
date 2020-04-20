@@ -260,7 +260,7 @@ class MdiMainWindow(QWidget):
     def irCameraclick(self):
 
         if self.isRunningOnPi:
-            irCamera = IrCameraWidget(radio=self.radio, parent=parent)
+            irCamera = IrCameraWidget(radio=self.radio, parent=self)
             irCamera.show()
         else:
             self._log.warning("Cannot open camera as application running in remote mode")
