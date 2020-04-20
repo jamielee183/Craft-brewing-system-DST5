@@ -25,7 +25,7 @@ import source.tools.exceptionLogging
 class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=3, height=3, dpi=100):
-        super(PlotCanvas,self).__init__(parent)
+        # super(PlotCanvas,self).__init__(parent)
         self.midpoint = 23
         self.scale = 50
 
@@ -85,6 +85,7 @@ class IrCameraWidget(QWidget):
     _logname = 'IrCameraWidget'
     _log = logging.getLogger(f'{_logname}')
     def __init__(self, radio=None, parent = None):
+        super(IrCameraWidget,self).__init__(parent)
         assert radio is not None
 
         self.slider = QSlider(QtCore.Qt.Vertical)
