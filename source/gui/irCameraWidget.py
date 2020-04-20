@@ -13,7 +13,7 @@ import matplotlib.cm as cm
 from scipy.ndimage.filters import gaussian_filter
 
 from PyQt5 import Qt, QtCore
-from PyQt5.QtWidgets import QWidget,  QSlider
+from PyQt5.QtWidgets import QWidget, QSlider
 from PyQt5.QtCore import QTimer
 
 # if running from command line, need to append the parent directories to the PATH
@@ -25,7 +25,7 @@ import source.tools.exceptionLogging
 class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=3, height=3, dpi=100):
-        
+        super().__init__(parent)
         self.midpoint = 23
         self.scale = 50
 
