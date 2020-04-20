@@ -162,7 +162,7 @@ class PiRadio(UCComms):
             dataIn = self.readData()
             if dataIn is not None:
 
-                thread = Thread(target=self.caseSwitcher, args=dataIn)
+                thread = Thread(target=self.caseSwitcher, args=bytes(dataIn))
                 thread.daemon = True   # Daemonize thread
                 thread.start()    
                 # self.caseSwitcher(dataIn)
