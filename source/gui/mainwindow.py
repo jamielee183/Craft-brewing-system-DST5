@@ -172,7 +172,7 @@ class MdiMainWindow(QWidget):
             self.but_irCam.setToolTip("View IR Camera Readings")
             self.but_irCam.setIcon(QIcon(QPixmap("icons/ir_camera.png")))
             self.but_irCam.setIconSize(QSize(icon_size, icon_size))
-            
+
         self.but_test = QPushButton(self.tr('Check System for Faults'))
         self.but_newUser = QPushButton()
         self.but_newUser.setToolTip("Create New User")
@@ -195,6 +195,10 @@ class MdiMainWindow(QWidget):
         gLay_buttons.addWidget(self.but_view_data)
         # gLay_buttons.addWidget(self.lab_view_data)
         gLay_buttons.addWidget(self.but_mashBoil)
+        
+        if self.isRunningOnPi:
+            gLay_buttons.addWidget(self.but_irCam)
+
         gLay_buttons.addWidget(self.but_fermenters)
         # gLay_buttons.addWidget(self.lab_fermenters)  
         gLay_buttons.addWidget(self.but_newUser)
