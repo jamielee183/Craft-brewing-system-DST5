@@ -25,7 +25,7 @@ import source.tools.exceptionLogging
 class PlotCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=3, height=3, dpi=100):
-        super().__init__(parent)
+        super(PlotCanvas,self).__init__(parent)
         self.midpoint = 23
         self.scale = 50
 
