@@ -260,7 +260,7 @@ class MdiMainWindow(QWidget):
     def irCameraclick(self):
 
         if self.isRunningOnPi:
-            irCamera = IrCameraWidget(radio=self.radio, parent=self)
+            irCamera = IrCameraWidget(radio=self.radio, parent=None)
             
 
             sub = QMdiSubWindow()
