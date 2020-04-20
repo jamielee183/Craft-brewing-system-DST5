@@ -13,8 +13,8 @@ import matplotlib.cm as cm
 from scipy.ndimage.filters import gaussian_filter
 
 from PyQt5 import Qt, QtCore
-from PyQt5.QtWidgets import QWidget, QSlider
-from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QWidget, QSlider, QSizePolicy
+from PyQt5.QtCore import QTimer 
 
 # if running from command line, need to append the parent directories to the PATH
 # so python knows where to find "source.file"
