@@ -24,11 +24,11 @@ import spidev
 from RF24 import *
 
 
-# CONFIGURE_ARUDINO = [0x05]
+CONFIGURE_ARUDINO = [0x05]
 
-# BOIL_COMMAND = 0x02
-# MASH_COMMAND = 0x01
-# FERMENT_COMMAND = 0x03
+BOIL_COMMAND = 0x02
+MASH_COMMAND = 0x01
+FERMENT_COMMAND = 0x03
 
 ##UCComms abstract calss
 #
@@ -92,9 +92,9 @@ class PiRadio(UCComms):
         self.pipes = [[0xE0,0xE0,0xF1,0xF1,0xE0], [0xCC, 0xCE,0xCC,0xCE,0xCC]]
         self.PI_INTERUPT_PIN = 5
         self.cases ={
-            MASH_COMMAND : self.mash,
-            BOIL_COMMAND : self.boil,
-            FERMENT_COMMAND : self.ferment
+            self.MASH_COMMAND : self.mash,
+            self.BOIL_COMMAND : self.boil,
+            self.FERMENT_COMMAND : self.ferment
         }
         self.sendRetryCount = 0
 
@@ -218,14 +218,14 @@ class PiRadio(UCComms):
         temp *= 10
         temp = int(temp)
         while True:
-            if self.sendData([MASH_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF]):
+            if self.sendData([self.MASH_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF]):
                 break
 
     ##Stop Mash
     #
     #Send command to brewing module to stop the mash.
     def stopMash(self):
-        self.sendData([MASH_COMMAND, 0x02])
+        self.sendData([self.MASH_COMMAND, 0x02])
 
     ##Boil data recived method
     #
@@ -253,14 +253,14 @@ class PiRadio(UCComms):
         temp *= 10
         temp = int(temp)
         while True:
-            if self.sendData([BOIL_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF]):
+            if self.sendData([self.BOIL_COMMAND, 0x01,(temp>>8)&0xFF, temp&0xFF]):
                 break
 
     ##Stop Boil
     #
     #Send command to brewing module to stop the boil.
     def stopBoil(self):
-        self.sendData([BOIL_COMMAND, 0x02])
+        self.sendData([self.BOIL_COMMAND, 0x02])
 
     ##Feremntaion data recived
     #
