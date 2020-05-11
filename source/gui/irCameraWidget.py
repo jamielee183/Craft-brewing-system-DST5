@@ -105,6 +105,7 @@ class IrCameraWidget(QWidget):
         ircameralayout.addWidget(self.slider)
 
         self.setLayout(ircameralayout)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     def sliderUpdate(self):
         self.cameraPlot.scale = self.slider.value()

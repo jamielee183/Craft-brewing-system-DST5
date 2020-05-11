@@ -133,6 +133,7 @@ class MdiMainWindow(QWidget):
         self.setWindowTitle("Brew Monitoring System")
         # self.setCentralWidget(self.main_widget)=
         self.parent = parent
+        self.fermentMonitor = FermentMonitor(self.LOGIN)
 
         if self.isRunningOnPi:
             from source.tools.uCcoms import PiRadio
