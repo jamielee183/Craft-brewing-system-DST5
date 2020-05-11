@@ -43,16 +43,6 @@ class SqlDatabaseHandler():
         self.cursor.execute(f"GRANT INSERT, SELECT, DELETE, UPDATE ON Brewing.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
         self.cursor.execute("FLUSH PRIVILEGES")
         self._log.info(f"New user: {user} created on: {host}")
-<<<<<<< HEAD
-
-
-    def createSuperUser(self, host: str, user: str, passwd: str):
-        self.cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}' WITH GRANT OPTION")
-        self.cursor.execute("FLUSH PRIVILEGES")
-        self._log.info(f"New super user: {user} created on: {host}")
-        
-=======
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     ##Create a database super user
     #
@@ -299,18 +289,10 @@ if __name__ == "__main__":
     USER = "jamie"
     PASSWORD = "beer"
 
-<<<<<<< HEAD
     HOST = input("Host ID: ")
     USER = input("User: ")
     PASSWORD = getpass()
     if HOST == "Pi": 
-=======
-    # HOST = input("Host ID: ")
-    # USER = input("User: ")
-    # PASSWORD = getpass()
-    if HOST == "Pi": 
-        HOST = "192.168.10.223"
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
         HOST = "192.168.0.17"
 
     LOGIN = [HOST,USER,PASSWORD]

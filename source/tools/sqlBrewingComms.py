@@ -295,19 +295,11 @@ if __name__ == '__main__':
     USER = "jamie"
     PASSWORD = "beer"
 
-<<<<<<< HEAD
     HOST = input("Host ID: ")
     USER = input("User: ")
     PASSWORD = getpass()
     if HOST == "Pi":
         HOST = "192.168.0.17"
-=======
-    # HOST = input("Host ID: ")
-    # USER = input("User: ")
-    # PASSWORD = getpass()
-    if HOST == "Pi":
-        HOST = "192.168.10.223"
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     LOGIN = [HOST,USER,PASSWORD]
 

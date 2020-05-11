@@ -236,17 +236,20 @@ class TabMash(TabGraph):
             timestamps.append(data[0])
             results.append(data[1])
 
-        startTime = timestamps[0]
-        for i in range(len(timestamps)):
-            timestamps[i] = (timestamps[i]-startTime).seconds
-            # timestamps[i] = timestamps[i].seconds
+        # startTime = timestamps[0]
 
+        if len(timestamps) != 0:
+            startTime = timestamps[0]
+            for i in range(len(timestamps)):
+                timestamps[i] = (timestamps[i]-startTime).seconds
+                # timestamps[i] = timestamps[i].seconds
+            self.curve.setData(timestamps, results)
         self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
 
         # self.timeStamps = [i[0] for i in query]
         
         # self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
-        self.curve.setData(timestamps, results)
+        # self.curve.setData(timestamps, results)
         # self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
         self.plot.replot()
         self.plot.show()

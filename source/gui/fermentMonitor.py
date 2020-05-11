@@ -33,23 +33,6 @@ from source.gui.guitools import FermentTimeScaleDraw, DateTimeTimeScaleDraw, QHL
 class FermentGraph(QWidget):
     _logname = 'FermentGraphGeneric'
     _log = logging.getLogger(f'{_logname}')
-<<<<<<< HEAD
-
-    textGraphDrop = {
-        "Temperature": "Temp",
-        "Specific Gravity" : "Sg",
-        "Volume" : "Volume"
-    }
-    
-    def __init__(self, LOGIN,parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Monitor")
-        self.LOGIN = LOGIN
-        self.db = dataBase(self.LOGIN, "Brewing")
-
-        self.displayDataType = {}
-=======
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     def __init__(self, database, parent=None):
         super().__init__(parent)
@@ -104,102 +87,12 @@ class FermentGraph(QWidget):
             for i in range(len(timestamps)):
                 timestamps[i] = (timestamps[i]-startTime).seconds
 
-<<<<<<< HEAD
-        sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{tankID}'"
-        query = self.db.custom(sql)
-        # self._log.debug(f"Query: {query}")
-        self.batchID = query[-1][0]
-        self._log.debug(f"BatchID: {self.batchID}, DataType: {self.displayDataType}")
-=======
             # self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
 
-<<<<<<< HEAD
-        self.recipeData = {}
-        self.recipeData['recipeName'] = query[0][1]
-        self.recipeData['recipeDate'] = query[0][2]
-        self.recipeData['mashTemp']   = query[0][3]
-        self.recipeData['mashTime']   = query[0][4]
-        self.recipeData['boilTemp']   = query[0][5]
-        self.recipeData['boilTime']   = query[0][6]
-        self.recipeData['hop1']       = (query[0][7],query[0][8])
-        self.recipeData['hop2']       = (query[0][9],query[0][10])
-        self.recipeData['hop3']       = (query[0][11],query[0][12])
-        self.recipeData['hop4']       = (query[0][13],query[0][14])
-        self.recipeData['fermenttemp']= query[0][15]
-
-        # self.tempData = self.getData("Temp","BatchID","Ferment")
-        # self.sGData = self.getData("Sg","BatchID","Ferment")
-        # self.volumeData = self.getData("Volume","BatchID","Ferment")
-        # self.tankNumber = self.getData("Fermenter","BatchID","Ferment")
-        sql = (f"SELECT TimeStamp FROM Ferment "
-              f"WHERE BatchID = '{self.batchID}' "
-              f"AND Fermenter = '{tankID}'")
-        data = self.db.custom(sql)
-        self.timeStamp = data
-        self._log.debug(self.timeStamp[0][0])
-       
-
-        self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
-
-
-        self.updatePlot()
-        self.updateLabels()
-
-    def updatePlot(self):
-        self.plot.setTitle(f"{self.recipeData['recipeName']}: {self.recipeData['recipeDate']}")
-        self.updatePlotData()
-
-    def updatePlotData(self):
-        sql = (f"SELECT TimeStamp FROM Ferment "
-            f"WHERE BatchID = '{self.batchID}' "
-            f"AND Fermenter = '{self.tankID}'")
-        self.db.flushTables()
-        data = self.db.custom(sql)
-        self.timeStamp = data
-        self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
-        self.dataY = self.displayData
-        self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
-        self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, FermentTimeScaleDraw(self.timeStamp))
-        # self.curve.setData(self.dataY)
-        self.plot.replot()
-
-    def updateLabels(self):
-        # if self.isVisible():
-        self.labelFermentTemp.setText(f"{self.recipeData['fermenttemp']}{DEGREESC}")
-        self.recipeName.setText(f"{self.recipeData['recipeName']}")
-
-        # db = dataBase(self.LOGIN, "Brewing")
-        sql = (f"SELECT BoilStart, BoilFinish FROM Boil "
-            f"WHERE BatchID = '{self.batchID}' ")
-        data = self.db.custom(sql)
-        self.boilStartTime.setText(data[-1][0].strftime('%H:%M:%S'))
-        self.boilEndTime.setText(data[-1][1].strftime('%H:%M:%S'))
-
-
-        self.label1.setText(self.displayDataType)
-
-
-    def getData(self,dataType, id,table):
-        # db = dataBase(self.LOGIN, "Brewing")
-        self.db.flushTables()
-        sql = f"SELECT {dataType} FROM {table} WHERE {id} = '{self.batchID}'"
-        data = self.db.custom(sql)
-        # data = [i[0] for i in data]
-        data = np.asarray(data, dtype=float)
-        #self._log.debug(f"batchID: {self.batchID}, sql return: {data}")
-        
-        return np.fromiter(data, dtype=float)
-        # return np.asarray(data, dtype=float)
-        # except:
-        #     return data
-=======
             self.curve.setData(timestamps, self.results)
             self.plot.replot()
             self.plot.show()
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     def changeTank(self, tankID):
         self.titleText.setText(f"Fermentation Tank: {tankID}")
@@ -377,32 +270,9 @@ class FermentMonitor(QDialog):
         # print(self.batchInTank)
         tankNo = self.dropDownBox.currentIndex()+1
         if self.isVisible():
-<<<<<<< HEAD
-            self._log.debug(f"INDEX {self.dropDownBox.currentIndex()}")
-            self.plot.updateData(self.dropDownBox.currentIndex()+1, self.textGraphDrop[f"{self.dropDownGraphBox.currentText()}"])
-
-    def fakeFermentData(self):
-        self.fakeFermenter = SQLFermentMonitor(self.LOGIN,
-                                                batchID=self.plot.batchID,
-                                                fermenterID=self.dropDownBox.currentIndex()+1)
-        x = self.fakeFermentCount
-        temp = np.divide(10*np.power(x,3)+2*np.square(x)-x, 2*np.power(x,3)+10*np.square(x)+1)
-        self.fakeFermenter.record(float(temp),float(temp*2*x),float(temp*4))
-        # self.fakeFermenter2.record(float(temp),float(temp*2),float(temp*4))
-        self.fakeFermentCount +=1
-
-    def startTimers(self):
-        self.updateDataTimer.start(5000)
-        self.updateTimer.start(10000)
-
-    def stopTimers(self):
-        self.updateTimer.stop()
-        self.updateDataTimer.stop()
-=======
             self.recipeUpdate(self.batchInTank[f"{tankNo}"])
             self.tabSg.changeTank(tankNo)
             self.tabTemp.changeTank(tankNo)
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     def closeWindow(self):
         self.close()
