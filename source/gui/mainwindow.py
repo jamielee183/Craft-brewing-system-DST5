@@ -165,6 +165,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
 
     from source.tools.sqlHandler import SqlTableHandler as db
+    from getpass import getpass
 
     HOST = "192.168.0.17"
     USER = "jamie"
@@ -173,6 +174,14 @@ if __name__ == "__main__":
     HOST = "localhost"
     USER = "Test"
     PASSWORD = "BirraMosfeti"
+
+    HOST = input("Host ID: ")
+    USER = input("User: ")
+    PASSWORD = getpass()
+    if HOST == "Pi":
+        HOST = "192.168.0.17"
+
+    LOGIN = [HOST,USER,PASSWORD]
     
     LOGIN = [HOST,USER,PASSWORD]
 

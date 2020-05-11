@@ -224,6 +224,7 @@ class SQLFermentMonitor(SQLBrewingComms):
 if __name__ == '__main__':
 
     import time
+    from getpass import getpass
     import logging
     _logname = 'SQLBrewingComms'
     _log = logging.getLogger(f'{_logname}')
@@ -237,7 +238,14 @@ if __name__ == '__main__':
     USER = "jamie"
     PASSWORD = "beer"
 
+    HOST = input("Host ID: ")
+    USER = input("User: ")
+    PASSWORD = getpass()
+    if HOST == "Pi":
+        HOST = "192.168.0.17"
+
     LOGIN = [HOST,USER,PASSWORD]
+
 
     # brewName:str, mashTime:str, \
     #             mashTemp:str, boilTime:str, boilTemp:str. \

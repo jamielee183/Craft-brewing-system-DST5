@@ -32,6 +32,12 @@ class FermentPlot(QWidget):
 
     _logname = 'FermentPlot'
     _log = logging.getLogger(f'{_logname}')
+
+    textGraphDrop = {
+        "Temperature": "Temp",
+        "Specific Gravity" : "Sg",
+        "Volume" : "Volume"
+    }
     
     def __init__(self, LOGIN,parent=None):
         super().__init__(parent)
@@ -89,7 +95,7 @@ class FermentPlot(QWidget):
         query = self.db.custom(sql)
         # self._log.debug(f"Query: {query}")
         self.batchID = query[-1][0]
-        self._log.debug(f"BatchID: {self.batchID}, DataType: {displayDataType}")
+        self._log.debug(f"BatchID: {self.batchID}, DataType: {self.displayDataType}")
 
         
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
@@ -120,38 +126,17 @@ class FermentPlot(QWidget):
         self._log.debug(self.timeStamp[0][0])
        
 
-        self.displayData = self.getData(f"{displayDataType}","BatchID","Ferment")
-
-        # for i in range(len(self.displayData)):
-        #     self.displayData[i] = [self.timeStamp[i], self.displayData[i]] 
+        self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
 
 
         self.updatePlot()
         self.updateLabels()
 
     def updatePlot(self):
-        # # self.dataY = self.sGData
-        # self.displayData = self.getData(f"{self.displayDataType}","BatchID","Ferment")
-        # self.dataY = self.displayData
-        # # self.dataX = np.zeros(len(self.dataY))
-        # # self._log.debug(f"timestamp type: {type(self.timeStamp[0][0])}")
-        # # for i in range(len(self.dataX)):
-        # #     self.dataX = self.timeStamp[i][0]
-
-        # self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
-
         self.plot.setTitle(f"{self.recipeData['recipeName']}: {self.recipeData['recipeDate']}")
-
-        # self.curve.setData(self.dataX, self.dataY)
-        # self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw(self.timeStamp))
-        # # self.curve.setData(self.dataY)
-        # self.plot.replot()
         self.updatePlotData()
 
     def updatePlotData(self):
-        #db = dataBase(self.LOGIN, "Brewing")
-        # self.db.flushTables()
-        # if self.isVisible():
         sql = (f"SELECT TimeStamp FROM Ferment "
             f"WHERE BatchID = '{self.batchID}' "
             f"AND Fermenter = '{self.tankID}'")
@@ -179,15 +164,20 @@ class FermentPlot(QWidget):
         self.boilEndTime.setText(data[-1][1].strftime('%H:%M:%S'))
 
 
+        self.label1.setText(self.displayDataType)
+
+
     def getData(self,dataType, id,table):
         # db = dataBase(self.LOGIN, "Brewing")
         self.db.flushTables()
         sql = f"SELECT {dataType} FROM {table} WHERE {id} = '{self.batchID}'"
         data = self.db.custom(sql)
-        data = [i[0] for i in data]
+        # data = [i[0] for i in data]
+        data = np.asarray(data, dtype=float)
         #self._log.debug(f"batchID: {self.batchID}, sql return: {data}")
         
         return np.fromiter(data, dtype=float)
+        # return np.asarray(data, dtype=float)
         # except:
         #     return data
 
@@ -303,7 +293,7 @@ class FermentMonitor(QDialog):
                                                 fermenterID=self.dropDownBox.currentIndex()+1)
         x = self.fakeFermentCount
         temp = np.divide(10*np.power(x,3)+2*np.square(x)-x, 2*np.power(x,3)+10*np.square(x)+1)
-        self.fakeFermenter.record(float(temp),float(temp*2),float(temp*4))
+        self.fakeFermenter.record(float(temp),float(temp*2*x),float(temp*4))
         # self.fakeFermenter2.record(float(temp),float(temp*2),float(temp*4))
         self.fakeFermentCount +=1
 
@@ -343,6 +333,7 @@ class FermentMonitorThread(QRunnable):
 
 if __name__ == "__main__":
     import logging
+    from getpass import getpass
     _logname = 'FermentMonitorMain'
     _log = logging.getLogger(f'{_logname}')
     
@@ -353,6 +344,12 @@ if __name__ == "__main__":
     HOST = "192.168.0.17"
     USER = "jamie"
     PASSWORD = "beer"
+
+    HOST = input("Host ID: ")
+    USER = input("User: ")
+    PASSWORD = getpass()
+    if HOST == "Pi":
+        HOST = "192.168.0.17"
 
     LOGIN = [HOST,USER,PASSWORD]
 

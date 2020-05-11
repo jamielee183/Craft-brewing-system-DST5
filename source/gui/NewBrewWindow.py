@@ -20,6 +20,7 @@ from source.tools.sqlHandler import SqlTableHandler as db
 from source.tools.sqlBrewingComms import SQLNewBrew
 from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 
+
 class NewBrewWindow(QDialog):
     formSubmitted = pyqtSignal()
 
