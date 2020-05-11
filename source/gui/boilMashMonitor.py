@@ -1,7 +1,8 @@
 import numpy as np
 import logging
 from datetime import datetime
-
+import warnings
+warnings.filterwarnings("ignore")
 import sys
 import os
 
@@ -10,7 +11,9 @@ from PyQt5 import QtCore, QtGui, Qt
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
-                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog
+                    QLabel, QGridLayout, QFrame, QMessageBox, QDialog, QSlider
+
+from PyQt5.QtGui import QFont
 
 from PyQt5.QtCore import QTimer, QDateTime, QTime, pyqtSignal
 
@@ -26,21 +29,28 @@ import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLBoil, SQLBoilMonitor, SQLFermentMonitor
 from source.tools.constants import *
-from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup
+from source.gui.guitools import BoilMashTimeScaleDraw, QHLine, QVLine, BoilFinishedPopup, QBoxColour, TimeScaleDraw
+from source.gui.irCameraWidget import IrCameraWidget
 
  
-
+##Parent class to hold graph instance
+#
+#Subclassed by TabBoil and TabMash
+#@sa TabBoil and TabMash
 class TabGraph(QWidget):
-
+    
     _logname = 'TabGraph'
     _log = logging.getLogger(f'{_logname}')
 
 
-
-    def __init__(self, LOGIN, parent=None):
+    ##TabGraph constructor
+    #
+    #Create the graph and accompanying buttons
+    def __init__(self, db, parent=None):
         super().__init__(parent)
-        self.LOGIN = LOGIN
-        self.db = dataBase(self.LOGIN, "Brewing")
+        # self.LOGIN = LOGIN
+        # self.db = dataBase(self.LOGIN, "Brewing")
+        self.db=db
         self.dataY = np.zeros(0)
         self.dataX = np.linspace(0,len(self.dataY),len(self.dataY))
 
@@ -50,6 +60,9 @@ class TabGraph(QWidget):
 
         self.tempLabel = QLabel("Temp:")
         self.tempLabel.setAlignment(QtCore.Qt.AlignRight)
+
+        self.targetTemp=QLabel("Set Temp:")
+        self.targetTime=QLabel("Set Time:")
 
         self.targetTimeLabel = QLabel("Target: ")
         self.targetTimeLabel.setAlignment(QtCore.Qt.AlignRight)
@@ -66,50 +79,70 @@ class TabGraph(QWidget):
         self.plot.replot()
         self.plot.show()
 
+        axisFont = QFont("Helvetica", 11, QFont.Bold)
+        titleFont = QFont("Helvetica", 12, QFont.Bold)
+
+        xTitle = QwtText()
+        xTitle.setText("Time")
+        xTitle.setFont(axisFont)
+        self.plot.setAxisTitle(self.plot.xBottom, xTitle)
+        yTitle = QwtText()
+        yTitle.setText(f"Temperature {DEGREESC}")
+        yTitle.setFont(axisFont)
+        self.plot.setAxisTitle(self.plot.yLeft, yTitle)
+
+
         self.tempStatusLED = QLed(self, onColour=QLed.Green, offColour=QLed.Red, shape=QLed.Circle)
         self.tempStatusLED.value=False
+        self.tempStatusLED.setMaximumSize(25,25)
 
         self.timeStatusLED = QLed(self, onColour=QLed.Green, offColour=QLed.Red, shape=QLed.Circle)
         self.timeStatusLED.value=False
+        self.timeStatusLED.setMaximumSize(25,25)
 
 
         self.recipeGrid = QGridLayout()
         self.recipeGrid.addWidget(QLabel(f"Recipe:"),0,0)
         self.recipeGrid.addWidget(QLabel(f"{self.recipedata['recipeName']}"),0,1)
         self.recipeGrid.addWidget(QHLine(), 1, 0, 1, 2)
+        self.recipeGrid.addWidget(self.targetTemp)
+        self.recipeGrid.addWidget(self.targetTempLabel)
+        self.recipeGrid.addWidget(self.targetTime)
+        self.recipeGrid.addWidget(self.targetTimeLabel)
+        self.recipeGrid.addWidget(QHLine(), 4, 0, 1, 2)
 
 
         self.tempLayout = QHBoxLayout()
-        self.tempLayout.addWidget(self.targetTempLabel)
-        self.tempLayout.addStretch(10)
+        # self.tempLayout.addWidget(self.targetTempLabel)
+        # self.tempLayout.addStretch(10)
         self.tempLayout.addWidget(self.tempLabel)
-        self.tempLayout.addStretch(10)
+        # self.tempLayout.addStretch(10)
         self.tempLayout.addWidget(self.tempStatusLED)
+        self.tempLayout.addStretch(10)
 
         self.timeLayout = QHBoxLayout()
-        self.timeLayout.addWidget(self.targetTimeLabel)
-        self.timeLayout.addStretch(10)
+        # self.timeLayout.addWidget(self.targetTimeLabel)
+        # self.timeLayout.addStretch(10)
         self.timeLayout.addWidget(self.timeLabel)
-        self.timeLayout.addStretch(10)
+        # self.timeLayout.addStretch(10)
         self.timeLayout.addWidget(self.timeStatusLED)
+        self.timeLayout.addStretch(10)
 
         self.plotLayout = QVBoxLayout()
         self.plotLayout.addLayout(self.timeLayout)
-        self.plotLayout.addStretch(10)
+        # self.plotLayout.addStretch(10)
         self.plotLayout.addLayout(self.tempLayout)
-        self.plotLayout.addStretch(10)
+        # self.plotLayout.addStretch(10)
         self.plotLayout.addWidget(self.plot)
-
-        
-        
-        buttonLayout = QVBoxLayout()
-        buttonLayout.addWidget(self.startButton)
-        buttonLayout.addWidget(self.stopButton)
-        buttonLayout.addLayout(self.recipeGrid)
-        buttonLayout.addStretch(100)
+    
+        self.buttonLayout = QVBoxLayout()
+        self.buttonLayout.addWidget(self.startButton)
+        self.buttonLayout.addWidget(self.stopButton)
+        self.buttonLayout.addLayout(self.recipeGrid)
+        self.buttonLayout.addStretch(100)
 
         mainLayout = QHBoxLayout()
-        mainLayout.addLayout(buttonLayout)
+        mainLayout.addLayout(self.buttonLayout)
         mainLayout.addLayout(self.plotLayout)
 
         vLayout = QVBoxLayout(self)
@@ -117,20 +150,12 @@ class TabGraph(QWidget):
 
         self.minuteTimer = QTimer(self)
         self.minuteTimer.timeout.connect(lambda:self.addTimer(60))
-
-
-    def insertSample(self,sample):
-        #self.dataY = np.append(self.dataY, [sample])
-        # self.dataYHistory = np.roll(self.dataYHistory,1)
-        # self.dataYHistory[0] = sample
-        # self.dataX = np.append(self.dataX,[self.display_time(self.count)])
-        # self.updatePlot()
-        pass
         
-
+    ##Keep track of the timer
     def addTimer(self, seconds):
         self.count += seconds
 
+    ##convery the time from seconds to hours/minutes
     def display_time(self,seconds, granularity=2):
         result = []
         for name, count in TIME_INTERVALS:
@@ -143,75 +168,130 @@ class TabGraph(QWidget):
         return ', '.join(result[:granularity])
 
     
-
+##Tab specific to mashing
 class TabMash(TabGraph):
     _logname = 'TabMash'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None):
+    ##Create tab layout and setup plot for camera
+    def __init__(self, db, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
         self.recipedata = recipedata
         self.batchID = batchID
-        super().__init__(LOGIN, parent)
+        self.radio = radio
+        super().__init__(db, parent)
         
         self.startButton.setText(self.tr('Start Mash'))
         self.stopButton.setText(self.tr('&Stop Mash'))
         self.plot.setTitle("Mash")
         self.curve.setTitle("Temprature")
 
-        self.targetTimeLabel.setText(f"Set mash time: {self.recipedata['mashTime']} mins")
-        self.targetTempLabel.setText(f"Set mash temp: {self.recipedata['mashTemp']}{DEGREESC}")
+        self.targetTimeLabel.setText(f"{self.recipedata['mashTime']} mins")
+        self.targetTempLabel.setText(f"{self.recipedata['mashTemp']}{DEGREESC}")
+
+
+        # if self.radio is not None:
+        #     irCamera = IrCameraWidget(radio=self.radio, parent=parent)
+        #     self.buttonLayout.addWidget(irCamera)
+
+        # if self.radio is not None:
+        #     self.slider = QSlider(QtCore.Qt.Vertical)
+        #     self.slider.setMinimum(0)
+        #     self.slider.setMaximum(50)
+        #     self.slider.setValue(10)
+        #     self.irCameraPlot = PlotCanvas(self, width=4, height=4)
+        #     self.slider.valueChanged.connect(lambda: self.sliderchanged())
+        #     ircameralayout = QHBoxLayout()
+        #     ircameralayout.addWidget(self.irCameraPlot)
+        #     ircameralayout.addWidget(self.slider)
+        #     self.buttonLayout.addLayout(ircameralayout)
+
+        #     self.irCameraTimer = QTimer(self)
+        #     self.irCameraTimer.timeout.connect(lambda: self.updateIr())
+        #     self.irCameraTimer.start(5000)
+
+    # def sliderchanged(self):
+    #     self.irCameraPlot.scale = self.slider.value()
+
+    # ##Update the IR camera plot every 5 seconds
+    # def updateIr(self):
+    #     if self.minuteTimer.isActive():
+    #         self.irCameraPlot.plot(self.radio.irTemp)
         
+    ##Update the mash plot with new data from the database
     def updatePlot(self):
         self.db.flushTables()
         # db = dataBase(self.LOGIN, "Brewing")
-        sql = f"SELECT Temp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        sql = f"SELECT TimeStamp, Temp FROM Mash WHERE BatchID = '{self.batchID}'"
+        # query = self.db.custom(sql)
 
-        results = [i[0] for i in query]
+        # results = [i[0] for i in query]
+        # self.dataY = np.fromiter(results, dtype=float)
 
-        sql = f"SELECT TimeStamp FROM Mash WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        # sql = f"SELECT TimeStamp FROM Mash WHERE BatchID = '{self.batchID}'"
+        # query = self.db.custom(sql)
 
+        timestamps = []
+        results = []
+        for data in self.db.custom(sql):
+            timestamps.append(data[0])
+            results.append(data[1])
 
-        self.timeStamps = [i[0] for i in query]
-        # self._log.debug(self.timeStamps)
-        self.dataY = np.fromiter(results, dtype=float)
+        startTime = timestamps[0]
+        for i in range(len(timestamps)):
+            timestamps[i] = (timestamps[i]-startTime).seconds
+            # timestamps[i] = timestamps[i].seconds
+
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+
+        # self.timeStamps = [i[0] for i in query]
         
-        self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
-        self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
+        # self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
+        self.curve.setData(timestamps, results)
+        # self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
         self.plot.replot()
         self.plot.show()
 
-        if len(self.dataX) == 0:
+        if len(timestamps) == 0:
             self.timeLabel.setText("Timer:")
             self.tempLabel.setText("Temp:")
         else:
-            # timerlabel = TimeScaleDraw(self.timeStamps).label(self.dataX[-1])}")
-            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
-            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))
+            self.timeLabel.setText("Timer: {}".format(self.display_time(timestamps[-1])))
+            self.tempLabel.setText("Temp: {}{}".format(results[-1],DEGREESC))     
 
+            if (results[-1] < (self.recipedata['mashTemp']-0.5)) or (results[-1] > (self.recipedata['mashTemp']+0.5)):
+                self.tempStatusLED.value=False
+            else:
+                self.tempStatusLED.value=True
+        if len(timestamps) == 0:
+            self.timeLabel.setText("Timer:")
+            self.tempLabel.setText("Temp:")
+        else:
+            self.timeLabel.setText("Timer: {}".format(self.display_time(timestamps[-1])))
+            self.tempLabel.setText("Temp: {}{}".format(results[-1],DEGREESC))
 
+##Tab specific to Boiling
 class TabBoil(TabGraph):
     _logname = 'TablesTabBoil'
     _log = logging.getLogger(f'{_logname}')
 
-    def __init__(self, LOGIN, batchID, recipedata:dict, parent=None):
+    ##Create tab layout and setup plot and recipe data timings
+    def __init__(self, db, LOGIN, batchID, recipedata:dict, parent=None, radio = None):
         self.recipedata = recipedata
         self.batchID = batchID
-        super().__init__(LOGIN, parent)
-        self.sqlBoilComms = SQLBoil(self.LOGIN)
+        self.radio = radio
+        super().__init__(db, parent)
+        self.sqlBoilComms = SQLBoil(LOGIN)
         self.plot.setTitle("Boil")
         self.curve.setTitle("Temprature")
 
         self.startButton.setText(self.tr('Start Boil'))
         self.stopButton.setText(self.tr('&Stop Boil'))
 
-        self.targetTimeLabel.setText(f"Set boil time: {self.recipedata['boilTime']} mins")
-        self.targetTempLabel.setText(f"Set boil temp: {self.recipedata['boilTemp']}{DEGREESC}")
+        # self.targetTimeLabel.setText(f"Set boil time: {self.recipedata['boilTime']} mins")
+        # self.targetTempLabel.setText(f"Set boil temp: {self.recipedata['boilTemp']}{DEGREESC}")
 
-        # for i in range(4):
-        #     if self.recipedata[f'hop{i+1}'][0] is None:
+        self.targetTimeLabel.setText(f"{self.recipedata['boilTime']} mins")
+        self.targetTempLabel.setText(f"{self.recipedata['boilTemp']}{DEGREESC}")
 
 
         self.recipeLED = [QLed(self, onColour=QLed.Green, 
@@ -228,29 +308,26 @@ class TabBoil(TabGraph):
         }
 
 
-        # self.recipeLED[0].setOffColour(QLed.Yellow)
-        # # self.recipeLED[1].setOffColour(QLed.Yellow)
-        # self.recipeLED[2].setOffColour(QLed.Yellow)
 
         self.hopTimeLabels = [QLabel("") for _ in range(4)]
 
-        self.recipeGrid.addWidget(QLabel(f"Hop"),3,0)
-        self.recipeGrid.addWidget(QLabel(f"Time"),3,1)
-        self.recipeGrid.addWidget(QLabel(f"Hop\nStatus"),3,2)
-        self.recipeGrid.addWidget(QLabel(f"Time\nadded"),3,3)
+        self.recipeGrid.addWidget(QLabel(f"Hop"),5,0)
+        self.recipeGrid.addWidget(QLabel(f"Time"),5,1)
+        self.recipeGrid.addWidget(QLabel(f"Hop\nStatus"),5,2)
+        self.recipeGrid.addWidget(QLabel(f"Time\nadded"),5,3)
         for i in range(4):
             if self.recipedata[f'hop{i+1}'][0] is None:
-                self.recipeGrid.addWidget(QLabel(""),4+i,0)
-                self.recipeGrid.addWidget(QLabel(""),4+i,1)
+                self.recipeGrid.addWidget(QLabel(""),6+i,0)
+                self.recipeGrid.addWidget(QLabel(""),6+i,1)
 
             else:
-                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][0])),4+i,0)
-                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][1])),4+i,1)
-                self.recipeGrid.addWidget(self.recipeLED[i],4+i,2)
-            self.recipeLED[i].setMaximumSize(35,35)
-            self.recipeGrid.addWidget(self.hopTimeLabels[i],4+i,3)
+                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][0])),6+i,0)
+                self.recipeGrid.addWidget(QLabel("{}".format(self.recipedata[f'hop{i+1}'][1])),6+i,1)
+                self.recipeGrid.addWidget(self.recipeLED[i],6+i,2)
+            self.recipeLED[i].setMaximumSize(25,25)
+            self.recipeGrid.addWidget(self.hopTimeLabels[i],6+i,3)
 
-        # for i in range(4):
+
         #Doesn't work in for loop for some reason
         self.recipeLED[0].clicked.connect(lambda: self.ledClicked(self.recipeLED[0],1))
         self.recipeLED[1].clicked.connect(lambda: self.ledClicked(self.recipeLED[1],2))
@@ -261,7 +338,7 @@ class TabBoil(TabGraph):
             if self.recipedata[f'hop{i+1}'][0] is None:
                 self.recipeLED[i].deleteLater()
                 
-
+    ##When LED is clicked, set timer in Database
     def ledClicked(self,led,hopNo):
         if self.minuteTimer.isActive():
             if led.offColour == QLed.Yellow and led.value==False:
@@ -282,62 +359,81 @@ class TabBoil(TabGraph):
             time = (self.recipedata['boilTime']*60)-self.count
             self.hopTimeLabels[hopNo-1].setText("{}".format(self.display_time(time)))
 
-
+    ##Update the plot with new data from the database
     def updatePlot(self):
         self.db.flushTables()
         # db = dataBase(self.LOGIN, "Brewing")
-        sql = f"SELECT Temp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
+        sql = f"SELECT TimeStamp, Temp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
         query = self.db.custom(sql)
 
         # results = [i[0] for i in query]
-        results = np.asarray(query)
+        # results = np.asarray(query)
+        # self.dataY = np.fromiter(results, dtype=float)
 
-        sql = f"SELECT TimeStamp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
-        query = self.db.custom(sql)
+        # sql = f"SELECT TimeStamp FROM BoilMonitor WHERE BatchID = '{self.batchID}'"
+        # query = self.db.custom(sql)
 
+        timestamps = []
+        results = []
+        for data in self.db.custom(sql):
+            timestamps.append(data[0])
+            results.append(data[1])
 
-        self.timeStamps = [i[0] for i in query]
-        # self.timeStamps = np.asarray(query)
-        # self._log.debug(self.timeStamps)
-        self.dataY = np.fromiter(results, dtype=float)
         
-        self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
-        self.curve.setData(self.dataX, self.dataY)
-        self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
+        if len(timestamps) == 0:
+            return
+
+        startTime = timestamps[0]
+        for i in range(len(timestamps)):
+            timestamps[i] = (timestamps[i]-startTime).seconds
+            # timestamps[i] = timestamps[i].seconds
+
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+
+        # self.timeStamps = [i[0] for i in query]
+        # self.dataY = np.fromiter(results, dtype=float)
+        
+        # self.dataX = np.linspace(0, len(self.dataY), len(self.dataY))
+        self.curve.setData(timestamps, results)
+        # self.plot.setAxisScaleDraw(QwtPlot.xBottom, BoilMashTimeScaleDraw(self.timeStamps))
         self.plot.replot()
         self.plot.show()
 
-        if len(self.dataX) == 0:
+        if len(timestamps) == 0:
             self.timeLabel.setText("Timer:")
             self.tempLabel.setText("Temp:")
         else:
-            # timerlabel = TimeScaleDraw(self.timeStamps).label(self.dataX[-1])}")
-            self.timeLabel.setText("Timer: {}".format(self.display_time(self.count)))
-            self.tempLabel.setText("Temp: {}{}".format(self.dataY[-1],DEGREESC))     
 
-            if (self.dataY[-1] < (self.recipedata['boilTemp']-0.5)) or (self.dataY[-1] > (self.recipedata['boilTemp']+0.5)):
+            self.timeLabel.setText("Timer: {}".format(self.display_time(timestamps[-1])))
+            self.tempLabel.setText("Temp: {}{}".format(results[-1],DEGREESC))     
+
+            if (results[-1] < (self.recipedata['boilTemp']-0.5)) or (results[-1] > (self.recipedata['boilTemp']+0.5)):
                 self.tempStatusLED.value=False
             else:
                 self.tempStatusLED.value=True
 
         for i in range(4):
             if self.recipedata[f'hop{i+1}'][1] is not None:
-                if self.count/60 >= self.recipedata['boilTime']-self.recipedata[f'hop{i+1}'][1]:
+                if timestamps[-1]/60 >= self.recipedata['boilTime']-self.recipedata[f'hop{i+1}'][1]:
                     self.recipeLED[i].setOffColour(QLed.Yellow)
 
+##Monitoring window for boiling and mashing processes
 class MonitorWindow(QDialog):
 
     _logname = 'MonitorWindow'
     _log = logging.getLogger(f'{_logname}')
 
-    finishedSignal= pyqtSignal()
-    
-    def __init__(self, LOGIN, batchID, parent=None):
+    closeSignal= pyqtSignal()
+    finishedSignal = pyqtSignal()
+    ##Setup to window 
+    def __init__(self, LOGIN, batchID, radio=None ,parent=None):
         super().__init__(parent)
         self.setWindowTitle("Monitor")
         self.LOGIN = LOGIN
         self.db = dataBase(self.LOGIN, "Brewing")
         self.batchID = batchID
+        
+        self.radio = radio
 
         sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
         query = self.db.custom(sql)
@@ -357,14 +453,14 @@ class MonitorWindow(QDialog):
         self.recipedata['fermenttemp']= query[0][15]
         
         self.tabs = QTabWidget()
-        self.tabMash = TabMash(LOGIN, self.batchID, self.recipedata, parent=self)
-        self.tabBoil = TabBoil(LOGIN, self.batchID, self.recipedata, parent=self)
+        self.tabMash = TabMash(self.db, LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
+        self.tabBoil = TabBoil(self.db, LOGIN, self.batchID, self.recipedata, parent=self, radio=radio)
         self.tabs.resize(100,1000)
 
         self.tabs.addTab(self.tabMash,"Mash")
         self.tabs.addTab(self.tabBoil,"Boil")
 
-        self.quitButton = QPushButton(self.tr('&Quit'))
+        self.quitButton = QPushButton(self.tr('&Close'))
         self.quitButton.clicked.connect(self.closeWindow)
         
         self.tabBoil.startButton.clicked.connect(self.boilStartClicked)
@@ -372,6 +468,12 @@ class MonitorWindow(QDialog):
 
         self.tabMash.startButton.clicked.connect(self.mashStartClicked)
         self.tabMash.stopButton.clicked.connect(self.mashStopClicked)
+
+        if radio is None:
+            self.tabBoil.startButton.setEnabled(False)
+            self.tabBoil.stopButton.setEnabled(False)
+            self.tabMash.startButton.setEnabled(False)
+            self.tabMash.stopButton.setEnabled(False)
         
 
         hLayout = QHBoxLayout()
@@ -389,26 +491,8 @@ class MonitorWindow(QDialog):
         self.mashPlotUpdateTimer.timeout.connect(self.updateMashPlot)
         self.mashPlotUpdateTimer.start(1000)
 
-        #TODO: remove once we can get real data
-        # if __name__ == "__main__":
-        self.boilMonitor = SQLBoilMonitor(self.LOGIN)
-        self.fakeBoilTimer = QTimer(self)
-        self.fakeBoilCount = 0
-        self.fakeBoilTimer.timeout.connect(self.fakeBoilData)
 
-
-    # def startBoilTimers(self):
-    #     # self.boilPlotUpdateTimer.start(1000)
-    #     self.tabBoil.minuteTimer.start(60000)
-    #     self.tabBoil.sqlBoilComms.startTimer()
-
-    # def stopBoilTimers(self):
-
-
-    # def startMashTimers(self):
-
-    # def stopMashTimers(self):
-    
+    ##Start the boil when the button is clicked
     def boilStartClicked(self):
         if not self.tabBoil.minuteTimer.isActive():
             msg = 'Start boiling? \n set {}{} for {} minutes'.format(self.recipedata['boilTemp'],DEGREESC,self.recipedata['boilTime'])
@@ -418,33 +502,33 @@ class MonitorWindow(QDialog):
                 '''
                 TODO: Set Boil Uc
                 '''
-                self.fakeBoilTimer.start(1000)   #TODO: remove once we can get real data
+                self.radio.startBoil(self.recipedata['boilTemp'])
+
                 self.tabBoil.minuteTimer.start(60000)
                 self.tabBoil.sqlBoilComms.startTimer()
                 self.tabBoil.timeStatusLED.value=True
         elif self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Boil already running: {} mins {} secs'.format(x[0],x[1])
+            msg = 'Boil already running: {} mins.'.format(x[0])
             reply = QMessageBox.question(self, 'oops', 
                     msg, QMessageBox.Ok)
         else:
             raise Exception("Boiling Error")
 
+    ##Stop the boil when clicked
     def boilStopClicked(self):
         if self.tabBoil.minuteTimer.isActive():
             x = divmod(self.tabBoil.count,60)
-            msg = 'Stop boiling?\nCurrent time: {} mins {} secs\nRecipe time: {} mins'.format(x[0],x[1], self.recipedata['boilTime'] )
+            msg = 'Stop boiling?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['boilTime'] )
             reply = QMessageBox.question(self, 'Continue?', 
                     msg, QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.Yes:
                 '''
                 TODO: TURN OFF BOIL uC 
                 '''
-                self.fakeBoilTimer.stop()
-                self.boilPlotUpdateTimer.stop()
-                self.mashPlotUpdateTimer.stop()#######
+                self.radio.stopBoil()
                 self.tabBoil.minuteTimer.stop()
-                self.tabMash.minuteTimer.stop() ###########
+
                 self.tabBoil.sqlBoilComms.endTimer()
                 self.tabBoil.timeStatusLED.value=False
 
@@ -455,61 +539,79 @@ class MonitorWindow(QDialog):
                     self._log.debug('Batch {} being sent to tank {}'.format(self.recipedata['batchID'],tankNumber))
                     '''EMIT SIGNAL with fermentation tank number'''
                     fermtank = SQLFermentMonitor(self.LOGIN, self.recipedata['batchID'], tankNumber)
-                    fermtank.record(None,None,None)
+                    fermtank.record(None,None,None) #enter null into database to attach tank to batch id
                     self.finishedSignal.emit()
                     self.close()
-                    
-                
 
         elif not self.tabBoil.minuteTimer.isActive():
             msg = 'No Boil currently running'
             reply = QMessageBox.question(self, 'oops', 
                     msg, QMessageBox.Ok)
 
-
+    ##Start the mash when button is clicked
     def mashStartClicked(self):
-        '''
-        Set mash Uc up with 
-        '''
-        self.tabMash.minuteTimer.start(60000)
+        if not self.tabMash.minuteTimer.isActive():
+            msg = 'Start mashing? \n set {}{} for {} minutes'.format(self.recipedata['mashTemp'],DEGREESC,self.recipedata['mashTime'])
+            reply = QMessageBox.question(self, 'Continue?', 
+                    msg, QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                '''
+                TODO: Set mash Uc
+                '''
+                self.radio.startMash(self.recipedata['mashTemp'])
 
+                self.tabMash.minuteTimer.start(60000)
+                self.tabMash.timeStatusLED.value=True
+        elif self.tabMash.minuteTimer.isActive():
+            x = divmod(self.tabMash.count,60)
+            msg = 'Mash already running: {} mins.'.format(x[0])
+            reply = QMessageBox.question(self, 'oops', 
+                    msg, QMessageBox.Ok)
+        else:
+            raise Exception("Mashing Error")
+        # self.tabMash.minuteTimer.start(60000)
+
+    ##Stop the mash when the button is clicked
     def mashStopClicked(self):
-        self.mashPlotUpdateTimer.stop()
-        self.tabMash.minuteTimer.stop()
+        if self.tabMash.minuteTimer.isActive():
+            x = divmod(self.tabMash.count,60)
+            msg = 'Stop mashing?\nCurrent time: {} mins\nRecipe time: {} mins.'.format(x[0], self.recipedata['mashTime'] )
+            reply = QMessageBox.question(self, 'Continue?', 
+                    msg, QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
 
+                self.radio.stopMash()
+
+                self.tabMash.minuteTimer.stop() 
+                self.tabMash.timeStatusLED.value=False
+
+        elif not self.tabMash.minuteTimer.isActive():
+            msg = 'No mash currently running'
+            reply = QMessageBox.question(self, 'oops', 
+                    msg, QMessageBox.Ok)
+
+    ##call the plot to be updated when the timer runs out
     def updateMashPlot(self):
-        '''
-        collect mash data
-        '''
-
-        # self.mashCount += 1
-        # self.tabMash.addTimer(1)
-        # self.tabMash.insertSample(np.sin(self.mashCount/4))
         self.tabMash.updatePlot()
-        
+
+    ##call the plot to be updated when the timer runs out  
     def updateBoilPlot(self):
-        '''
-        collect boil data
-        '''
         self.tabBoil.updatePlot()
 
+    ##close the window safely, stop all the timers  
     def closeWindow(self):
-        self.fakeBoilTimer.stop()
+        if self.radio is not None:
+            self.radio.stopMash()
+            self.radio.stopBoil()
+
         self.boilPlotUpdateTimer.stop()
         self.tabBoil.minuteTimer.stop()
         self.mashPlotUpdateTimer.stop()
         self.tabMash.minuteTimer.stop()
         self.close()
-
-
-    def fakeBoilData(self):
-        #temp = float(np.exp(self.fakeBoilCount, dtype=float))
-        x = self.fakeBoilCount
-        temp = np.divide(10*np.power(x,3)+2*np.square(x)-x, 2*np.power(x,3)+10*np.square(x)+1)
+        self.closeSignal.emit()
         
-        
-        self.boilMonitor.record(float(temp),10)
-        self.fakeBoilCount +=1
+
 
 
 

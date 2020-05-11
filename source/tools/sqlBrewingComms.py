@@ -1,3 +1,8 @@
+##@package sqlBrewingComms
+#MySQL database python helper package for brewing specific data
+# 
+#a collection of functions to allow easy use of the MySQL brewing database.
+
 import sys
 import os
 
@@ -10,17 +15,23 @@ sys.path.append(os.path.join(os.path.join(os.getcwd(), os.pardir),os.pardir))
 import source.tools.exceptionLogging
 from source.tools.sqlHandler import SqlTableHandler as Sql
 
+
+##SQLBrewingComms
+#
+#Collection of methods to help insert data into database
 class SQLBrewingComms(metaclass=ABCMeta):
 
     _logname = 'SQLBrewingComms'
     _log = logging.getLogger(f'{_logname}')
 
+    ##SQLBrewingComms constructor
     def __init__(self, LOGIN:list):
         self.LOGIN = LOGIN
         self.dbName = "Brewing"
         self.db = Sql(self.LOGIN, self.dbName)
         # self.batchID = self.getCurrentBrew()
-        
+    
+    ##Perform Custom SQL command
     def _custom(self, sql: str, val=None ):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
@@ -29,35 +40,64 @@ class SQLBrewingComms(metaclass=ABCMeta):
         elif val is not None:
             self.db.custom(sql,val)
 
+    ##Return the current brew 
     def getCurrentBrew(self):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
         return self.db.maxIdFromTable("Brews")
 
+    ## Return the recipe data for the current brew
     def getBrewData(self, batchID):
         # db = Sql(self.LOGIN, self.dbName)
         self.db.flushTables()
-        sql = f"SELECT * FROM Brews WHERE id = '{batchID}'"
-        query = self.db.custom(sql)
-        data = {}
+        sql = f"SELECT * FROM Brews WHERE id = '%s'"
+        val = (f"{batchID}")
+        query = self.db.custom(sql, val)
+        data = {
+            "recipeName"    :query[0][1],
+            "recipeDate"    :query[0][2],
+            "mashTemp"      :query[0][3],
+            "mashTime"      :query[0][4],
+            "boilTemp"      :query[0][5],
+            "boilTime"      :query[0][6],
+            "hop1"          :(query[0][7],query[0][8]),
+            "hop2"          :(query[0][9],query[0][10]),
+            "hop3"          :(query[0][11],query[0][12]),
+            "hop4"          :(query[0][13],query[0][14]),
+            "fermenttemp"   :query[0][15]
+            }
 
-        data["recipeName"] = query[0][1]
-        data["recipeDate"] = query[0][2]
-        data["mashTemp"]   = query[0][3]
-        data["mashTime"]  = query[0][4]
-        data["boilTemp"]  = query[0][5]
-        data["boilTime"]  = query[0][6]
-        data["hop1"]       = (query[0][7],query[0][8])
-        data["hop2"]       = (query[0][9],query[0][10])
-        data["hop3"]       = (query[0][11],query[0][12])
-        data["hop4"]       = (query[0][13],query[0][14])
-        data["fermenttemp"]= query[0][15]
         return data
 
     @abstractmethod
     def record(self):
         pass
 
+##SQLMashMonitor
+#
+#Class to insert data into mash table
+class SQLMashMonitor(SQLBrewingComms):
+
+    _logname = 'SQLMashMonitor'
+    _log = logging.getLogger(f'{_logname}')
+
+    def __init__(self, LOGIN:list):
+       super().__init__(LOGIN)
+
+    ##Record Data into the passed data into the table
+    def record(self, temp, volume=0, pH=0, SG=0):
+        self.batchID = self.getCurrentBrew()
+        insert = []
+        insert.append(("BatchID", "TimeStamp", "Temp", "Volume", "pH","SG"))
+        insert.append((self.batchID, datetime.now(), temp, volume, pH, SG))
+        self._log.debug(f"Batch ID:{self.batchID}, Time Stamp: {datetime.now()}, Temp: {temp}, Volume:{volume}, pH:{pH}, SG:{SG}")
+        # db = Sql(self.LOGIN, self.dbName)
+        self.db.insertToTable("Mash", insert)
+        self.db.flushTables()
+
+##SQLBoilMonitor
+#
+#Class to insert data into boilMonitor table
 class SQLBoilMonitor(SQLBrewingComms):
 
     _logname = 'SQLBoilMonitor'
@@ -66,7 +106,7 @@ class SQLBoilMonitor(SQLBrewingComms):
     def __init__(self, LOGIN:list):
        super().__init__(LOGIN)
 
-    
+    ##Record passed data into the table
     def record(self, temp, volume):
         self.batchID = self.getCurrentBrew()
         insert = []
@@ -77,6 +117,9 @@ class SQLBoilMonitor(SQLBrewingComms):
         self.db.insertToTable("BoilMonitor", insert)
         self.db.flushTables()
 
+##SQLBoil
+#
+#Class to insert data into boil table
 class SQLBoil(SQLBrewingComms):
 
     _logname = 'SQLBoil'
@@ -95,42 +138,48 @@ class SQLBoil(SQLBrewingComms):
        self.hop3Flag = False
        self.hop4Flag = False
 
-
+    ##Start the timer for the boil
     def startTimer(self):
         self.starttime = datetime.now()
         self.activeFlag = True
         return datetime.time(datetime.now())
 
+    ##End the timer for the boil
     def endTimer(self):
         self.endtime = datetime.now()
         self.activeFlag = False
         self.record()
         return datetime.time(datetime.now())
 
+    ##call when hop1 has been added and record time
     def hop1Timer(self):
         self.hop1timer = datetime.time(datetime.now())
         self._log.info("Hop 1 added")
         self.hop1Flag = True
         return datetime.time(datetime.now())
 
+    ##call when hop2 has been added and record time
     def hop2Timer(self):
         self.hop2timer = datetime.time(datetime.now())
         self._log.info("Hop 2 added")
         self.hop2Flag = True
         return datetime.time(datetime.now())
 
+    ##call when hop3 has been added and record time
     def hop3Timer(self):
         self.hop3timer = datetime.time(datetime.now())
         self._log.info("Hop 3 added")
         self.hop3Flag = True
         return datetime.time(datetime.now())
 
+    ##call when hop4 has been added and record time
     def hop4Timer(self):
         self.hop4timer = datetime.time(datetime.now())
         self._log.info("Hop 4 added")
         self.hop4Flag = True
         return datetime.time(datetime.now())
 
+    ##Record passed data into the table
     def record(self):
         self.batchID = self.getCurrentBrew()
         insert = []
@@ -140,6 +189,9 @@ class SQLBoil(SQLBrewingComms):
         self.db.insertToTable("Boil", insert)
         self.db.flushTables()
 
+##SQLNewBrew
+#
+#Class to start a new brew, with a given recipe
 class SQLNewBrew(SQLBrewingComms):
 
     _logname = 'SQLNewBrew'
@@ -162,6 +214,7 @@ class SQLNewBrew(SQLBrewingComms):
         self.record()
         # self.batchID = self.getCurrentBrew()
 
+    ##Record passed data into the table
     def record(self):
         
         insert = []
@@ -197,7 +250,9 @@ class SQLNewBrew(SQLBrewingComms):
                      )
         
 
-
+##SQLFermentMonitor
+#
+#Class to insert data into the fermentation table
 class SQLFermentMonitor(SQLBrewingComms):
 
     _logname = 'SQLFermentMonitor'
@@ -211,7 +266,8 @@ class SQLFermentMonitor(SQLBrewingComms):
     def newBatch(self):
         self.batchID = self.getCurrentBrew()
 
-    def record(self, specificG, temp, volume):
+    ##Record passed data into the table
+    def record(self, specificG, temp, volume=None):
         insert = []
         insert.append(("BatchID", "TimeStamp", "Fermenter", "Sg", "Temp", "Volume"))
         insert.append((self.batchID, datetime.now(), self.fermenterID, specificG, temp, volume))
@@ -234,15 +290,24 @@ if __name__ == '__main__':
     USER = "Test"
     PASSWORD = "BirraMosfeti"
 
+    HOST = "192.168.10.223"
     HOST = "192.168.0.17"
     USER = "jamie"
     PASSWORD = "beer"
 
+<<<<<<< HEAD
     HOST = input("Host ID: ")
     USER = input("User: ")
     PASSWORD = getpass()
     if HOST == "Pi":
         HOST = "192.168.0.17"
+=======
+    # HOST = input("Host ID: ")
+    # USER = input("User: ")
+    # PASSWORD = getpass()
+    if HOST == "Pi":
+        HOST = "192.168.10.223"
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     LOGIN = [HOST,USER,PASSWORD]
 
@@ -259,6 +324,7 @@ if __name__ == '__main__':
 
     # brew = SQLNewBrew(LOGIN, "None", "None","None","None","None",hop1,hop2,hop3,hop4, "None" )
     brew = SQLNewBrew(LOGIN, "Fake", "60","-20","69","-2",hop1,hop2,hop3,hop4, "112" )
+    brew = SQLNewBrew(LOGIN, "Fake2", "60","-20","69","-2",hop1,hop2,hop3,hop4, "112" )
     # fermenter1=SQLFermentMonitor(LOGIN, 1)
     # boilMonitor = SQLBoilMonitor(LOGIN)
     # boil = SQLBoil(LOGIN)

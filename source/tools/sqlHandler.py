@@ -1,3 +1,7 @@
+##@package sqlHandler
+#MySQL database python helper package
+# 
+#a collection of functions to allow easy ascess to the MySQL database.
 
 import numpy as np
 import mysql.connector as sql
@@ -8,14 +12,20 @@ from collections.abc import Iterable
 
 
 
-
+##SqlDatabaseHandler
+#
+#Collection of methods to help manage the MySQL database
 class SqlDatabaseHandler():
 
     _logname = 'SqlDatabaseHandler'
     _log = logging.getLogger(f'{_logname}')
-    
+
+    ##SqlDatabaseHandler constructor
+    #
+    #Log in to the database and create connection
+    #@param LOGIN The login details of the MySQL database.   
     def __init__(self, LOGIN: list):
-        self.db= sql.connect(
+        self.db = sql.connect(
             host=LOGIN[0],
             user=LOGIN[1],
             passwd=LOGIN[2]
@@ -23,10 +33,17 @@ class SqlDatabaseHandler():
 
         self.cursor = self.db.cursor()
 
+    ##Create a database user
+    #
+    #create a user for the brewing database
+    #@param host The host that the databse will be acessed from.
+    #@param user The username.
+    #@param passwd The password.
     def createUser(self, host: str, user: str, passwd: str):
         self.cursor.execute(f"GRANT INSERT, SELECT, DELETE, UPDATE ON Brewing.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}'")
         self.cursor.execute("FLUSH PRIVILEGES")
         self._log.info(f"New user: {user} created on: {host}")
+<<<<<<< HEAD
 
 
     def createSuperUser(self, host: str, user: str, passwd: str):
@@ -34,7 +51,21 @@ class SqlDatabaseHandler():
         self.cursor.execute("FLUSH PRIVILEGES")
         self._log.info(f"New super user: {user} created on: {host}")
         
+=======
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
+    ##Create a database super user
+    #
+    #create a super user for the all databases, privilaged acess.
+    #@param host The host that the databse will be acessed from.
+    #@param user The username.
+    #@param passwd The password.
+    def createSuperUser(self, host: str, user: str, passwd: str):
+        self.cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{user}'@'{host}' IDENTIFIED BY '{passwd}' WITH GRANT OPTION")
+        self.cursor.execute("FLUSH PRIVILEGES")
+        self._log.info(f"New super user: {user} created on: {host}")
+        
+    ##Show all the databses present.
     def showAllDatabases(self):
         self.cursor.execute("SHOW DATABASES")
         if not any(True for _ in self.cursor):
@@ -46,7 +77,10 @@ class SqlDatabaseHandler():
                 s += f" {x[0]}"
             self._log.info(f"{s}")
 
-
+    ##check if a database exists
+    #
+    #@param databaseName name of database to check if exists
+    #@return bool if database exists
     def checkDatabaseExists(self, databaseName: str) -> bool:
         self.cursor.execute("""
             SELECT COUNT(*)
@@ -57,44 +91,62 @@ class SqlDatabaseHandler():
             return True
         return False
 
-
+    ##Create a new Database
     def createDatabase(self, databaseName: str):
         if self.checkDatabaseExists(databaseName):
             self._log.info(f"Database \"{databaseName}\" already exists")
             return
         self.cursor.execute(f"CREATE DATABASE IF NOT EXISTS {databaseName}")
         self._log.info(f"Database \"{databaseName}\" added")
-        
+
+    ##Delete a databse
     def deleteDatabase(self, databaseName: str):
         self.cursor.execute(f"DROP DATABASE IF EXISTS {databaseName}")
         self._log.info(f"Database \"{databaseName}\" droped")
 
+##LoginError exception
+#
+#If user fails to login, return exception
 class LoginError(Exception):
     "Exception for login Errors"
     pass
+
+##SqlTableHandler
+#
+#Collection of methods to help manage a table in the database
 class SqlTableHandler():
 
     _logname = 'SqlTableHandler'
     _log = logging.getLogger(f'{_logname}')
 
+    ##SqlTableHandler constructor
+    #
+    #Log in to the database and create connection
+    #@param LOGIN The login details of the MySQL connection. 
+    #@param databaseName The database to acess
     def __init__(self, LOGIN, databaseName):
+        self.databaseName = databaseName
+        self._log.debug(f"Opening \"{databaseName}\"")
         try:
+            # self.sql = sql
             self.db= sql.connect(
                 host=LOGIN[0],
                 user=LOGIN[1],
                 passwd=LOGIN[2],
                 database=databaseName)
-
-            self.databaseName = databaseName
-            self._log.debug(f"Opening \"{databaseName}\"")
             self.cursor = self.db.cursor()
 
         except ProgrammingError:
             raise LoginError("Invalid Login details ")
 
+    ##Update the tables for all users
     def flushTables(self):
         self.cursor.execute("FLUSH TABLES")
 
+    ##Perform custom SQL command
+    #
+    #@param sql The SQL string to execute
+    #@return the returned query results
     def custom(self, sql: str, val=None ):
         if val is None:
             self.cursor.execute(sql)
@@ -102,7 +154,7 @@ class SqlTableHandler():
             self.cursor.executemany(sql,val)
         return self.cursor.fetchall()
 
-    
+    ##Create a table in the database
     def createTable(self, tableName: str, columns: list):
         if self.checkTableExists(tableName):
             self._log.info(f"Table \"{tableName}\" already exists")
@@ -116,6 +168,7 @@ class SqlTableHandler():
         self.cursor.execute(f"CREATE TABLE IF NOT EXISTS {tableName} {string}")
         self._log.info(f"Table \"{tableName}\" added")
 
+    ##Check if a table exists
     def checkTableExists(self, tableName: str) -> bool:
         self.cursor.execute("""
             SELECT COUNT(*)
@@ -125,7 +178,8 @@ class SqlTableHandler():
         if self.cursor.fetchone()[0] == 1:
             return True
         return False
-        
+    
+    ##Delete a table from the database
     def deleteTable(self, tableName: str): 
         if not self.checkTableExists(tableName):
             self._log.info(f"Table \"{tableName}\" dosen't exist")
@@ -133,12 +187,16 @@ class SqlTableHandler():
         self.cursor.execute(f"DROP TABLE IF EXISTS {tableName}")
         self._log.info(f"Table \"{tableName}\" droped")
 
+    ##Find information regarding a table
     def describeTable(self, tableName: str):
         self._log.info(f"Table: {tableName}")
         self.cursor.execute(f"DESCRIBE {tableName}")
         for x in self.cursor:
             self._log.info(f"{x}")
 
+    ##SQL field genorator
+    #
+    #Helper method to check validity of a field and return an SQL command to create a field of a given type
     def createField(self, name: str, datatype: str, length=None, decimal=None):
         try:
             if (length is None) and (decimal is None):
@@ -161,7 +219,7 @@ class SqlTableHandler():
         except AssertionError:
             self._log.error(f"invalid table field of name: {name}, type: {datatype}, length: {length}, decimal: {decimal}")
             
-
+    ##Show all the tablse in a database
     def showAllTables(self):
         self.cursor.execute("SHOW TABLES")
         if not any(True for _ in self.cursor):
@@ -171,11 +229,13 @@ class SqlTableHandler():
             for x in self.cursor:
                 self._log.info(x)
 
+    ##View all the contents of a table
     def viewTable(self, tableName:str):
         self.cursor.execute(f"SELECT * FROM {tableName}")
         for x in self.cursor.fetchall():
             self._log.info(x)
 
+    ##Delete an entry from a tbale
     def deleteFromTable(self, tableName: str, field: str, value:str):
         sql = f"DELETE FROM {tableName} WHERE {field} = %s "
         val = (f"{value}",)
@@ -183,6 +243,7 @@ class SqlTableHandler():
         self.db.commit()
         self._log.info("Table record deleted")
 
+    ##insert data into a given table
     def insertToTable(self, tableName: str, data: list):
         fields = data[0][0]
         values = "%s"
@@ -194,20 +255,24 @@ class SqlTableHandler():
 
         self.db.commit()
         self._log.debug(f"Record inserted to {tableName}: {fields}")
-    
+
+    ##Read fields forom a table
     def readFromTable(self, tableName: str, fields: str):
         sql = f"SELECT {fields} FROM {tableName}"
         self.cursor.execute(sql)
         return self.cursor.fetchall()
     
+    ##Return the maximum primary key from table
     def maxIdFromTable(self, tableName: str):
         self.cursor.execute(f"SELECT max(id) FROM {tableName}")
         return self.cursor.fetchone()[0]
 
+    ##Return the maximum value froma  given table
     def maxValueFromTable(self, value, tableName: str):
         self.cursor.execute(f"SELECT max({value}) FROM {tableName}")
         return self.cursor.fetchone()[0]
 
+    ##Perform an Inner Join
     def innerJoin(self, primaryTable: str, fieldSelect: str, secondaryTable: str, fieldSelect2: str, fieldMatch: str):
 
         sql = f"SELECT {secondaryTable}.{fieldSelect2}, {primaryTable}.{fieldSelect} "
@@ -230,14 +295,22 @@ if __name__ == "__main__":
     USER = "Test"
     PASSWORD = "BirraMosfeti"
 
-    HOST = "192.168.0.17"
+    HOST = "192.168.10.223"
     USER = "jamie"
     PASSWORD = "beer"
 
+<<<<<<< HEAD
     HOST = input("Host ID: ")
     USER = input("User: ")
     PASSWORD = getpass()
     if HOST == "Pi": 
+=======
+    # HOST = input("Host ID: ")
+    # USER = input("User: ")
+    # PASSWORD = getpass()
+    if HOST == "Pi": 
+        HOST = "192.168.10.223"
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
         HOST = "192.168.0.17"
 
     LOGIN = [HOST,USER,PASSWORD]
@@ -281,7 +354,7 @@ if __name__ == "__main__":
     fileds.append(t.createField("TimeStamp","DATETIME"))
     fileds.append(t.createField("Temp","DOUBLE", 225, 2))
     fileds.append(t.createField("pH","DOUBLE",255,2))
-    fileds.append(t.createField("SG","DOUBLE",255,3))
+    fileds.append(t.createField("SG","DOUBLE",255,5))
     fileds.append(t.createField("Volume","DOUBLE",255,4))
     t.createTable("Mash", fileds)
 
@@ -349,6 +422,7 @@ if __name__ == "__main__":
         print(x)
 
     print("current BrewID: {}".format(t.maxIdFromTable("Brews")))
+    print("database reset")
 
     #t.deleteTable("people")
     # t.createTable("people", columns)

@@ -8,6 +8,8 @@ from datetime import datetime
 
 from PyQt5 import QtCore, QtGui, Qt
 
+from PyQt5.QtGui import QFont
+
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, \
                  QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget, \
                     QLabel, QGridLayout, QComboBox, QDialog
@@ -25,13 +27,13 @@ import source.tools.exceptionLogging
 from source.tools.constants import *
 from source.tools.sqlHandler import SqlTableHandler as dataBase
 from source.tools.sqlBrewingComms import SQLFermentMonitor
-from source.gui.guitools import FermentTimeScaleDraw, QHLine
+from source.gui.guitools import FermentTimeScaleDraw, DateTimeTimeScaleDraw, QHLine, NewGraph
 
 
-class FermentPlot(QWidget):
-
-    _logname = 'FermentPlot'
+class FermentGraph(QWidget):
+    _logname = 'FermentGraphGeneric'
     _log = logging.getLogger(f'{_logname}')
+<<<<<<< HEAD
 
     textGraphDrop = {
         "Temperature": "Temp",
@@ -46,61 +48,74 @@ class FermentPlot(QWidget):
         self.db = dataBase(self.LOGIN, "Brewing")
 
         self.displayDataType = {}
+=======
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
+    def __init__(self, database, parent=None):
+        super().__init__(parent)
+        self.db = database
+        self.updateTimer = QTimer(self)
+        self.updateTimer.start(5000)
 
         self.plot = QwtPlot()
-        
         self.curve = QwtPlotCurve()
         self.curve.attach(self.plot)
-        #self.curve.setData(self.dataX, self.dataY)
         self.plot.resize(1000, 1000)
-        self.plot.replot()
         self.plot.show()
+        self.plot.setAxisScaleDraw(QwtPlot.xBottom, DateTimeTimeScaleDraw())
 
-        self.labelFerment = QLabel("Set Temp:")
-        self.labelFermentTemp = QLabel("Temp")
-        self.recipeLabel = QLabel(f"Recipe:")
-        self.recipeName = QLabel("Name")
-        self.boilStartLabel = QLabel("Boil Start:")
-        self.boilStartTime = QLabel("Time")
-        self.boilEndLabel = QLabel("Boil End:")
-        self.boilEndTime = QLabel("Time")
-        
+        axisFont = QFont("Helvetica", 11, QFont.Bold)
+        titleFont = QFont("Helvetica", 12, QFont.Bold)
 
-        self.recipeGrid = QGridLayout()
-        self.recipeGrid.addWidget(self.recipeLabel,0,0)
-        self.recipeGrid.addWidget(self.recipeName,0,1)
-        self.recipeGrid.addWidget(QHLine(), 1, 0, 1, 2)
-        self.recipeGrid.addWidget(self.labelFerment,2,0)
-        self.recipeGrid.addWidget(self.labelFermentTemp,2,1)
-        self.recipeGrid.addWidget(self.boilStartLabel,3,0)
-        self.recipeGrid.addWidget(self.boilStartTime,3,1)
-        self.recipeGrid.addWidget(self.boilEndLabel,4,0)
-        self.recipeGrid.addWidget(self.boilEndTime,4,1)
+        xTitle = QwtText()
+        xTitle.setText("Time")
+        xTitle.setFont(axisFont)
+        self.plot.setAxisTitle(self.plot.xBottom, xTitle)
+
+        self.yTitle = QwtText()
+        self.yTitle.setFont(axisFont)
+        self.plot.setAxisTitle(self.plot.yLeft, self.yTitle)
+
+        self.titleText = QwtText()
+        self.titleText.setFont(titleFont)
+        self.plot.setTitle(self.titleText)
 
         mainLayout = QHBoxLayout()
-        # mainLayout.addLayout(buttonLayout)
         mainLayout.addWidget(self.plot)
+        self.setLayout(mainLayout)
 
-        vLayout = QVBoxLayout(self)
-        vLayout.addLayout(mainLayout)
+        self.plot.show()
+        self.results = []
+        self.batchID = None
 
+        
+    def updatePlot(self, variable):
+        if self.batchID is not None:
+            self.db.flushTables()
+            sql = f"SELECT TimeStamp, {variable} FROM Ferment WHERE BatchID = '{self.batchID}'"
+            
+            timestamps = []
+            self.results = []
+            for data in self.db.custom(sql)[1:]:
+                timestamps.append(data[0])
+                self.results.append(data[1])
 
-    def updateData(self, tankID, displayDataType):
-        self.displayDataType = displayDataType
-        self.tankID = tankID
-        self.db.flushTables()
+            startTime = timestamps[0]
+            for i in range(len(timestamps)):
+                timestamps[i] = (timestamps[i]-startTime).seconds
 
+<<<<<<< HEAD
         sql = f"SELECT BatchID FROM Ferment WHERE Fermenter = '{tankID}'"
         query = self.db.custom(sql)
         # self._log.debug(f"Query: {query}")
         self.batchID = query[-1][0]
         self._log.debug(f"BatchID: {self.batchID}, DataType: {self.displayDataType}")
+=======
+            # self.plot.setAxisScaleDraw(QwtPlot.xBottom, TimeScaleDraw())
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
-        
-        sql = f"SELECT * FROM Brews WHERE id = '{self.batchID}'"
-        query = self.db.custom(sql)
 
+<<<<<<< HEAD
         self.recipeData = {}
         self.recipeData['recipeName'] = query[0][1]
         self.recipeData['recipeDate'] = query[0][2]
@@ -180,110 +195,189 @@ class FermentPlot(QWidget):
         # return np.asarray(data, dtype=float)
         # except:
         #     return data
+=======
+            self.curve.setData(timestamps, self.results)
+            self.plot.replot()
+            self.plot.show()
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
+
+    def changeTank(self, tankID):
+        self.titleText.setText(f"Fermentation Tank: {tankID}")
+
+    
+class FermentTempTab(FermentGraph):
+    _logname = 'FermentTempTab'
+    _log = logging.getLogger(f'{_logname}')
+
+    def __init__(self, database, parent=None):
+        super().__init__(database=database, parent=parent)
+        self.yTitle.setText("Temperature"+DEGREESC)
+        self.updateTimer.timeout.connect(lambda : self.updatePlot(variable = 'Temp'))
+
+    def changeBatchID(self,batchID):
+        self.batchID = batchID
+        self.updatePlot("Temp")
 
 
+class FermentSgTab(FermentGraph):
+    _logname = 'FermentSgTab'
+    _log = logging.getLogger(f'{_logname}')
+
+    def __init__(self, database, parent=None):
+        super().__init__(database=database, parent=parent)
+        self.yTitle.setText("Specific Gravity units")
+        self.updateTimer.timeout.connect(lambda : self.updatePlot(variable = 'Sg'))
+
+    def changeBatchID(self,batchID):
+        self.batchID = batchID
+        self.updatePlot("Sg")
 
 
 class FermentMonitor(QDialog):
-
     _logname = 'FermentMonitor'
     _log = logging.getLogger(f'{_logname}')
 
-    textGraphDrop = {
-        "Temperature": "Temp",
-        "Specific Gravity" : "Sg",
-        "Volume" : "Volume"
-    }
-    fermentClose = pyqtSignal()
-    
+    closeSignal = pyqtSignal()
 
     def __init__(self, LOGIN, parent=None):
         self.LOGIN = LOGIN
+        self.db = dataBase(self.LOGIN, "Brewing")
         super().__init__(parent)
-        # super().__init__()
-        # self.app = QCoreApplication.instance()
-        # self.restart()
+        self.setWindowTitle('Fermentation tanks')
+        self.batchInTank = {}
 
-        self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")
-        # super().__init__(parent)
-        self.setWindowTitle('Fermentation monitor')
-        
+        self.tabs = QTabWidget()
+        self.tabSg = FermentSgTab(database=self.db, parent=parent)
+        self.tabTemp = FermentTempTab(database=self.db, parent=parent)
+        self.tabs.resize(100,1000)
+
+        self.tabs.addTab(self.tabSg,"Gravity")
+        self.tabs.addTab(self.tabTemp,"Temperature")
+
         self.dropDownBox = QComboBox()
+        self.updateTankDropdown()
         self.dropDownGraphBox = QComboBox()
         self.dropDownGraphBox.addItem("Specific Gravity")
         self.dropDownGraphBox.addItem("Temperature")
-        self.dropDownGraphBox.addItem("Volume")
+        # self.dropDownGraphBox.addItem("Volume")
 
-        # if self.numberTotalTanks == None:
-        #    raise Exception("No fermentations active")
-        # #    pass
-
-        # for i in range(self.numberTotalTanks):
-        #     self.dropDownBox.addItem(f"Fermentation tank {i+1}")
-        self.restartTankDropdown()
-
-
-        self.plot = FermentPlot(self.LOGIN)
-        # self.plot.updateData(1, "Sg")
         self.dropDownBox.currentIndexChanged.connect(self.indexChanged)
-        self.dropDownGraphBox.currentIndexChanged.connect(self.indexChanged)
 
-        self.plotLayout = QHBoxLayout()
-        self.plotLayout.addWidget(self.plot)
-
-        self.dropDownBoxLayout = QVBoxLayout()
-        self.dropDownBoxLayout.addStretch(10)
-        self.dropDownBoxLayout.addWidget(self.dropDownBox)
-        self.dropDownBoxLayout.addWidget(self.dropDownGraphBox)
-        self.dropDownBoxLayout.addStretch(10)
-        self.dropDownBoxLayout.addLayout(self.plot.recipeGrid)
-        self.dropDownBoxLayout.addStretch(100)
-
-        self.gridLayout = QGridLayout()
-        self.gridLayout.addLayout(self.dropDownBoxLayout,0,0)
-        self.gridLayout.addLayout(self.plotLayout,0,1)
-
-        self.quitButton = QPushButton(self.tr('&Quit'))
-        self.quitButton.clicked.connect(self.closeWindow)
+        quitButton = QPushButton(self.tr('&Close'))
+        quitButton.clicked.connect(self.closeWindow)
         quitLayout = QHBoxLayout()
-        quitLayout.addStretch(100)
-        quitLayout.addWidget(self.quitButton)
+        quitLayout.addStretch(10)
+        quitLayout.addWidget(quitButton)
 
-        self.mainLayout = QVBoxLayout(self)
-        self.mainLayout.addLayout(self.gridLayout)
-        self.mainLayout.addLayout(quitLayout)
+        currentValuetimer = QTimer(self)
+        currentValuetimer.timeout.connect(self.updateCurrentValues)
+        currentValuetimer.start(1000)
 
-        self.updateTimer = QTimer(self)
-        self.updateTimer.timeout.connect(self.indexChanged)
-        # self.updateTimer.start(1000)
+        self.recipelayout = QGridLayout()
+        
+        nameLabel = QLabel("Recipe:")
+        self.nameValue = QLabel()
 
-        # if __name__ == "__main__":
-        self.fakeFermentCount = 0
-        self.fakeFermenter = SQLFermentMonitor(self.LOGIN,1,1)
-        # self.fakeFermenter2 = SQLFermentMonitor(self.LOGIN,5,4)
-        self.updateDataTimer = QTimer(self)
-        self.updateDataTimer.timeout.connect(self.fakeFermentData)
-        # self.updateDataTimer.start(1000)
-        # self.startTimers()
+        dateLabel = QLabel("Date:")
+        self.dateValue = QLabel()
 
-    def restartTankDropdown(self):
-        self.numberTotalTanks = dataBase(self.LOGIN, "Brewing").maxValueFromTable("Fermenter","Ferment")
+        brewIDLabel =QLabel("Brew ID:")
+        self.brewIDValue =QLabel()
+
+        setTempLabel =QLabel("Set temperature:")
+        self.setTempValue = QLabel()
+
+        currentTempLabel =QLabel("Current temperature:")
+        self.currentTempValue = QLabel()
+
+        currentSgLabel =QLabel("Current specific gravity:")
+        self.currentSgValue = QLabel()
+
+        self.recipelayout.addWidget(nameLabel, 0,0)
+        self.recipelayout.addWidget(self.nameValue, 0,1)
+        self.recipelayout.addWidget(dateLabel, 1,0)
+        self.recipelayout.addWidget(self.dateValue, 1,1)
+        self.recipelayout.addWidget(brewIDLabel, 2,0)
+        self.recipelayout.addWidget(self.brewIDValue, 2,1)
+        self.recipelayout.addWidget(setTempLabel, 3,0)
+        self.recipelayout.addWidget(self.setTempValue, 3,1)
+        self.recipelayout.addWidget(currentTempLabel, 4,0)
+        self.recipelayout.addWidget(self.currentTempValue, 4,1)
+        self.recipelayout.addWidget(currentSgLabel, 5,0)
+        self.recipelayout.addWidget(self.currentSgValue, 5,1)
+
+        buttonlayout = QVBoxLayout()
+        buttonlayout.addWidget(self.dropDownBox)
+        buttonlayout.addLayout(self.recipelayout)
+        buttonlayout.addStretch(10)
+
+        tablayout = QHBoxLayout()
+        tablayout.addLayout(buttonlayout)
+        tablayout.addWidget(self.tabs)
+
+        mainlayout = QVBoxLayout()
+        mainlayout.addLayout(tablayout)
+        mainlayout.addLayout(quitLayout)
+
+        self.setLayout(mainlayout)
+
+        self.recipeUpdate(self.batchInTank["1"])
+        self.tabSg.changeTank(1)
+        self.tabTemp.changeTank(1)
+
+
+    def updateTankDropdown(self):
+        self.db.flushTables()
+        self.numberTotalTanks = self.db.maxValueFromTable("Fermenter","Ferment")
         self.dropDownBox.clear()
-        if self.numberTotalTanks == None:
-        #    raise Exception("No fermentations active")
-           pass
-        else:
+        if self.numberTotalTanks is not None:
             tanks = []
             for i in range(self.numberTotalTanks):
-                tanks.append(f"Fermentation tank {i+1}")
+                tanks.append(f"Fermentation Tank {i+1}")
+                sql = f"SELECT max(BatchID) FROM Ferment WHERE Fermenter = '{i+1}'"
+                self.batchInTank[f"{i+1}"] = self.db.custom(sql)[0][0]
 
             self.dropDownBox.addItems(tanks)
 
-    def startMonitor(self):
-        pass
+
+
+    def recipeUpdate(self, batchID):
+
+        sql = f"SELECT * FROM Brews WHERE id = '{batchID}'"
+        query = self.db.custom(sql)
+
+        recipeData = {}
+        recipeData['recipeName'] = query[0][1]
+        recipeData['recipeDate'] = query[0][2]
+        recipeData['fermenttemp']= query[0][15]
+
+        self.nameValue.setText(f"{recipeData['recipeName']}")
+        self.dateValue.setText(f"{recipeData['recipeDate']}")
+        self.brewIDValue.setText(f"{batchID}")
+        self.setTempValue.setText(f"{recipeData['fermenttemp']}")
+
+
+
+
+        self.tabSg.changeBatchID(batchID)
+        self.tabTemp.changeBatchID(batchID)
+
+
+    def updateCurrentValues(self):
+        try:
+            self.currentSgValue.setText(f"{self.tabSg.results[-1]}")
+            self.currentTempValue.setText(f"{self.tabTemp.results[-1]}")
+        except IndexError:
+            self.currentSgValue.setText("None")
+            self.currentTempValue.setText("None")
+            
+
 
     def indexChanged(self):
+        # print(self.batchInTank)
+        tankNo = self.dropDownBox.currentIndex()+1
         if self.isVisible():
+<<<<<<< HEAD
             self._log.debug(f"INDEX {self.dropDownBox.currentIndex()}")
             self.plot.updateData(self.dropDownBox.currentIndex()+1, self.textGraphDrop[f"{self.dropDownGraphBox.currentText()}"])
 
@@ -304,32 +398,16 @@ class FermentMonitor(QDialog):
     def stopTimers(self):
         self.updateTimer.stop()
         self.updateDataTimer.stop()
+=======
+            self.recipeUpdate(self.batchInTank[f"{tankNo}"])
+            self.tabSg.changeTank(tankNo)
+            self.tabTemp.changeTank(tankNo)
+>>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     def closeWindow(self):
-        self.stopTimers()
         self.close()
+        self.closeSignal.emit()
 
-class FermentMonitorThread(QRunnable):
-
-    def __init__(self, LOGIN, parent=None):
-        super().__init__()
-        # self.fermentMonitor = FermentMonitor(LOGIN)
-        # self.mainLayout = QVBoxLayout()
-        # self.mainLayout.addWidget(self.fermentMonitor)
-        # self.fermentMonitor = None
-        self.LOGIN = LOGIN
-        # self.app = QCoreApplication.instance()
-        
-
-    def run(self):
-        # self.fermentMonitor.startMonitor()
-        # self.mainLayout = QVBoxLayout()
-        # self.mainLayout.addWidget(self.fermentMonitor)
-        # app = QCoreApplication.instance()
-        FermentMonitor(LOGIN=LOGIN)
-
-    # def __del__(self):
-    #     self.wait()
 
 if __name__ == "__main__":
     import logging

@@ -23,6 +23,7 @@ from source.gui.boilMashMonitor import MonitorWindow as MashBoilMonitor
 
 class NewBrewWindow(QDialog):
     formSubmitted = pyqtSignal()
+    closeSignal = pyqtSignal()
 
     def __init__(self, LOGIN, parent=None):
         super(NewBrewWindow, self).__init__(parent)
@@ -38,7 +39,7 @@ class NewBrewWindow(QDialog):
         nameGroupBox = QGroupBox('Recipe')
         nameForm = QFormLayout() 
         self.recipeNameEdit = QLineEdit()
-        nameForm.addRow(QLabel('Recipe Name'), self.recipeNameEdit)
+        nameForm.addRow(QLabel('Recipe Name:'), self.recipeNameEdit)
         nameGroupBox.setLayout(nameForm)
 
         # Mash group box
@@ -59,7 +60,7 @@ class NewBrewWindow(QDialog):
         boilForm.addRow(QLabel('Time (mins):'), self.boilTimeEdit)
        
         # Create 4 hop boxes using createHopBox function
-        self.hopBoxes = [self.createHopBox(i,0) for i in range(4)]
+        self.hopBoxes = [self.createHopBox(i+1,0) for i in range(4)]
         # Create hBoxes for hop boxes
         hopHLayout = QHBoxLayout()
         hopHLayout2 = QHBoxLayout()
@@ -77,7 +78,7 @@ class NewBrewWindow(QDialog):
         fermentGroupBox = QGroupBox('Fermentation')
         fermentForm = QFormLayout()
         self.fermentTempEdit = QLineEdit()
-        fermentForm.addRow(QLabel('Temperature:'), self.fermentTempEdit)
+        fermentForm.addRow(QLabel(f"Temperature ({DEGREES}C): "), self.fermentTempEdit)
         fermentGroupBox.setLayout(fermentForm)
 
         # Buttons at bottom of page
@@ -111,26 +112,13 @@ class NewBrewWindow(QDialog):
         hopNameEdit = QLineEdit()
         hopTimeEdit = QLineEdit()
         hopForm.addRow(QLabel('Name:'), hopNameEdit)
-        hopForm.addRow(QLabel('Boil Time (mins):'), hopTimeEdit)
+        timeLabel = QLabel('Boil Time (mins):')
+        timeLabel.setToolTip("The amount of time that the hop must be boiled for.")
+        hopForm.addRow(timeLabel, hopTimeEdit)
         hopBox.setLayout(hopForm)
 
         return hopBox, hopNameEdit, hopTimeEdit
 
-    
-    # Function to check whether hop box is checked and deal with data accordingly
-    # def checkHopBox(self, hopBoxes):
-
-    #     for i in range(4):
-    #         if (hopBoxes[i][0].isChecked() == False):
-                
-    #             hopBoxes[i][1].setText(None)
-    #             hopBoxes[i][2].setText(None)
-
-    #             hopBoxes[i][1] = None
-    #             hopBoxes[i][2] = None
-                
-    #         else:
-    #             int(hopBoxes[i][2].text(),10)
 
     def checkHopBox(self, hopBox):
 
@@ -152,7 +140,7 @@ class NewBrewWindow(QDialog):
             mashTemp = float(self.mashTempEdit.text())
             mashTime = int(self.mashTimeEdit.text(), 10)
             boilTemp = float(self.boilTempEdit.text())
-            boilTemp = int(self.boilTimeEdit.text(), 10)
+            boilTime = int(self.boilTimeEdit.text(), 10)
             fermTemp = float(self.fermentTempEdit.text())
 
             hop1 = self.checkHopBox(self.hopBoxes[0])
@@ -169,7 +157,7 @@ class NewBrewWindow(QDialog):
                         brewName    =   "{}".format(self.recipeNameEdit.text()), 
                         mashTime    =   "{}".format(mashTime),
                         mashTemp    =   "{}".format(mashTemp),
-                        boilTime    =   "{}".format(boilTemp),
+                        boilTime    =   "{}".format(boilTime),
                         boilTemp    =   "{}".format(boilTemp),
                         fermentTemp =   "{}".format(fermTemp),
                         hop1        =    self.checkHopBox(self.hopBoxes[0]),
@@ -198,5 +186,6 @@ class NewBrewWindow(QDialog):
     # Function run if Quit button is pressed
     def brewquitClicked(self):
         self.close()
+        self.closeSignal.emit()
 
 

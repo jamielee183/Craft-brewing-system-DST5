@@ -11,3 +11,7 @@ TIME_INTERVALS = (
     ('mins', 60),
     ('secs', 1),
     )
+
+PI_RADIO_CHANNEL =0x76
+PI_IP = "192.168.10.223"
+PI_IP = "192.168.0.17"
