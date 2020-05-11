@@ -1,0 +1,4 @@
+<map id="guitools.BoilFinishedPopup" name="guitools.BoilFinishedPopup">
+<area shape="rect" id="node1" title="Popup dialog to select what fermentation tank to send brew after boiling." alt="" coords="5,79,188,104"/>
+<area shape="rect" id="node2" title=" " alt="" coords="62,5,131,31"/>
+</map>

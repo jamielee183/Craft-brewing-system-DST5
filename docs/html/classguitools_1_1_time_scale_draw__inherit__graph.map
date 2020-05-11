@@ -1,0 +1,6 @@
+<map id="guitools.TimeScaleDraw" name="guitools.TimeScaleDraw">
+<area shape="rect" id="node1" title="convert database timestamps into xaxis values for a graph" alt="" coords="153,79,317,104"/>
+<area shape="rect" id="node3" href="$classguitools_1_1_boil_mash_time_scale_draw.html" title="convert database timestamps into xaxis time for fboiling and mashing" alt="" coords="5,152,225,177"/>
+<area shape="rect" id="node4" href="$classguitools_1_1_ferment_time_scale_draw.html" title="convert database timestamps into xaxis time for fermenting" alt="" coords="249,152,464,177"/>
+<area shape="rect" id="node2" title=" " alt="" coords="180,5,290,31"/>
+</map>
