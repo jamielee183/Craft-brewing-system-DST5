@@ -349,27 +349,13 @@ class MdiMainWindow(QWidget):
 if __name__ == "__main__":
 
     from source.tools.sqlHandler import SqlTableHandler as db
-<<<<<<< HEAD
-=======
     from source.gui.loginWindow import LoginWindow
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
     from getpass import getpass
 
     HOST = "192.168.10.223"
     USER = "jamie"
     PASSWORD = "beer"
 
-<<<<<<< HEAD
-    HOST = "localhost"
-    USER = "Test"
-    PASSWORD = "BirraMosfeti"
-
-    HOST = input("Host ID: ")
-    USER = input("User: ")
-    PASSWORD = getpass()
-    if HOST == "Pi":
-        HOST = "192.168.0.17"
-=======
     # HOST = "localhost"
     # USER = "Test"
     # PASSWORD = "BirraMosfeti"
@@ -379,11 +365,9 @@ if __name__ == "__main__":
     # PASSWORD = getpass()
     if HOST == "Pi":
         HOST = PI_IP
->>>>>>> 3c6d0bb3cf9aeffbf1eb8547b86fa6e0eafc3acd
 
     LOGIN = [HOST,USER,PASSWORD]
     
-    LOGIN = [HOST,USER,PASSWORD]
 
     
 
